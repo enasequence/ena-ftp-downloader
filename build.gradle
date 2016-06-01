@@ -1,0 +1,130 @@
+group 'uk.ac.ebi.ena'
+version '1.0'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+    flatDir (name: 'jre library', dirs: 'C:/Program Files/Java/jdk1.7.0_79/jre/lib')
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+configurations {
+    provided
+    compile.extendsFrom provided
+}
+
+//create a single Jar with all dependencies
+/*task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'ENA FTP Downloader',
+                'Implementation-Version': version,
+                'Main-Class': 'uk.ac.ebi.ena.ftp.Main'
+    }
+    baseName = project.name + '-aio'
+    dependsOn configurations.runtime
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}*/
+
+jar {
+    dependsOn configurations.compile
+    from {
+        (configurations.compile - configurations.provided).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    } {
+        exclude "META-INF/**"
+    }
+}
+
+
+dependencies {
+    compile group: 'commons-net', name: 'commons-net', version: '3.5'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    compile 'commons-io:commons-io:2.4'
+    provided name:'javaws'
+    provided name:'jfxrt'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+task copyWebStartFiles(type: Copy, dependsOn: [jar]) {
+    from configurations.compile
+    from("build/libs")
+    into("build/webstart/lib")
+    include('ena-ftp-downloader-1.0*.jar')
+}
+
+task signAll(dependsOn: [copyWebStartFiles]) << {
+    new File('build/webstart/signed').mkdirs()
+    def libFiles = files { file('build/webstart/lib').listFiles() }
+    libFiles.each {
+        ant.signjar(
+                storetype: 'pkcs12',
+                destDir: 'build/webstart/signed',
+                alias: 'european molecular biology laboratory\'s godaddy.com, inc. id',
+                jar: it,
+                keystore: 'jnlp/keystore/ENA.P12',
+                storepass: 'pass1234',
+                verbose: 'true',
+                tsaurl: 'http://tsa.starfieldtech.com/', //timestamp url for godaddy
+                preservelastmodified: 'true')
+    }
+}
+
+task generateJnlp(dependsOn: [signAll]) << {
+    File jnlpTemplateFile = new File('jnlp/template/template.vm')
+    def root = new XmlParser().parse(jnlpTemplateFile)
+    def jnlpFileName = "ena-ftp-downloader-${version}.jnlp"
+    // Setting values in the jnlp template
+    // Setting root values
+    // File CodeBase
+    // root.@codebase = 'file:/'+new File('webstart/signed').absolutePath
+    // Http CodeBase
+    root.@codebase = 'http://localhost:8080/ena/data'
+    root.@href = jnlpFileName
+    // Setting information values
+    def information = root.information[0]
+    def title = information.title[0]
+    def vendor = information.vendor[0]
+    title.setValue("ENA FTP Downloader")
+    vendor.setValue("ENA")
+    def descriptionList = information.description
+    descriptionList.each {
+        it.setValue("File Downloader")
+    }
+    // Setting resources
+    def resource = root.resources[0]
+    def j2se = resource.j2se[0]
+    j2se.@version = "1.7+"
+    def collection = files { file('build/webstart/lib').listFiles() }
+    def mainJar = "${name}-${version}.jar"
+    collection.each {
+        def resourceValues = [href: it.name]
+        if (mainJar == it.name) {
+            resourceValues = [href: it.name, main: 'true']
+        }
+        resource.appendNode('jar', resourceValues)
+    }
+    // Setting the main class
+    def applicationDesc = root.'application-desc'[0]
+    applicationDesc.'@main-class' = "uk.ac.ebi.ena.ftp.Main"
+    // Writing the jnlp file filled
+    File jnlpFile = new File('build/webstart/signed/' + jnlpFileName)
+    new XmlNodePrinter(new PrintWriter(jnlpFile)).print(root)
+}
+
+task generateWebStartFiles (dependsOn: [generateJnlp])<< {
+    println("Generating all webstart files in:build/webstart/signed")
+}
+
+task deployToTomcat (type: Copy, dependsOn: [generateWebStartFiles])<< {
+    println("Deploying all webstart files in:build/webstart/signed")
+    from("build/webstart/signed")
+    into("C:\\devtools\\apache-tomcat-6.0.44\\webapps\\ena\\data")
+    include('*.jar', '*.jnlp')
+}
