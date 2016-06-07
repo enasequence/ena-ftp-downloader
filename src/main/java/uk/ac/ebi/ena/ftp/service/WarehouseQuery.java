@@ -15,9 +15,9 @@ import java.util.List;
  */
 public class WarehouseQuery {
 
-    public List<RemoteFile> queryFastq(String accession) {
+    public List<RemoteFile> query(String accession, String type) {
         // URL stump for programmatic query of files
-        String url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=" + accession + "&result=read_run&fields=fastq_ftp,fastq_bytes";
+        String url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=" + accession + "&result=read_run&fields=" + type + "_ftp," + type + "_bytes," + type + "_md5";
         try {
             // Build URL, Connect and get results reader
             List<String> fileStrings = null;
@@ -25,9 +25,12 @@ public class WarehouseQuery {
             URLConnection yc = enaQuery.openConnection();
             fileStrings = IOUtils.readLines(yc.getInputStream());
             yc.getInputStream().close();
+            if (fileStrings.size() > 1) {
+                return parseFileReport(fileStrings);
+            }
+            return new ArrayList<>();
 
-            return parseFileReport(fileStrings);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return new ArrayList<>();
@@ -36,9 +39,11 @@ public class WarehouseQuery {
     private List<RemoteFile> parseFileReport(List<String> fileStrings) {
         List<RemoteFile> files = new ArrayList<>();
         for (int f = 1; f < fileStrings.size(); f++) {// skip header line
-            String[] parts = fileStrings.get(f).split("\\s");
-            RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(parts[0], "/"), Long.parseLong(parts[1]), parts[0]);
-            files.add(file);
+            if (StringUtils.isNotBlank(fileStrings.get(f))) {
+                String[] parts = fileStrings.get(f).split("\\s");
+                RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(parts[0], "/"), Long.parseLong(parts[1]), parts[0], parts[2]);
+                files.add(file);
+            }
         }
         return files;
     }
