@@ -16,21 +16,17 @@ import java.io.InputStream;
 public class FTPUtility {
 
     // FTP server information
-    private String host;
-    private int port;
-    private String username;
-    private String password;
+    private String host = "ftp.sra.ebi.ac.uk";
+    private int port = 21;
+    private String username = "ftp";
+    private String password = "1234";
 
     private FTPClient ftpClient = new FTPClient();
     private int replyCode;
 
     private InputStream inputStream;
 
-    public FTPUtility(String host, int port, String user, String pass) {
-        this.host = host;
-        this.port = port;
-        this.username = user;
-        this.password = pass;
+    public FTPUtility() {
         FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_L8);
         ftpClient.configure(conf);
     }
@@ -43,8 +39,9 @@ public class FTPUtility {
     public void connect() throws FTPException {
         try {
             ftpClient.connect(host);
+            ftpClient.setBufferSize(8192);
             replyCode = ftpClient.getReplyCode();
-            System.out.print(ftpClient.getReplyString());
+//            System.out.print(ftpClient.getReplyString());
             if (!FTPReply.isPositiveCompletion(replyCode)) {
                 throw new FTPException("FTP serve refused connection.");
             }
@@ -57,11 +54,11 @@ public class FTPUtility {
                     throw new FTPException("Could not login to the server.");
                 }
             }
-            System.out.println(ftpClient.getSystemType());
-            FTPFile[] ftpFiles = ftpClient.listDirectories();
+//            System.out.println(ftpClient.getSystemType());
+            /*FTPFile[] ftpFiles = ftpClient.listDirectories();
             for (FTPFile ftpFile : ftpFiles) {
                 System.out.println(ftpFile.getName());
-            }
+            }*/
 
 //            ftpClient.enterRemotePassiveMode();
 
@@ -71,37 +68,43 @@ public class FTPUtility {
         }
     }
 
-    /**
+/*
+    */
+/**
      * Gets size (in bytes) of the file on the server.
      *
      * @param filePath Path of the file on server
      * @return file size in bytes
      * @throws FTPException
-     */
+     *//*
+
     public long getFileSize(String dir, String filePath) throws FTPException {
         try {
-            System.out.println(StringUtils.join(ftpClient.listNames(), " "));
-            ftpClient.changeWorkingDirectory(dir);
-            System.out.println(StringUtils.join(ftpClient.listNames(), " "));
-            FTPFile[] ftpFiles = ftpClient.listFiles();
+//            System.out.println(StringUtils.join(ftpClient.listNames(), " "));
+//            System.out.println(StringUtils.join(ftpClient.listNames(), " "));
+            */
+/*FTPFile[] ftpFiles = ftpClient.listFiles();
             for (FTPFile ftpFile : ftpFiles) {
                 System.out.println(ftpFile.getName());
                 if (StringUtils.equals(ftpFile.getName(), filePath)) {
                     return ftpFile.getSize();
                 }
-            }
+            }*//*
+
 
 //            FTPFile file = ftpClient.mlistFile(filePath);
 //            if (file == null) {
 //                throw new FTPException("The file may not exist on the server!");
 //            }
-            throw new FTPException("The file may not exist on the server!");
+//            throw new FTPException("The file may not exist on the server!");
 
+            return 0;
         } catch (IOException ex) {
             throw new FTPException("Could not determine size of the file: "
                     + ex.getMessage());
         }
     }
+*/
 
     /**
      * Start downloading a file from the server
@@ -109,7 +112,7 @@ public class FTPUtility {
      * @param downloadPath Full path of the file on the server
      * @throws FTPException if client-server communication error occurred
      */
-    public void downloadFile(String downloadPath) throws FTPException {
+    public void getInputStream(String downloadPath) throws FTPException {
         try {
 
             boolean success = ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -117,7 +120,12 @@ public class FTPUtility {
                 throw new FTPException("Could not set binary file type.");
             }
 
-            inputStream = ftpClient.retrieveFileStream(downloadPath);
+            String path = StringUtils.substringAfter(downloadPath, this.host);
+            String dir = StringUtils.substringAfter(StringUtils.substringBeforeLast(path, "/"), "/");
+            ftpClient.changeWorkingDirectory(dir);
+//            long fileSize = getFileSize(dir, StringUtils.substringAfterLast(path, "/"));
+//            System.out.println(fileSize);
+            inputStream = ftpClient.retrieveFileStream(path);
 
             if (inputStream == null) {
                 throw new FTPException(
@@ -132,7 +140,9 @@ public class FTPUtility {
      * Complete the download operation.
      */
     public void finish() throws IOException {
-        inputStream.close();
+        if (inputStream != null) {
+            inputStream.close();
+        }
         ftpClient.completePendingCommand();
     }
 

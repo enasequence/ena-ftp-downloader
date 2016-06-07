@@ -10,6 +10,7 @@
 <?import javafx.scene.text.Font?>
 <?import uk.ac.ebi.ena.ftp.gui.custom.*?>
 
+<?import java.net.URL?>
 <Pane prefHeight="541.0" prefWidth="798.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.ac.ebi.ena.ftp.gui.Controller">
     <children>
         <AnchorPane>
@@ -33,8 +34,11 @@
                                 <Tab text="FASTQ">
                                     <content>
                                         <TableView fx:id="fastqFileTable" editable="true" prefHeight="308.0" prefWidth="782.0">
+                                            <placeholder>
+                                                <Label text="No FASTQ files found."/>
+                                            </placeholder>
                                             <columns>
-                                                <TableColumn fx:id="fastqDownloadColumn" prefWidth="85.0" text="Download">
+                                                <TableColumn fx:id="fastqDownloadColumn" prefWidth="90.0" text="Download" resizable="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="checked" />
                                                     </cellValueFactory>
@@ -45,45 +49,56 @@
                                                         <CheckBoxCellValueFactory />
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn prefWidth="276.0" text="Name">
+                                                <TableColumn prefWidth="271.0" text="Name" resizable="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="name" />
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn prefWidth="110.0" text="Size">
+                                                <TableColumn prefWidth="108.0" text="Size" resizable="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="size" />
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <!--<TableColumn prefWidth="311.0" text="Progress" />-->
                                             </columns>
-                                 <columnResizePolicy>
+                                 <!--<columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                 </columnResizePolicy>
+                                 </columnResizePolicy>-->
                                         </TableView>
                                     </content>
                                 </Tab>
-                                <Tab text="Submitted">
-                                    <content>
-                                        <TableView fx:id="submittedFileTable" editable="true" prefHeight="285.0" prefWidth="782.0">
-                                            <columns>
-                                                <TableColumn prefWidth="85.0" text="Download">
-                                                </TableColumn>
-                                                <TableColumn prefWidth="276.0" text="Name">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="name" />
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                                <TableColumn prefWidth="110.0" text="Size">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="size" />
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                                <TableColumn prefWidth="311.0" text="Progress" />
-                                            </columns>
-                                        </TableView>
-                                    </content>
-                                </Tab>
+                        <Tab text="Submitted">
+                           <content>
+                              <TableView fx:id="submittedFileTable" editable="true" prefHeight="308.0" prefWidth="782.0">
+                                  <placeholder>
+                                      <Label text="No Submitted files found."/>
+                                  </placeholder>
+                                 <columns>
+                                    <TableColumn fx:id="submittedDownloadColumn" prefWidth="90.0" text="Download" resizable="false">
+                                       <cellFactory>
+                                          <CheckBoxCellFactory />
+                                       </cellFactory>
+                                       <cellValueFactory>
+                                          <CheckBoxCellValueFactory />
+                                       </cellValueFactory>
+                                    </TableColumn>
+                                    <TableColumn prefWidth="271.0" text="Name" resizable="false">
+                                       <cellValueFactory>
+                                          <PropertyValueFactory property="name" />
+                                       </cellValueFactory>
+                                    </TableColumn>
+                                    <TableColumn prefWidth="108.0" text="Size" resizable="false">
+                                       <cellValueFactory>
+                                          <PropertyValueFactory property="size" />
+                                       </cellValueFactory>
+                                    </TableColumn>
+                                 </columns>
+                                  <!--<columnResizePolicy>
+                                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                  </columnResizePolicy>-->
+                              </TableView>
+                           </content>
+                        </Tab>
                             </tabs>
                             <BorderPane.margin>
                                 <Insets />
@@ -106,4 +121,7 @@
             </padding>
         </AnchorPane>
     </children>
+    <stylesheets>
+        <URL value="@gui.css" />
+    </stylesheets>
 </Pane>

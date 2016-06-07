@@ -12,24 +12,20 @@ import uk.ac.ebi.ena.ftp.service.DownloadService;
 public class RemoteFile extends Task<Void> {
     private SimpleBooleanProperty download;
     private String name;
-    private long size;
+    private long size, transferred=0;
     private String path;
 
-    private int waitTime = 100; // milliseconds
-    private int pauseTime = 100; // milliseconds
     private String saveLocation;
+    private String md5;
 
 
-    public RemoteFile(String name, long size, String path) {
+    public RemoteFile(String name, long size, String path, String md5) {
         this.download = new SimpleBooleanProperty(false);
         this.name = name;
         this.size = size;
         this.path = path;
-    }
-
-    public RemoteFile(int waitTime, int pauseTime) {
-        this.waitTime = waitTime;
-        this.pauseTime = pauseTime;
+        this.md5 = md5;
+        this.updateProgress(0);
     }
 
 
@@ -76,7 +72,14 @@ public class RemoteFile extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         DownloadService downloadService = new DownloadService();
-        downloadService.downloadFile(this);
+        this.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS, 1);
+        this.updateMessage("Waiting...");
+        this.updateMessage("Running...");
+        if (!downloadService.fileAlreadyDownloaded(this)) {
+            downloadService.downloadFileFtp4J(this);
+        }
+        this.updateMessage("Done");
+        this.updateProgress(1, 1);
         return null;
     }
 
@@ -90,5 +93,21 @@ public class RemoteFile extends Task<Void> {
 
     public String getSaveLocation() {
         return saveLocation;
+    }
+
+    public String getMd5() {
+        return md5;
+    }
+
+    public void setMd5(String md5) {
+        this.md5 = md5;
+    }
+
+    public long getTransferred() {
+        return transferred;
+    }
+
+    public void setTransferred(long transferred) {
+        this.transferred = transferred;
     }
 }
