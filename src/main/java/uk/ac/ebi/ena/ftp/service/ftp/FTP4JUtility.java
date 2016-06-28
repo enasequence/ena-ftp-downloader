@@ -60,7 +60,6 @@ public class FTP4JUtility {
         try {
 
             final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + remoteFile.getName());
-            final BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(downloadFile));
 
             ftpClient.setType(FTPClient.TYPE_AUTO);
             String path = StringUtils.substringAfter(remoteFile.getPath(), this.host);
@@ -68,7 +67,7 @@ public class FTP4JUtility {
             ftpClient.changeDirectory(dir);
 //            long fileSize = getFileSize(dir, StringUtils.substringAfterLast(path, "/"));
 //            System.out.println(fileSize);
-            ftpClient.download(path, outputStream, 0, new FTPDataTransferListener() {
+            ftpClient.download(path, downloadFile, 0, new FTPDataTransferListener() {
 
                 @Override
                 public void started() {
@@ -83,11 +82,6 @@ public class FTP4JUtility {
 
                 @Override
                 public void completed() {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                     new Thread() {
                         @Override
                         public void run() {
@@ -111,22 +105,12 @@ public class FTP4JUtility {
 
                 @Override
                 public void aborted() {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                     remoteFile.updateProgress(0);
                     remoteFile.cancel(true);
                 }
 
                 @Override
                 public void failed() {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                     remoteFile.updateProgress(0);
                     remoteFile.cancel(true);
                 }

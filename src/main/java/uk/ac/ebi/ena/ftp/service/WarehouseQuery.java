@@ -41,8 +41,20 @@ public class WarehouseQuery {
         for (int f = 1; f < fileStrings.size(); f++) {// skip header line
             if (StringUtils.isNotBlank(fileStrings.get(f))) {
                 String[] parts = fileStrings.get(f).split("\\s");
-                RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(parts[0], "/"), Long.parseLong(parts[1]), parts[0], parts[2]);
-                files.add(file);
+                if (StringUtils.contains(parts[0], ";")) {
+                    String[] fileParts = parts[0].split(";");
+                    String[]  sizeParts = parts[1].split(";");
+                    String[] md5Parts = parts[2].split(";");
+                    for (int p = 0; p< fileParts.length; p++) {
+                        RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(fileParts[p], "/"), Long.parseLong(sizeParts[p]), fileParts[p], md5Parts[p]);
+                        files.add(file);
+
+                    }
+
+                } else {
+                    RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(parts[0], "/"), Long.parseLong(parts[1]), parts[0], parts[2]);
+                    files.add(file);
+                }
             }
         }
         return files;
