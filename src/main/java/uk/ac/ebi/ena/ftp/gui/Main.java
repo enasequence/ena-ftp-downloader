@@ -11,15 +11,19 @@ public class Main extends Application {
     public static Parameters parameters;
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) throws Exception {
+        try {
+            parameters = getParameters();
 
-        parameters = getParameters();
-
-        Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("gui.fxml"));
-        primaryStage.setTitle("ENA File Downloader");
-        primaryStage.setScene(new Scene(root, 785, 520));
-        primaryStage.setResizable(false);
-        primaryStage.show();
+            Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("gui.fxml"));
+            String acc = parameters.getRaw().get(0);
+            primaryStage.setTitle("ENA File Downloader: " + acc);
+            primaryStage.setScene(new Scene(root, 785, 520));
+            primaryStage.setResizable(false);
+            primaryStage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

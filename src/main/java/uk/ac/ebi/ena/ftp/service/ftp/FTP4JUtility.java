@@ -1,8 +1,10 @@
 package uk.ac.ebi.ena.ftp.service.ftp;
 
 
+import it.sauronsoftware.ftp4j.FTPAbortedException;
 import it.sauronsoftware.ftp4j.FTPClient;
 import it.sauronsoftware.ftp4j.FTPDataTransferListener;
+import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
@@ -67,7 +69,7 @@ public class FTP4JUtility {
             ftpClient.changeDirectory(dir);
 //            long fileSize = getFileSize(dir, StringUtils.substringAfterLast(path, "/"));
 //            System.out.println(fileSize);
-            ftpClient.download(path, downloadFile, 0, new FTPDataTransferListener() {
+            ftpClient.download(path, downloadFile, remoteFile.getTransferred(), new FTPDataTransferListener() {
 
                 @Override
                 public void started() {
@@ -76,7 +78,7 @@ public class FTP4JUtility {
                 @Override
                 public void transferred(int i) {
                     remoteFile.setTransferred(remoteFile.getTransferred() + i);
-                    int percentCompleted = (int) (remoteFile.getTransferred() * 100 / remoteFile.getSize());
+                    double percentCompleted = (double) remoteFile.getTransferred() / (double) remoteFile.getSize();
                     remoteFile.updateProgress(percentCompleted);
                 }
 
@@ -92,9 +94,11 @@ public class FTP4JUtility {
                                 if (!StringUtils.equals(md5, remoteFile.getMd5())) {
                                     System.out.println("Error");
                                     remoteFile.updateProgress(0);
-                                    remoteFile.cancel(true);
+//                                    remoteFile.cancel(true);
                                 } else {
+                                    remoteFile.updateProgress(1);
                                     System.out.println("md5 matched");
+                                    remoteFile.setDownloaded(true);
                                 }
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -105,19 +109,22 @@ public class FTP4JUtility {
 
                 @Override
                 public void aborted() {
-                    remoteFile.updateProgress(0);
-                    remoteFile.cancel(true);
+                    System.out.println(remoteFile.getPath() + " aborted at " + remoteFile.getTransferred());
+//                    remoteFile.updateProgress(0);
+//                    remoteFile.cancel(true);
                 }
 
                 @Override
                 public void failed() {
                     remoteFile.updateProgress(0);
-                    remoteFile.cancel(true);
+//                    remoteFile.cancel(true);
                 }
             });
 
         } catch (IOException ex) {
             throw new FTPException("Error downloading file: " + ex.getMessage());
+        } catch (FTPAbortedException e) {
+            System.out.println("Data transfer aborted.");
         }
     }
 
@@ -128,7 +135,10 @@ public class FTP4JUtility {
     public void disconnect() throws Exception {
         if (ftpClient.isConnected()) {
             try {
-                ftpClient.logout();
+                try {
+                    ftpClient.logout();
+                } catch (it.sauronsoftware.ftp4j.FTPException e) {
+                }
                 ftpClient.disconnect(false);
             } catch (IOException ex) {
                 throw new FTPException("Error disconnect from the server: "
@@ -142,5 +152,13 @@ public class FTP4JUtility {
      */
     public InputStream getInputStream() {
         return inputStream;
+    }
+
+    public void abortDownload() throws Exception {
+        try {
+            ftpClient.abortCurrentDataTransfer(true);
+        } catch (Exception e) {
+            throw e;
+        }
     }
 }

@@ -1,15 +1,19 @@
 package uk.ac.ebi.ena.ftp.model;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.concurrent.Task;
-import javafx.scene.control.ProgressIndicator;
+import javafx.beans.property.SimpleDoubleProperty;
+import uk.ac.ebi.ena.ftp.gui.Controller;
 import uk.ac.ebi.ena.ftp.service.DownloadService;
+
+import java.util.List;
 
 /**
  * Created by suranj on 27/05/2016.
  */
-public class RemoteFile extends Task<Void> {
+public class RemoteFile {
     private SimpleBooleanProperty download;
     private String name;
     private long size, transferred=0;
@@ -17,6 +21,11 @@ public class RemoteFile extends Task<Void> {
 
     private String saveLocation;
     private String md5;
+    private DownloadService downloadService;
+    private List<RemoteFile> fileList;
+    private Controller controller;
+    private DoubleProperty progress;
+    private boolean downloaded;
 
 
     public RemoteFile(String name, long size, String path, String md5) {
@@ -25,7 +34,7 @@ public class RemoteFile extends Task<Void> {
         this.size = size;
         this.path = path;
         this.md5 = md5;
-        this.updateProgress(0);
+        this.progress = new SimpleDoubleProperty(0);
     }
 
 
@@ -69,22 +78,20 @@ public class RemoteFile extends Task<Void> {
     public static final int NUM_ITERATIONS = 100;
 
 
-    @Override
+    /*@Override
     protected Void call() throws Exception {
-        DownloadService downloadService = new DownloadService();
-        this.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS, 1);
-        this.updateMessage("Waiting...");
-        this.updateMessage("Running...");
-        if (!downloadService.fileAlreadyDownloaded(this)) {
-            downloadService.downloadFileFtp4J(this);
-        }
-        this.updateMessage("Done");
-        this.updateProgress(1, 1);
-        return null;
+
     }
 
-    public void updateProgress(int percentCompleted) {
-        this.updateProgress(percentCompleted, 100);
+
+*/
+    public void updateProgress(final double percentCompleted) {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                progress.setValue(percentCompleted);
+            }
+        });
     }
 
     public void setSaveLocation(String saveLocation) {
@@ -109,5 +116,33 @@ public class RemoteFile extends Task<Void> {
 
     public void setTransferred(long transferred) {
         this.transferred = transferred;
+    }
+
+    public void setFileList(List<RemoteFile> fileList) {
+        this.fileList = fileList;
+    }
+
+    public void setController(Controller controller) {
+        this.controller = controller;
+    }
+
+    public boolean isDownloaded() {
+        return downloaded;
+    }
+
+    public void setDownloaded(boolean downloaded) {
+        this.downloaded = downloaded;
+    }
+
+    public double getProgress() {
+        return progress.get();
+    }
+
+    public DoubleProperty progressProperty() {
+        return progress;
+    }
+
+    public void setProgress(double progress) {
+        this.progress.set(progress);
     }
 }
