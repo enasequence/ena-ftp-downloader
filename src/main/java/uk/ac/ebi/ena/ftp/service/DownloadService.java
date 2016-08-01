@@ -16,6 +16,7 @@ import java.util.List;
 public class DownloadService {
 
     private static final int BUFFER_SIZE = 8192; //2097152;// 2MB
+    private FTP4JUtility util = new FTP4JUtility();
 
     public Void downloadFile(final RemoteFile remoteFile) throws Exception {
         FTPUtility util = new FTPUtility();
@@ -57,7 +58,7 @@ public class DownloadService {
                         if (!StringUtils.equals(md5, remoteFile.getMd5())) {
                             System.out.println("Error");
                             remoteFile.updateProgress(0);
-                            remoteFile.cancel(true);
+//                            remoteFile.cancel(true);
                         } else {
                             System.out.println("md5 matched");
                         }
@@ -71,7 +72,7 @@ public class DownloadService {
         } catch (FTPException ex) {
             ex.printStackTrace();
             remoteFile.updateProgress(0);
-            remoteFile.cancel(true);
+//            remoteFile.cancel(true);
         } finally {
             if (outputStream != null) {
                 outputStream.close();
@@ -83,16 +84,12 @@ public class DownloadService {
     }
 
     public Void downloadFileFtp4J(final RemoteFile remoteFile) throws Exception {
-        FTP4JUtility util = new FTP4JUtility();
         try {
             util.connect();
-
             util.downloadFile(remoteFile);
             util.disconnect();
             System.out.println(remoteFile.getName() + " download completed.");
-
             System.out.println("end");
-
         } catch (FTPException ex) {
             ex.printStackTrace();
 
@@ -109,8 +106,15 @@ public class DownloadService {
                 String md5 = DigestUtils.md5Hex(fis);
                 fis.close();
                 if (!StringUtils.equals(md5, remoteFile.getMd5())) {
-                    downloadFile.delete();
-                    return false;
+                    if (remoteFile.getTransferred() == 0) {
+                        // old file fragment
+                        downloadFile.delete();
+                        return false;
+                    } else {
+                        // resume
+                        System.out.println("Resuming download.");
+                        return false;
+                    }
                 } else {
                     System.out.println("Existing file md5 matched");
                     return true;
@@ -120,5 +124,13 @@ public class DownloadService {
             }
         }
         return false;
+    }
+
+    public void abortDownload() throws Exception {
+        try {
+            util.abortDownload();
+        } catch (Exception e) {
+            System.out.println("Aborted:" + e.getMessage());
+        }
     }
 }
