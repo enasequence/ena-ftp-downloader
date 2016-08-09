@@ -8,6 +8,8 @@ import uk.ac.ebi.ena.ftp.service.ftp.FTP4JUtility;
 import uk.ac.ebi.ena.ftp.service.ftp.FTPUtility;
 
 import java.io.*;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.List;
 
 /**
@@ -92,7 +94,6 @@ public class DownloadService {
             System.out.println("end");
         } catch (FTPException ex) {
             ex.printStackTrace();
-
         }
 
         return null;
