@@ -1,9 +1,11 @@
 package uk.ac.ebi.ena.ftp.gui;
 
 import javafx.concurrent.Task;
-import javafx.scene.control.ProgressIndicator;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 import uk.ac.ebi.ena.ftp.service.DownloadService;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * Created by suranj on 01/08/2016.
@@ -19,13 +21,24 @@ public class DownloadTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         try {
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    try {
+                        if (!downloadService.fileAlreadyDownloaded(file)) {
+                            downloadService.downloadFileFtp4J(file);
+                        } else {
+                            file.updateProgress(1);
+                            file.setDownloaded(true);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+            });
 //            file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
-            if (!downloadService.fileAlreadyDownloaded(file)) {
-                downloadService.downloadFileFtp4J(file);
-            } else {
-                file.updateProgress(1);
-                file.setDownloaded(true);
-            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -38,7 +51,7 @@ public class DownloadTask extends Task<Void> {
         try {
             double progress = this.getProgress();
 //            if (!file.isDownloaded()) {
-                downloadService.abortDownload();
+            downloadService.abortDownload();
 //                File downloadFile = new File(getSaveLocation() + File.separator + getName());
 //                boolean deleted = downloadFile.delete();
 //                if (!deleted) {

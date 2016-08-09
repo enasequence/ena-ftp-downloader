@@ -16,10 +16,10 @@
    <children>
       <AnchorPane prefHeight="84.0" prefWidth="600.0">
          <children>
-            <HBox alignment="CENTER_LEFT" layoutX="26.0" layoutY="27.0" prefHeight="31.0" prefWidth="710.0">
+            <HBox alignment="CENTER_LEFT" layoutX="26.0" layoutY="27.0" prefHeight="31.0" prefWidth="710.0"  fx:id="downloadHBox">
                <children>
                   <Label fx:id="localDownloadDirLabel" layoutX="21.0" layoutY="46.0" prefHeight="21.0" prefWidth="195.0" text="Local Download Directory:" />
-                  <TextField fx:id="localDownloadDir" prefHeight="31.0" prefWidth="418.0" />
+                  <TextField fx:id="localDownloadDir" prefHeight="31.0" prefWidth="418.0" editable="true" />
                   <Button fx:id="localDownloadDirBtn" mnemonicParsing="false" text="..." />
                </children>
             </HBox>

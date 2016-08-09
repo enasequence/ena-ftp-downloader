@@ -62,6 +62,7 @@ public class FTP4JUtility {
         try {
 
             final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + remoteFile.getName());
+            System.out.println("downloadFile.canWrite():" + downloadFile.canWrite());
 
             ftpClient.setType(FTPClient.TYPE_AUTO);
             String path = StringUtils.substringAfter(remoteFile.getPath(), this.host);
