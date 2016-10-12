@@ -33,6 +33,7 @@ public class DownloadTask extends Task<Void> {
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
+//                        throw e; / todo hanndle error
                     }
                     return null;
                 }

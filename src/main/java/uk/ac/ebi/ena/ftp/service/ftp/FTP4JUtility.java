@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 
 import java.io.*;
+import java.net.SocketTimeoutException;
 
 /**
  * A utility class that provides functionality for downloading files from a FTP
@@ -42,9 +43,11 @@ public class FTP4JUtility {
      */
     public void connect() throws Exception {
         try {
-            ftpClient.connect(host);
+            System.out.println("host:" + host);
+            String[] connect = ftpClient.connect(host);
+            System.out.println("connected:" + StringUtils.join(connect));
             ftpClient.login(username, password);
-
+            System.out.println("logged in");
         } catch (IOException ex) {
             ex.printStackTrace();
             throw new FTPException("I/O error: " + ex.getMessage());
@@ -62,7 +65,7 @@ public class FTP4JUtility {
         try {
 
             final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + remoteFile.getName());
-            System.out.println("downloadFile.canWrite():" + downloadFile.canWrite());
+            System.out.println(downloadFile.getAbsolutePath() + ":downloadFile.canWrite():" + downloadFile.canWrite());
 
             ftpClient.setType(FTPClient.TYPE_AUTO);
             String path = StringUtils.substringAfter(remoteFile.getPath(), this.host);
@@ -70,59 +73,60 @@ public class FTP4JUtility {
             ftpClient.changeDirectory(dir);
 //            long fileSize = getFileSize(dir, StringUtils.substringAfterLast(path, "/"));
 //            System.out.println(fileSize);
+            System.out.println("path:" + path);
             ftpClient.download(path, downloadFile, remoteFile.getTransferred(), new FTPDataTransferListener() {
-
-                @Override
-                public void started() {
-                }
-
-                @Override
-                public void transferred(int i) {
-                    remoteFile.setTransferred(remoteFile.getTransferred() + i);
-                    double percentCompleted = (double) remoteFile.getTransferred() / (double) remoteFile.getSize();
-                    remoteFile.updateProgress(percentCompleted);
-                }
-
-                @Override
-                public void completed() {
-                    new Thread() {
                         @Override
-                        public void run() {
-                            try {
-                                FileInputStream fis = new FileInputStream(downloadFile);
-                                String md5 = DigestUtils.md5Hex(fis);
-                                fis.close();
-                                if (!StringUtils.equals(md5, remoteFile.getMd5())) {
-                                    System.out.println("Error");
-                                    remoteFile.updateProgress(0);
-//                                    remoteFile.cancel(true);
-                                } else {
-                                    remoteFile.updateProgress(1);
-                                    System.out.println("md5 matched");
-                                    remoteFile.setDownloaded(true);
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                        public void started() {
                         }
-                    }.start();
-                }
 
-                @Override
-                public void aborted() {
-                    System.out.println(remoteFile.getPath() + " aborted at " + remoteFile.getTransferred());
+                        @Override
+                        public void transferred(int i) {
+                            remoteFile.setTransferred(remoteFile.getTransferred() + i);
+                            double percentCompleted = (double) remoteFile.getTransferred() / (double) remoteFile.getSize();
+                            remoteFile.updateProgress(percentCompleted);
+                        }
+
+                        @Override
+                        public void completed() {
+                            new Thread() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        FileInputStream fis = new FileInputStream(downloadFile);
+                                        String md5 = DigestUtils.md5Hex(fis);
+                                        fis.close();
+                                        if (!StringUtils.equals(md5, remoteFile.getMd5())) {
+                                            System.out.println("Error");
+                                            remoteFile.updateProgress(0);
+//                                    remoteFile.cancel(true);
+                                        } else {
+                                            remoteFile.updateProgress(1);
+                                            System.out.println("md5 matched");
+                                            remoteFile.setDownloaded(true);
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }.start();
+                        }
+
+                        @Override
+                        public void aborted() {
+                            System.out.println(remoteFile.getPath() + " aborted at " + remoteFile.getTransferred());
 //                    remoteFile.updateProgress(0);
 //                    remoteFile.cancel(true);
-                }
+                        }
 
-                @Override
-                public void failed() {
-                    remoteFile.updateProgress(0);
+                        @Override
+                        public void failed() {
+                            remoteFile.updateProgress(0);
 //                    remoteFile.cancel(true);
-                }
-            });
+                        }
+                    });
 
         } catch (IOException ex) {
+            ex.printStackTrace();
             throw new FTPException("Error downloading file: " + ex.getMessage());
         } catch (FTPAbortedException e) {
             System.out.println("Data transfer aborted.");

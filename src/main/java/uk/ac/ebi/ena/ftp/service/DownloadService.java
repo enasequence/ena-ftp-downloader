@@ -94,6 +94,7 @@ public class DownloadService {
             System.out.println("end");
         } catch (FTPException ex) {
             ex.printStackTrace();
+            throw ex;
         }
 
         return null;
