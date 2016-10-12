@@ -61,9 +61,9 @@ public class Controller implements Initializable {
         System.out.println("initialize");
         assert startDownloadBtn != null : "fx:id=\"startDownloadBtn\" was not injected: check your FXML file 'gui.fxml'.";
         // initialize your logic here: all @FXML variables will have been injected
-        System.out.println("named ------------------" + StringUtils.join(Main.parameters.getNamed(), ","));
-        System.out.println("unnamed ------------------" + StringUtils.join(Main.parameters.getUnnamed(), ","));
-        System.out.println("raw ------------------" + StringUtils.join(Main.parameters.getRaw(), ","));
+//        System.out.println("named ------------------" + StringUtils.join(Main.parameters.getNamed(), ","));
+//        System.out.println("unnamed ------------------" + StringUtils.join(Main.parameters.getUnnamed(), ","));
+//        System.out.println("raw ------------------" + StringUtils.join(Main.parameters.getRaw(), ","));
         String accession = Main.parameters.getUnnamed().size() > 0 ? Main.parameters.getUnnamed().get(0) : Main.parameters.getNamed().get("accession");
 //        if (StringUtils.isBlank(accession)) {
 //            accession = "SRX1683606";
