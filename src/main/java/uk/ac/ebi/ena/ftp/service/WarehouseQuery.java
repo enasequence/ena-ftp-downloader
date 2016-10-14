@@ -2,6 +2,8 @@ package uk.ac.ebi.ena.ftp.service;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import uk.ac.ebi.ena.ftp.gui.Controller;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 
 import java.io.IOException;
@@ -14,10 +16,17 @@ import java.util.List;
  * Created by suranj on 27/05/2016.
  */
 public class WarehouseQuery {
+    private final static Logger log = Logger.getLogger(WarehouseQuery.class);
+
+    public static final String ERA_ANALYSIS_ID_PATTERN = "[ESDR]RZ[0-9]+";
 
     public List<RemoteFile> query(String accession, String type) {
         // URL stump for programmatic query of files
-        String url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=" + accession + "&result=read_run&fields=" + type + "_ftp," + type + "_bytes," + type + "_md5";
+        String resultDomain = getResultDomain(accession);
+        if (resultDomain.equals("analysis") && type.equals("fastq")) {
+            return new ArrayList<>();
+        }
+        String url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=" + accession + "&result=" + resultDomain + "&fields=" + type + "_ftp," + type + "_bytes," + type + "_md5";
         try {
             // Build URL, Connect and get results reader
             List<String> fileStrings = null;
@@ -31,9 +40,16 @@ public class WarehouseQuery {
             return new ArrayList<>();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error with warehouse query", e);
         }
         return new ArrayList<>();
+    }
+
+    private String getResultDomain(String accession) {
+        if (accession.matches(ERA_ANALYSIS_ID_PATTERN)) {
+            return "analysis";
+        }
+        return "read_run";
     }
 
     private List<RemoteFile> parseFileReport(List<String> fileStrings) {

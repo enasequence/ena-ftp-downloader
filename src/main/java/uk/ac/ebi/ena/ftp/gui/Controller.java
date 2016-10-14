@@ -17,6 +17,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import uk.ac.ebi.ena.ftp.gui.custom.ProgressBarTableCell;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 import uk.ac.ebi.ena.ftp.service.WarehouseQuery;
@@ -24,6 +25,7 @@ import uk.ac.ebi.ena.ftp.utils.Utils;
 
 import java.io.File;
 import java.net.URL;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -32,6 +34,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class Controller implements Initializable {
+
+    private final static Logger log = Logger.getLogger(Controller.class);
+
     @FXML
     private TextField localDownloadDir;
 
@@ -58,12 +63,12 @@ public class Controller implements Initializable {
 
     @Override // This method is called by the FXMLLoader when initialization is complete
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
-        System.out.println("initialize");
+        log.debug("initialize");
         assert startDownloadBtn != null : "fx:id=\"startDownloadBtn\" was not injected: check your FXML file 'gui.fxml'.";
         // initialize your logic here: all @FXML variables will have been injected
-//        System.out.println("named ------------------" + StringUtils.join(Main.parameters.getNamed(), ","));
-//        System.out.println("unnamed ------------------" + StringUtils.join(Main.parameters.getUnnamed(), ","));
-//        System.out.println("raw ------------------" + StringUtils.join(Main.parameters.getRaw(), ","));
+//        log.debug("named ------------------" + StringUtils.join(Main.parameters.getNamed(), ","));
+//        log.debug("unnamed ------------------" + StringUtils.join(Main.parameters.getUnnamed(), ","));
+//        log.debug("raw ------------------" + StringUtils.join(Main.parameters.getRaw(), ","));
         String accession = Main.parameters.getUnnamed().size() > 0 ? Main.parameters.getUnnamed().get(0) : Main.parameters.getNamed().get("accession");
 //        if (StringUtils.isBlank(accession)) {
 //            accession = "SRX1683606";
@@ -178,8 +183,8 @@ public class Controller implements Initializable {
                 return;
             }
             File downloadDir = new File(localDownloadDir.getText());
-            System.out.println("downloadDir.isDirectory():" + downloadDir.isDirectory());
-            System.out.println("downloadDir.canWrite():" + downloadDir.canWrite());
+            log.debug("downloadDir.isDirectory():" + downloadDir.isDirectory());
+            log.debug("downloadDir.canWrite():" + downloadDir.canWrite());
             if (!downloadDir.isDirectory()/* || !downloadDir.canWrite()*/) {
                 selectionLabel.setText("Unable to save to selected download location.");
                 return;
@@ -237,7 +242,7 @@ public class Controller implements Initializable {
                                 try {
                                     sleep(500);
                                 } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                                    log.warn("Interrupted");
                                 }
                             }
                             startDownloadBtn.setDisable(false);
@@ -254,7 +259,7 @@ public class Controller implements Initializable {
         public void handle(ActionEvent actionEvent) {
             startDownloadBtn.setDisable(false);
             stopDownloadBtn.setDisable(true);
-            System.out.println("Stopping downloads");
+            log.debug("Stopping downloads");
             selectionLabel.setText("Downloading stopped by user! Click Start Download to resume.");
             if (executor != null) {
                 List<Runnable> runnables = executor.shutdownNow();
