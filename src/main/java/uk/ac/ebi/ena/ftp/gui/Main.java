@@ -7,8 +7,11 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 public class Main extends Application {
+
+    private final static Logger log = Logger.getLogger(Main.class);
 
     public static Parameters parameters;
     public static Stage stage;
@@ -19,7 +22,7 @@ public class Main extends Application {
             parameters = getParameters();
             stage = primaryStage;
 
-            System.out.println("parameters:" + StringUtils.join(parameters));
+            log.debug("parameters:" + StringUtils.join(parameters));
 
             Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("gui.fxml"));
             String accession = Main.parameters.getUnnamed().size() > 0 ? Main.parameters.getUnnamed().get(0) : Main.parameters.getNamed().get("accession");
@@ -30,7 +33,7 @@ public class Main extends Application {
             primaryStage.getIcons().add(new Image("http://www.ebi.ac.uk/web_guidelines/images/logos/ena/ena_100x100.png"));
             primaryStage.show();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error in main", e);
         }
     }
 

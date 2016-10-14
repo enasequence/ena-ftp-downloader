@@ -4,13 +4,15 @@ package uk.ac.ebi.ena.ftp.service.ftp;
 import it.sauronsoftware.ftp4j.FTPAbortedException;
 import it.sauronsoftware.ftp4j.FTPClient;
 import it.sauronsoftware.ftp4j.FTPDataTransferListener;
-import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 
-import java.io.*;
-import java.net.SocketTimeoutException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A utility class that provides functionality for downloading files from a FTP
@@ -20,21 +22,22 @@ import java.net.SocketTimeoutException;
  */
 public class FTP4JUtility {
 
+    private final static Logger log = Logger.getLogger(FTP4JUtility.class);
+
     // FTP server information
     private String host = "ftp.sra.ebi.ac.uk";
     private int port = 21;
     private String username = "anonymous";
     private String password = "1234";
 
-    private FTPClient ftpClient = new FTPClient();
+    private FTPClient ftpClient;
     private int replyCode;
 
     private InputStream inputStream;
 
-    /*public FTP4JUtility() {
-        FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_L8);
-        ftpClient.configure(conf);
-    }*/
+    public FTP4JUtility() {
+        ftpClient = new FTPClient();
+    }
 
     /**
      * Connect and login to the server.
@@ -42,18 +45,17 @@ public class FTP4JUtility {
      * @throws FTPException
      */
     public void connect() throws Exception {
-        try {
-            System.out.println("host:" + host);
-            String[] connect = ftpClient.connect(host);
-            System.out.println("connected:" + StringUtils.join(connect));
-            ftpClient.login(username, password);
-            System.out.println("logged in");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            throw new FTPException("I/O error: " + ex.getMessage());
-        }
+//        try {
+        log.debug("host:" + host);
+        String[] connect = ftpClient.connect(host);
+        log.debug("connected:" + StringUtils.join(connect));
+        ftpClient.login(username, password);
+        log.debug("logged in");
+//        } catch (IOException ex) {
+//            ex.log.error();
+//            throw new FTPException("I/O error: " + ex.getMessage());
+//        }
     }
-
 
 
     /**
@@ -65,71 +67,71 @@ public class FTP4JUtility {
         try {
 
             final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + remoteFile.getName());
-            System.out.println(downloadFile.getAbsolutePath() + ":downloadFile.canWrite():" + downloadFile.canWrite());
+            log.debug(downloadFile.getAbsolutePath() + ":downloadFile.canWrite():" + downloadFile.canWrite());
 
             ftpClient.setType(FTPClient.TYPE_AUTO);
             String path = StringUtils.substringAfter(remoteFile.getPath(), this.host);
             String dir = StringUtils.substringAfter(StringUtils.substringBeforeLast(path, "/"), "/");
             ftpClient.changeDirectory(dir);
 //            long fileSize = getFileSize(dir, StringUtils.substringAfterLast(path, "/"));
-//            System.out.println(fileSize);
-            System.out.println("path:" + path);
+//            log.debug(fileSize);
+            log.debug("path:" + path);
             ftpClient.download(path, downloadFile, remoteFile.getTransferred(), new FTPDataTransferListener() {
-                        @Override
-                        public void started() {
-                        }
+                @Override
+                public void started() {
+                }
 
-                        @Override
-                        public void transferred(int i) {
-                            remoteFile.setTransferred(remoteFile.getTransferred() + i);
-                            double percentCompleted = (double) remoteFile.getTransferred() / (double) remoteFile.getSize();
-                            remoteFile.updateProgress(percentCompleted);
-                        }
+                @Override
+                public void transferred(int i) {
+                    remoteFile.setTransferred(remoteFile.getTransferred() + i);
+                    double percentCompleted = (double) remoteFile.getTransferred() / (double) remoteFile.getSize();
+                    remoteFile.updateProgress(percentCompleted);
+                }
 
+                @Override
+                public void completed() {
+                    new Thread() {
                         @Override
-                        public void completed() {
-                            new Thread() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        FileInputStream fis = new FileInputStream(downloadFile);
-                                        String md5 = DigestUtils.md5Hex(fis);
-                                        fis.close();
-                                        if (!StringUtils.equals(md5, remoteFile.getMd5())) {
-                                            System.out.println("Error");
-                                            remoteFile.updateProgress(0);
+                        public void run() {
+                            try {
+                                FileInputStream fis = new FileInputStream(downloadFile);
+                                String md5 = DigestUtils.md5Hex(fis);
+                                fis.close();
+                                if (!StringUtils.equals(md5, remoteFile.getMd5())) {
+                                    log.debug("Error");
+                                    remoteFile.updateProgress(0);
 //                                    remoteFile.cancel(true);
-                                        } else {
-                                            remoteFile.updateProgress(1);
-                                            System.out.println("md5 matched");
-                                            remoteFile.setDownloaded(true);
-                                        }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
+                                } else {
+                                    remoteFile.updateProgress(1);
+                                    log.debug("md5 matched");
+                                    remoteFile.setDownloaded(true);
                                 }
-                            }.start();
+                            } catch (IOException e) {
+                                log.error("Error", e);
+                            }
                         }
+                    }.start();
+                }
 
-                        @Override
-                        public void aborted() {
-                            System.out.println(remoteFile.getPath() + " aborted at " + remoteFile.getTransferred());
+                @Override
+                public void aborted() {
+                    log.debug(remoteFile.getPath() + " aborted at " + remoteFile.getTransferred());
 //                    remoteFile.updateProgress(0);
 //                    remoteFile.cancel(true);
-                        }
+                }
 
-                        @Override
-                        public void failed() {
-                            remoteFile.updateProgress(0);
+                @Override
+                public void failed() {
+                    remoteFile.updateProgress(0);
 //                    remoteFile.cancel(true);
-                        }
-                    });
+                }
+            });
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error("IO error", ex);
             throw new FTPException("Error downloading file: " + ex.getMessage());
         } catch (FTPAbortedException e) {
-            System.out.println("Data transfer aborted.");
+            log.debug("Data transfer aborted.");
         }
     }
 

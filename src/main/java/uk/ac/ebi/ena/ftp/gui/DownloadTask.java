@@ -1,6 +1,7 @@
 package uk.ac.ebi.ena.ftp.gui;
 
 import javafx.concurrent.Task;
+import org.apache.log4j.Logger;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 import uk.ac.ebi.ena.ftp.service.DownloadService;
 
@@ -11,6 +12,9 @@ import java.security.PrivilegedAction;
  * Created by suranj on 01/08/2016.
  */
 public class DownloadTask extends Task<Void> {
+    private final static int RETRY_COUNT = 10;
+    private final static Logger log = Logger.getLogger(DownloadTask.class);
+
     private final RemoteFile file;
     private DownloadService downloadService = new DownloadService();
 
@@ -21,29 +25,41 @@ public class DownloadTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         try {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            /*AccessController.doPrivileged(new PrivilegedAction<Object>() {
                 @Override
-                public Object run() {
+                public Object run() {*/
                     try {
                         if (!downloadService.fileAlreadyDownloaded(file)) {
-                            downloadService.downloadFileFtp4J(file);
+                            int count = 0;
+                            while (count < RETRY_COUNT) {
+                                try {
+                                    downloadService.downloadFileFtp(file);
+                                    break;
+                                } catch (Exception e) {
+                                    count++;
+                                    log.warn(file.getName() + " Timed out download attempt. Retry:" + count);
+                                    if (RETRY_COUNT == count) {
+                                        throw e;
+                                    }
+                                }
+                            }
                         } else {
                             file.updateProgress(1);
                             file.setDownloaded(true);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
-//                        throw e; / todo hanndle error
+                        log.error("Failed download", e);
+                        throw  e;
                     }
                     return null;
-                }
-            });
+//                }
+//            });
 //            file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed download", e);
+            throw e;
         }
-        return null;
     }
 
     @Override
@@ -62,7 +78,7 @@ public class DownloadTask extends Task<Void> {
 //                this.updateProgress(0);
 //            }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed cancel:", e);
         }
     }
 }
