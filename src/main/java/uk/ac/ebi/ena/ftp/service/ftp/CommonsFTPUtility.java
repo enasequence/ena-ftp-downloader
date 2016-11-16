@@ -167,6 +167,8 @@ public class CommonsFTPUtility {
         } catch (IOException ex) {
             log.error("Download error", ex);
             throw new FTPException("Error downloading file: " + ex.getMessage());
+        } finally {
+
         }
     }
 

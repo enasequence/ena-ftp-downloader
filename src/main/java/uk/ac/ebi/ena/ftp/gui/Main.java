@@ -24,7 +24,7 @@ public class Main extends Application {
 
             log.debug("parameters:" + StringUtils.join(parameters));
 
-            Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("gui.fxml"));
+            Parent root = FXMLLoader.load(this.getClass().getResource("gui.fxml"));
             String accession = Main.parameters.getUnnamed().size() > 0 ? Main.parameters.getUnnamed().get(0) : Main.parameters.getNamed().get("accession");
 
             primaryStage.setTitle("ENA File Downloader: " + accession);
