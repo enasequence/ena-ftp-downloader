@@ -201,7 +201,7 @@ public class Controller implements Initializable {
 
             for (RemoteFile file : files) {
                 if (file.isDownload().get()) {
-                    if (file.getTransferred() == 0) {
+                    if (file.getTransferred() == 0 && file.getProgress() < 1) {
                         file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
                     }
                     file.setSaveLocation(localDownloadDir.getText());
@@ -212,6 +212,7 @@ public class Controller implements Initializable {
                 selectionLabel.setText("No files selected for download.");
                 return;
             } else {
+                updateSelectionMessage();
                 for (RemoteFile file : checkedFiles) {
                     if (!file.isDownloaded()) {
 //                        file.setFileList(notDoneFiles);
