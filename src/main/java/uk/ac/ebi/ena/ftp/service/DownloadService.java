@@ -17,7 +17,7 @@ public class DownloadService {
 
     private final static Logger log = Logger.getLogger(CommonsFTPUtility.class);
 
-    private CommonsFTPUtility util = new CommonsFTPUtility();
+    private FTP4JUtility util = new FTP4JUtility();
 
     public Void downloadFileFtp(final RemoteFile remoteFile) throws Exception {
         util.connect();

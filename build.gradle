@@ -2,6 +2,8 @@ group 'uk.ac.ebi.ena'
 version '1.0'
 
 apply plugin: 'java'
+apply plugin: 'javafx-gradle-plugin'
+
 
 sourceCompatibility = 1.7
 
@@ -13,23 +15,36 @@ repositories {
     }
 }
 
+buildscript {
+    dependencies {
+        classpath group: 'de.dynamicfiles.projects.gradle.plugins', name: 'javafx-gradle-plugin', version: '8.7.0'
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
 configurations {
     provided
     compile.extendsFrom provided
 }
 
-//create a single Jar with all dependencies
-/*task fatJar(type: Jar) {
-    manifest {
-        attributes 'Implementation-Title': 'ENA FTP Downloader',
-                'Implementation-Version': version,
-                'Main-Class': 'uk.ac.ebi.ena.ftp.Main'
-    }
-    baseName = project.name + '-aio'
-    dependsOn configurations.runtime
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}*/
+task copyToLib(type: Copy) {
+    into "$buildDir/output/lib"
+    from configurations.runtime
+}
+
+jfx {
+    // minimal requirement for jfxJar-task
+    mainClass = 'uk.ac.ebi.ena.ftp.gui.Main'
+
+    // minimal requirement for jfxNative-task
+    vendor = 'ENA'
+
+    additionalAppResources = 'build/additionalResources'
+}
 
 jar {
     dependsOn configurations.compile
@@ -44,7 +59,7 @@ jar {
         attributes 'Implementation-Title': 'ENA FTP Downloader',
                 'Implementation-Version': version,
                 'Main-Class': 'uk.ac.ebi.ena.ftp.gui.Main',
-        'Permissions': 'all-permissions',
+                'Permissions': 'all-permissions',
                 'Application-Name': 'ENA FTP File Downloader'
     }
 }
@@ -76,15 +91,16 @@ task signAll(dependsOn: [copyWebStartFiles]) << {
         ant.signjar(
                 storetype: 'pkcs12',
                 destDir: 'build/webstart/signed',
-                alias: 'european molecular biology laboratory\'s godaddy.com, inc. id',
+                alias: '1', //'european molecular biology laboratory\'s godaddy.com, inc. id',
                 jar: it,
-                keystore: 'jnlp/keystore/ENA.P12',
+                keystore: 'certificates/ENA-2016.P12',
                 storepass: 'pass1234',
                 verbose: 'true',
                 tsaurl: 'http://tsa.starfieldtech.com/', //timestamp url for godaddy
                 preservelastmodified: 'true')
     }
 }
+//jarsigner -storetype pkcs12 -keystore ENA-2016.p12 build/libs/webin-file-uploader-1.0.0.jar “1"
 
 task generateJnlp(dependsOn: [signAll]) << {
     File jnlpTemplateFile = new File('jnlp/template/template.vm')
