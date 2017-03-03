@@ -2,24 +2,19 @@ group 'uk.ac.ebi.ena'
 version '1.0'
 
 apply plugin: 'java'
-apply plugin: 'javafx-gradle-plugin'
-
 
 sourceCompatibility = 1.7
 
 repositories {
     mavenCentral()
-    flatDir (name: 'jre library', dirs: 'C:/Program Files/Java/jdk1.7.0_79/jre/lib')
+    flatDir (name: 'jre library', dirs: 'C:/Program Files/Java/jdk1.8.0_40/jre/lib/ext')
+    flatDir (name: 'jre library', dirs: 'C:/Program Files/Java/jdk1.8.0_40/jre/lib')
     flatDir {
         dirs 'lib'
     }
 }
 
 buildscript {
-    dependencies {
-        classpath group: 'de.dynamicfiles.projects.gradle.plugins', name: 'javafx-gradle-plugin', version: '8.7.0'
-    }
-
     repositories {
         mavenLocal()
         mavenCentral()
@@ -34,16 +29,6 @@ configurations {
 task copyToLib(type: Copy) {
     into "$buildDir/output/lib"
     from configurations.runtime
-}
-
-jfx {
-    // minimal requirement for jfxJar-task
-    mainClass = 'uk.ac.ebi.ena.ftp.gui.Main'
-
-    // minimal requirement for jfxNative-task
-    vendor = 'ENA'
-
-    additionalAppResources = 'build/additionalResources'
 }
 
 jar {
