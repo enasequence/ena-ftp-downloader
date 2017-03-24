@@ -8,7 +8,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 
 import java.io.*;
@@ -21,7 +22,7 @@ import java.net.SocketTimeoutException;
  * @author www.codejava.net
  */
 public class CommonsFTPUtility {
-    private final static Logger log = Logger.getLogger(CommonsFTPUtility.class);
+    private final static Logger log = LoggerFactory.getLogger(CommonsFTPUtility.class);
 
 
     // FTP server information

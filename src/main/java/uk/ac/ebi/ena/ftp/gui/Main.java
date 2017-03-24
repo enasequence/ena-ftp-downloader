@@ -7,11 +7,12 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main extends Application {
 
-    private final static Logger log = Logger.getLogger(Main.class);
+    static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static Parameters parameters;
     public static Stage stage;
@@ -46,6 +47,7 @@ public class Main extends Application {
     @Override
     public void stop() throws Exception {
         super.stop();
+        log.info("Exiting downloader.");
         System.exit(0);
     }
 }

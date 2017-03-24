@@ -1,19 +1,20 @@
 package uk.ac.ebi.ena.ftp.gui;
 
 import javafx.concurrent.Task;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.ac.ebi.ena.ftp.gui.custom.MD5TableCell;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 import uk.ac.ebi.ena.ftp.service.DownloadService;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.io.File;
 
 /**
  * Created by suranj on 01/08/2016.
  */
 public class DownloadTask extends Task<Void> {
     private final static int RETRY_COUNT = 10;
-    private final static Logger log = Logger.getLogger(DownloadTask.class);
+    private final static Logger log = LoggerFactory.getLogger(DownloadTask.class);
 
     private final RemoteFile file;
     private DownloadService downloadService = new DownloadService();
@@ -45,6 +46,7 @@ public class DownloadTask extends Task<Void> {
                             }
                         } else {
                             file.updateProgress(1);
+                            file.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                             file.setDownloaded(true);
                         }
                     } catch (Exception e) {
@@ -58,6 +60,13 @@ public class DownloadTask extends Task<Void> {
 
         } catch (Exception e) {
             log.error("Failed download", e);
+            file.updateProgress(0);
+            file.setSuccessIcon(MD5TableCell.ERROR_ICON);
+            try {
+                new File(file.getLocalPath()).delete();
+            } catch (Exception ex) {
+                log.error("Error deleting failed file:" + file.getLocalPath());
+            }
             throw e;
         }
     }

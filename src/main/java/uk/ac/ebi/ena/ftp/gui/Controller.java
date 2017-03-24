@@ -13,19 +13,19 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.ftp.gui.custom.ProgressBarTableCell;
+import uk.ac.ebi.ena.ftp.gui.custom.MD5TableCell;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 import uk.ac.ebi.ena.ftp.service.WarehouseQuery;
 import uk.ac.ebi.ena.ftp.utils.Utils;
 
 import java.io.File;
 import java.net.URL;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -35,7 +35,7 @@ import java.util.concurrent.Future;
 
 public class Controller implements Initializable {
 
-    private final static Logger log = Logger.getLogger(Controller.class);
+    private final static Logger log = LoggerFactory.getLogger(Controller.class);
 
     @FXML
     private TextField localDownloadDir;
@@ -59,6 +59,7 @@ public class Controller implements Initializable {
     private List<Task> downloadTasks;
     private ExecutorService executor;
     private Controller self = this;
+    private long totalSize;
 
 
     @Override // This method is called by the FXMLLoader when initialization is complete
@@ -133,13 +134,32 @@ public class Controller implements Initializable {
         });
         tableView.setItems(tableFiles);
         addProgressColumn(tableView);
+        addIconColumn(tableView);
+    }
+
+    private void addIconColumn(TableView<RemoteFile> tableView) {
+        ObservableList columns = tableView.getColumns();
+
+        TableColumn<RemoteFile, String> progressCol = new TableColumn<>("MD5 OK");
+        progressCol.setPrefWidth(60);
+        progressCol.setResizable(false);
+        PropertyValueFactory<RemoteFile, String> progress = new PropertyValueFactory<>("successIcon");
+        progressCol.setCellValueFactory(progress);
+        progressCol.setCellFactory(new Callback<TableColumn<RemoteFile, String>, TableCell<RemoteFile, String>>() {
+            @Override
+            public TableCell<RemoteFile, String> call(TableColumn<RemoteFile, String> param) {
+                TableCell<RemoteFile, String> cell = new MD5TableCell();
+                return cell;
+            }
+        });
+        columns.add(4, progressCol);
     }
 
     private void addProgressColumn(TableView<RemoteFile> tableView) {
         ObservableList columns = tableView.getColumns();
 
         TableColumn<RemoteFile, Double> progressCol = new TableColumn<>("Progress");
-        progressCol.setPrefWidth(314);
+        progressCol.setPrefWidth(295);
         progressCol.setResizable(false);
         PropertyValueFactory<RemoteFile, Double> progress = new PropertyValueFactory<>("progress");
         progressCol.setCellValueFactory(progress);
@@ -167,6 +187,7 @@ public class Controller implements Initializable {
             }
         }
         selectionLabel.setText(count + " " + type + " files selected. Total size: " + Utils.getHumanReadableSize(size));
+        totalSize = size;
     }
 
     private void setupDownloadButtons() {
@@ -189,6 +210,13 @@ public class Controller implements Initializable {
                 selectionLabel.setText("Unable to save to selected download location.");
                 return;
             }
+            long usableSpace = downloadDir.getUsableSpace();
+            if (usableSpace < totalSize) {
+                selectionLabel.setText("Not enough space in selected location to save all files. An additional "
+                        + Utils.getHumanReadableSize(totalSize - usableSpace) + " is required.");
+                return;
+            }
+
             int tabIndex = fileTabPane.getSelectionModel().getSelectedIndex();
             ObservableList<RemoteFile> files = null;
             if (tabIndex == 0) {

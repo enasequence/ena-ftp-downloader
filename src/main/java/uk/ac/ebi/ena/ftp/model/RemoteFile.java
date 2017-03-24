@@ -1,10 +1,7 @@
 package uk.ac.ebi.ena.ftp.model;
 
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.*;
 import uk.ac.ebi.ena.ftp.gui.Controller;
 import uk.ac.ebi.ena.ftp.service.DownloadService;
 
@@ -26,6 +23,8 @@ public class RemoteFile {
     private Controller controller;
     private DoubleProperty progress;
     private boolean downloaded;
+    private StringProperty successIcon;
+    private String localPath;
 
 
     public RemoteFile(String name, long size, String path, String md5) {
@@ -35,6 +34,7 @@ public class RemoteFile {
         this.path = path;
         this.md5 = md5;
         this.progress = new SimpleDoubleProperty(0);
+        this.successIcon = new SimpleStringProperty();
     }
 
 
@@ -142,7 +142,24 @@ public class RemoteFile {
         return progress;
     }
 
+
     public void setProgress(double progress) {
         this.progress.set(progress);
+    }
+
+    public StringProperty successIconProperty() {
+        return successIcon;
+    }
+
+    public void setSuccessIcon(String icon) {
+        this.successIcon.set(icon);
+    }
+
+    public void setLocalPath(String localPath) {
+        this.localPath = localPath;
+    }
+
+    public String getLocalPath() {
+        return localPath;
     }
 }

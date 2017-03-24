@@ -48,7 +48,7 @@
                            <content>
                               <TableView fx:id="fastqFileTable" editable="true">
                                   <columns>
-                                    <TableColumn fx:id="fastqDownloadColumn" prefWidth="90.0" resizable="false" text="Download">
+                                    <TableColumn fx:id="fastqDownloadColumn" prefWidth="75.0" resizable="false" text="Download">
                                        <cellFactory>
                                           <CheckBoxCellFactory />
                                        </cellFactory>
@@ -56,12 +56,12 @@
                                           <CheckBoxCellValueFactory />
                                        </cellValueFactory>
                                     </TableColumn>
-                                    <TableColumn prefWidth="271.0" resizable="false" text="Name">
+                                    <TableColumn prefWidth="265.0" resizable="true" text="Name">
                                        <cellValueFactory>
                                           <PropertyValueFactory property="name" />
                                        </cellValueFactory>
                                     </TableColumn>
-                                    <TableColumn prefWidth="108.0" resizable="false" text="Size">
+                                    <TableColumn prefWidth="90.0" resizable="true" text="Size">
                                        <cellValueFactory>
                                           <PropertyValueFactory property="size" />
                                        </cellValueFactory>
@@ -77,7 +77,7 @@
                            <content>
                               <TableView fx:id="submittedFileTable" editable="true">
                                   <columns>
-                                    <TableColumn fx:id="submittedDownloadColumn" prefWidth="90.0" resizable="false" text="Download">
+                                    <TableColumn fx:id="submittedDownloadColumn" prefWidth="75.0" resizable="false" text="Download">
                                        <cellFactory>
                                           <CheckBoxCellFactory />
                                        </cellFactory>
@@ -85,12 +85,12 @@
                                           <CheckBoxCellValueFactory />
                                        </cellValueFactory>
                                     </TableColumn>
-                                    <TableColumn prefWidth="271.0" resizable="false" text="Name">
+                                    <TableColumn prefWidth="265.0" resizable="true" text="Name">
                                        <cellValueFactory>
                                           <PropertyValueFactory property="name" />
                                        </cellValueFactory>
                                     </TableColumn>
-                                    <TableColumn prefWidth="108.0" resizable="false" text="Size">
+                                    <TableColumn prefWidth="90.0" resizable="true" text="Size">
                                        <cellValueFactory>
                                           <PropertyValueFactory property="size" />
                                        </cellValueFactory>

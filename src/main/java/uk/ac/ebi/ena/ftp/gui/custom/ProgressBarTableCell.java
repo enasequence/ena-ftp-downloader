@@ -1,19 +1,9 @@
 package uk.ac.ebi.ena.ftp.gui.custom;
 
-import com.sun.javafx.binding.SelectBinding;
-import com.sun.javafx.geom.BaseBounds;
-import com.sun.javafx.geom.transform.BaseTransform;
-import com.sun.javafx.scene.BoundsAccessor;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.effect.BlendMode;
-import javafx.scene.effect.Effect;
 import javafx.util.Callback;
 
 /**
@@ -35,7 +25,7 @@ public class ProgressBarTableCell<S> extends TableCell<S, Double> {
     public ProgressBarTableCell() {
         this.getStyleClass().add("progress-bar-table-cell");
         this.progressBar = new ProgressBar(0.0);
-        progressBar.setPrefWidth(300);
+        progressBar.setPrefWidth(290);
         setGraphic(progressBar);
     }
 
