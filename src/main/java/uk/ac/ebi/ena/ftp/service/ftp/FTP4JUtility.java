@@ -6,7 +6,9 @@ import it.sauronsoftware.ftp4j.FTPClient;
 import it.sauronsoftware.ftp4j.FTPDataTransferListener;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.ac.ebi.ena.ftp.gui.custom.MD5TableCell;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 
 import java.io.File;
@@ -22,7 +24,7 @@ import java.io.InputStream;
  */
 public class FTP4JUtility {
 
-    private final static Logger log = Logger.getLogger(FTP4JUtility.class);
+    private final static Logger log = LoggerFactory.getLogger(FTP4JUtility.class);
 
     // FTP server information
     private String host = "ftp.sra.ebi.ac.uk";
@@ -47,12 +49,16 @@ public class FTP4JUtility {
     public void connect() throws Exception {
 //        try {
         log.debug("host:" + host);
+        if (ftpClient.isConnected() && ftpClient.isAuthenticated()) {
+            log.info("Client is aleady connected.");
+            return;
+        }
         String[] connect = ftpClient.connect(host);
         log.debug("connected:" + StringUtils.join(connect));
         ftpClient.login(username, password);
         log.debug("logged in");
 //        } catch (IOException ex) {
-//            ex.log.error();
+//            log.error();
 //            throw new FTPException("I/O error: " + ex.getMessage());
 //        }
     }
@@ -76,6 +82,7 @@ public class FTP4JUtility {
 //            long fileSize = getFileSize(dir, StringUtils.substringAfterLast(path, "/"));
 //            log.debug(fileSize);
             log.debug("path:" + path);
+            remoteFile.setLocalPath(downloadFile.getAbsolutePath());
             ftpClient.download(path, downloadFile, remoteFile.getTransferred(), new FTPDataTransferListener() {
                 @Override
                 public void started() {
@@ -94,15 +101,23 @@ public class FTP4JUtility {
                         @Override
                         public void run() {
                             try {
+                                remoteFile.setSuccessIcon(MD5TableCell.LOADING_ICON);
                                 FileInputStream fis = new FileInputStream(downloadFile);
                                 String md5 = DigestUtils.md5Hex(fis);
                                 fis.close();
                                 if (!StringUtils.equals(md5, remoteFile.getMd5())) {
                                     log.debug("Error");
                                     remoteFile.updateProgress(0);
+                                    remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON);
+                                    try {
+                                        new File(remoteFile.getLocalPath()).delete();
+                                    } catch (Exception e) {
+                                        log.error("Error deleting failed file:" + remoteFile.getLocalPath());
+                                    }
 //                                    remoteFile.cancel(true);
                                 } else {
                                     remoteFile.updateProgress(1);
+                                    remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                                     log.debug("md5 matched");
                                     remoteFile.setDownloaded(true);
                                 }
@@ -123,6 +138,13 @@ public class FTP4JUtility {
                 @Override
                 public void failed() {
                     remoteFile.updateProgress(0);
+                    remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON);
+                    try {
+                        new File(remoteFile.getLocalPath()).delete();
+                    } catch (Exception e) {
+                        log.error("Error deleting failed file:" + remoteFile.getLocalPath());
+                    }
+                    disconnect();
 //                    remoteFile.cancel(true);
                 }
             });
@@ -139,7 +161,7 @@ public class FTP4JUtility {
     /**
      * Log out and disconnect from the server
      */
-    public void disconnect() throws Exception {
+    public void disconnect() {
         if (ftpClient.isConnected()) {
             try {
                 try {
@@ -147,8 +169,8 @@ public class FTP4JUtility {
                 } catch (it.sauronsoftware.ftp4j.FTPException e) {
                 }
                 ftpClient.disconnect(false);
-            } catch (IOException ex) {
-                throw new FTPException("Error disconnect from the server: "
+            } catch (Exception ex) {
+                log.error("Error disconnecting from the server: "
                         + ex.getMessage());
             }
         }

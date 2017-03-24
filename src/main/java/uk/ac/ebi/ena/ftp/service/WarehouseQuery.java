@@ -2,11 +2,10 @@ package uk.ac.ebi.ena.ftp.service;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import uk.ac.ebi.ena.ftp.gui.Controller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ import java.util.List;
  * Created by suranj on 27/05/2016.
  */
 public class WarehouseQuery {
-    private final static Logger log = Logger.getLogger(WarehouseQuery.class);
+    private final static Logger log = LoggerFactory.getLogger(WarehouseQuery.class);
 
     public static final String ERA_ANALYSIS_ID_PATTERN = "[ESDR]RZ[0-9]+";
 

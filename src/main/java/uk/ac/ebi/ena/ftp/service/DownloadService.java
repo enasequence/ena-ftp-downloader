@@ -2,7 +2,8 @@ package uk.ac.ebi.ena.ftp.service;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 import uk.ac.ebi.ena.ftp.service.ftp.CommonsFTPUtility;
 import uk.ac.ebi.ena.ftp.service.ftp.FTP4JUtility;
@@ -15,7 +16,7 @@ import java.io.FileInputStream;
  */
 public class DownloadService {
 
-    private final static Logger log = Logger.getLogger(CommonsFTPUtility.class);
+    private final static Logger log = LoggerFactory.getLogger(CommonsFTPUtility.class);
 
     private FTP4JUtility util = new FTP4JUtility();
 
@@ -61,6 +62,8 @@ public class DownloadService {
             util.abortDownload();
         } catch (Exception e) {
             log.debug("Aborted:" + e.getMessage());
+        } finally {
+            util.disconnect();
         }
     }
 }

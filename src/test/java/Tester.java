@@ -12,7 +12,7 @@ public class Tester {
                 "        <fx:argument>$accession</fx:argument>\n" +
                 "    <jfx:javafx-desc>\n";
 
-        log.debug(s.replaceAll("\\$accession", "xxxx"));
+//        log.debug(s.replaceAll("\\$accession", "xxxx"));
 
     }
 }
