@@ -90,9 +90,11 @@ public class FTP4JUtility {
 
                 @Override
                 public void transferred(int i) {
-                    remoteFile.setTransferred(remoteFile.getTransferred() + i);
-                    double percentCompleted = (double) remoteFile.getTransferred() / (double) remoteFile.getSize();
-                    remoteFile.updateProgress(percentCompleted);
+                    if (remoteFile.getSize() > 0) {
+                        remoteFile.setTransferred(remoteFile.getTransferred() + i);
+                        double percentCompleted = (double) remoteFile.getTransferred() / (double) remoteFile.getSize();
+                        remoteFile.updateProgress(percentCompleted);
+                    }
                 }
 
                 @Override
@@ -101,26 +103,29 @@ public class FTP4JUtility {
                         @Override
                         public void run() {
                             try {
-                                remoteFile.setSuccessIcon(MD5TableCell.LOADING_ICON);
-                                FileInputStream fis = new FileInputStream(downloadFile);
-                                String md5 = DigestUtils.md5Hex(fis);
-                                fis.close();
-                                if (!StringUtils.equals(md5, remoteFile.getMd5())) {
-                                    log.debug("Error");
-                                    remoteFile.updateProgress(0);
-                                    remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON);
-                                    try {
-                                        new File(remoteFile.getLocalPath()).delete();
-                                    } catch (Exception e) {
-                                        log.error("Error deleting failed file:" + remoteFile.getLocalPath());
+                                if (StringUtils.isNotBlank(remoteFile.getMd5())) {
+                                    remoteFile.setSuccessIcon(MD5TableCell.LOADING_ICON);
+                                    FileInputStream fis = new FileInputStream(downloadFile);
+                                    String md5 = DigestUtils.md5Hex(fis);
+                                    fis.close();
+                                    if (!StringUtils.equals(md5, remoteFile.getMd5())) {
+                                        log.debug("Error");
+                                        remoteFile.updateProgress(0);
+                                        remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON);
+                                        try {
+                                            new File(remoteFile.getLocalPath()).delete();
+                                        } catch (Exception e) {
+                                            log.error("Error deleting failed file:" + remoteFile.getLocalPath());
+                                        }
+                                        return;
                                     }
 //                                    remoteFile.cancel(true);
-                                } else {
-                                    remoteFile.updateProgress(1);
-                                    remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
-                                    log.debug("md5 matched");
-                                    remoteFile.setDownloaded(true);
                                 }
+                                remoteFile.updateProgress(1);
+                                remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
+                                log.debug("md5 matched");
+                                remoteFile.setDownloaded(true);
+
                             } catch (IOException e) {
                                 log.error("Error", e);
                             }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+" codebase="" href="">
+    <information>
+        <title>
+            Interforest - Punto de Venta AW-INT
+        </title>
+        <vendor>
+            Interforest S.A.C
+        </vendor>
+        <description kind="one-line">
+            Interforest - Punto de Venta AW-INT
+        </description>
+        <description kind="short">
+            Interforest - Punto de Venta AW-INT
+        </description>
+        <description kind="tooltip">
+            Interforest - Punto de Venta AW-INT
+        </description>
+        <offline-allowed/>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <j2se version="" initial-heap-size="128m" max-heap-size="512m"/>
+    </resources>
+    <application-desc main-class=""/>
+</jnlp>
+
