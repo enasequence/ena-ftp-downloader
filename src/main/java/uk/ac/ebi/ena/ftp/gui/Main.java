@@ -25,15 +25,32 @@ public class Main extends Application {
 
             log.debug("parameters:" + StringUtils.join(parameters));
 
-            Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("gui.fxml"));
-//            String accession = "ERX556000";//Main.parameters.getUnnamed().size() > 0 ? Main.parameters.getUnnamed().get(0) : Main.parameters.getNamed().get("accession");
-            String accession = Main.parameters.getUnnamed().size() > 0 ? Main.parameters.getUnnamed().get(0) : Main.parameters.getNamed().get("accession");
+            FXMLLoader firstPaneLoader = new FXMLLoader(getClass().getClassLoader().getResource("search.fxml"));
+            Parent searchPane = firstPaneLoader.load();
+            Scene searchScene = new Scene(searchPane);
 
-            primaryStage.setTitle("ENA File Downloader: " + accession);
-            primaryStage.setScene(new Scene(root, 785, 520));
+            FXMLLoader secondPaneLoader = new FXMLLoader(getClass().getClassLoader().getResource("results.fxml"));
+            Parent resultsPane = secondPaneLoader.load();
+            Scene resultScene = new Scene(resultsPane);
+
+            // injecting second scene into the controller of the first scene
+            SearchController firstPaneController = (SearchController) firstPaneLoader.getController();
+            firstPaneController.setResultsScene(resultScene);
+
+
+            // injecting first scene into the controller of the second scene
+            ResultsController secondPaneController = (ResultsController) secondPaneLoader.getController();
+            secondPaneController.setSearchScene(searchScene);
+            firstPaneController.setResultsController(secondPaneController);
+            secondPaneController.setSearchController(firstPaneController);
+
+            primaryStage.setTitle("ENA File Downloader");
+            primaryStage.setScene(searchScene);
             primaryStage.setResizable(false);
             primaryStage.getIcons().add(new Image("http://www.ebi.ac.uk/web_guidelines/images/logos/ena/ena_100x100.png"));
             primaryStage.show();
+            secondPaneController.setStage(primaryStage);
+
         } catch (Exception e) {
             log.error("Error in main", e);
         }

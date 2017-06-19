@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import java.net.URL?>
+<AnchorPane prefHeight="175.0" prefWidth="800.0" xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml" fx:controller="uk.ac.ebi.ena.ftp.gui.SearchController">
+    <stylesheets>
+        <URL value="@gui.css"/>
+    </stylesheets>
+    <children>
+        <HBox fx:id="accessionHBox" alignment="CENTER_LEFT" layoutX="26.0" layoutY="20.0" prefHeight="32.0"
+              prefWidth="600.0">
+            <children>
+                <Label fx:id="accessionLabel" prefHeight="21.0" prefWidth="100.0" text="Accession:"/>
+                <TextField fx:id="accession" editable="true" prefHeight="25.0" prefWidth="400.0">
+                    <tooltip>
+                        <Tooltip text="Type in accession"/>
+                    </tooltip>
+                </TextField>
+                <Button fx:id="accessionBtn" mnemonicParsing="false" prefHeight="25.0" prefWidth="81.0" text="Search">
+                    <tooltip>
+                        <Tooltip text="Search for accession and load file list"/>
+                    </tooltip>
+                </Button>
+            </children>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" layoutX="26.0" layoutY="52.0">
+            <children>
+                <Label text="OR"/>
+            </children>
+        </HBox>
+        <HBox fx:id="reportHBox" alignment="CENTER_LEFT" layoutX="26.0" layoutY="69.0" prefHeight="32.0"
+              prefWidth="684.0">
+            <children>
+                <Label fx:id="reportLabel" layoutX="21.0" layoutY="46.0" prefHeight="21.0" prefWidth="100.0"
+                       text="Report File:"/>
+                <TextField fx:id="report" editable="true" prefHeight="25.0" prefWidth="400.0">
+                    <tooltip>
+                        <Tooltip text="Select file report"/>
+                    </tooltip>
+                </TextField>
+                <Button fx:id="reportBtn" mnemonicParsing="false" text="Load Report File"/>
+                <Label mnemonicParsing="false" fx:id="helpBtn">
+                    <graphic>
+                        <ImageView fitWidth="25" preserveRatio="true" smooth="true">
+                            <image>
+                                <Image url="@help.png"/>
+                            </image>
+                        </ImageView>
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="When generating the file report in the ENA Browser, also select the corresponding bytes and md5 columns for the file types you want."/>
+                    </tooltip>
+                </Label>
+            </children>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" layoutX="30.0" layoutY="110.0">
+            <children>
+                <Label fx:id="fileErrorLabel" text="Enter an accession or select a previously generated report file from the file system."/>
+            </children>
+        </HBox>
+    </children>
+</AnchorPane>

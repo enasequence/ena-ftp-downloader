@@ -1,3 +1,10 @@
 .table-cell {
     -fx-alignment: CENTER;
 }
+
+#helpBtn {
+    -fx-background-image: url("help.png");
+    -fx-background-size: 18 18;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position:left;
+}
