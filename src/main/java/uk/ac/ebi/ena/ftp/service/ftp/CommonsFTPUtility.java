@@ -62,7 +62,7 @@ public class CommonsFTPUtility {
             int reply = ftpClient.getReplyCode();
             if (!FTPReply.isPositiveCompletion(reply)) {
                 ftpClient.disconnect();
-                System.err.println("FTP server refused connection.");
+                log.error("FTP server refused connection.");
                 System.exit(1);
             }
             ftpClient.enterLocalPassiveMode();

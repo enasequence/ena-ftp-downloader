@@ -2,10 +2,6 @@ package uk.ac.ebi.ena.ftp.model;
 
 import javafx.application.Platform;
 import javafx.beans.property.*;
-import uk.ac.ebi.ena.ftp.gui.Controller;
-import uk.ac.ebi.ena.ftp.service.DownloadService;
-
-import java.util.List;
 
 /**
  * Created by suranj on 27/05/2016.
@@ -18,9 +14,6 @@ public class RemoteFile {
 
     private String saveLocation;
     private String md5;
-    private DownloadService downloadService;
-    private List<RemoteFile> fileList;
-    private Controller controller;
     private DoubleProperty progress;
     private boolean downloaded;
     private StringProperty successIcon;
@@ -118,14 +111,6 @@ public class RemoteFile {
         this.transferred = transferred;
     }
 
-    public void setFileList(List<RemoteFile> fileList) {
-        this.fileList = fileList;
-    }
-
-    public void setController(Controller controller) {
-        this.controller = controller;
-    }
-
     public boolean isDownloaded() {
         return downloaded;
     }
@@ -141,7 +126,6 @@ public class RemoteFile {
     public DoubleProperty progressProperty() {
         return progress;
     }
-
 
     public void setProgress(double progress) {
         this.progress.set(progress);

@@ -1,31 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.*?>
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.text.*?>
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.control.cell.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import uk.ac.ebi.ena.ftp.gui.custom.*?>
-<?import java.net.URL?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.ac.ebi.ena.ftp.gui.Controller">
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="800.0"
+      xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.ac.ebi.ena.ftp.gui.ResultsController">
    <children>
-      <AnchorPane prefHeight="84.0" prefWidth="600.0">
+      <AnchorPane prefWidth="800.0">
          <children>
-            <HBox alignment="CENTER_LEFT" layoutX="26.0" layoutY="27.0" prefHeight="31.0" prefWidth="710.0"  fx:id="downloadHBox">
+            <HBox fx:id="downloadHBox" alignment="CENTER_LEFT" layoutX="26.0"  layoutY="20.0" prefHeight="32.0" prefWidth="710.0">
                <children>
                   <Label fx:id="localDownloadDirLabel" layoutX="21.0" layoutY="46.0" prefHeight="21.0" prefWidth="195.0" text="Local Download Directory:" />
-                  <TextField fx:id="localDownloadDir" prefHeight="31.0" prefWidth="418.0" editable="true" />
+                  <TextField fx:id="localDownloadDir" editable="true" prefHeight="23.0" prefWidth="418.0">
+                     <tooltip>
+                        <Tooltip text="Select location to save files" />
+                     </tooltip></TextField>
                   <Button fx:id="localDownloadDirBtn" mnemonicParsing="false" text="..." />
                </children>
             </HBox>
          </children>
       </AnchorPane>
-      <AnchorPane prefHeight="513.0" prefWidth="800.0">
+      <AnchorPane prefHeight="465.0" prefWidth="800.0">
          <children>
             <Label fx:id="remoteFilesLabel" layoutX="25.0" layoutY="14.0" text="Remote Files">
                <font>
@@ -44,7 +56,7 @@
                <center>
                   <TabPane fx:id="fileTabPane" prefHeight="339.0" prefWidth="782.0">
                      <tabs>
-                        <Tab text="FASTQ">
+                        <Tab text="FASTQ" fx:id="fastqTab">
                            <content>
                               <TableView fx:id="fastqFileTable" editable="true">
                                   <columns>
@@ -62,9 +74,6 @@
                                        </cellValueFactory>
                                     </TableColumn>
                                     <TableColumn prefWidth="90.0" resizable="true" text="Size">
-                                       <cellValueFactory>
-                                          <PropertyValueFactory property="size" />
-                                       </cellValueFactory>
                                     </TableColumn>
                                  </columns>
                                  <placeholder>
@@ -73,7 +82,7 @@
                               </TableView>
                            </content>
                         </Tab>
-                        <Tab text="Submitted">
+                        <Tab text="Submitted" fx:id="submittedTab">
                            <content>
                               <TableView fx:id="submittedFileTable" editable="true">
                                   <columns>
@@ -102,6 +111,35 @@
                               </TableView>
                            </content>
                         </Tab>
+                        <Tab text="SRA" fx:id="sraTab">
+                           <content>
+                              <TableView fx:id="sraFileTable" editable="true">
+                                 <columns>
+                                    <TableColumn fx:id="sraDownloadColumn" prefWidth="75.0" resizable="false" text="Download">
+                                       <cellFactory>
+                                          <CheckBoxCellFactory />
+                                       </cellFactory>
+                                       <cellValueFactory>
+                                          <CheckBoxCellValueFactory />
+                                       </cellValueFactory>
+                                    </TableColumn>
+                                    <TableColumn prefWidth="265.0" resizable="true" text="Name">
+                                       <cellValueFactory>
+                                          <PropertyValueFactory property="name" />
+                                       </cellValueFactory>
+                                    </TableColumn>
+                                    <TableColumn prefWidth="90.0" resizable="true" text="Size">
+                                       <cellValueFactory>
+                                          <PropertyValueFactory property="size" />
+                                       </cellValueFactory>
+                                    </TableColumn>
+                                 </columns>
+                                 <placeholder>
+                                    <Label text="No SRA files found." />
+                                 </placeholder>
+                              </TableView>
+                           </content>
+                        </Tab>
                      </tabs>
                      <BorderPane.margin>
                         <Insets />
@@ -109,6 +147,7 @@
                   </TabPane>
                </center>
             </BorderPane>
+            <Button fx:id="backBtn" layoutX="15.0" layoutY="432.0" mnemonicParsing="false" text="Back" />
             <Button fx:id="startDownloadBtn" layoutX="497.0" layoutY="432.0" mnemonicParsing="false" text="Start Download" />
             <Button fx:id="stopDownloadBtn" layoutX="637.0" layoutY="432.0" mnemonicParsing="false" text="Stop Download" />
          </children>
