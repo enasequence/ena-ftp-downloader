@@ -29,31 +29,31 @@ public class DownloadTask extends Task<Void> {
             /*AccessController.doPrivileged(new PrivilegedAction<Object>() {
                 @Override
                 public Object run() {*/
-                    try {
-                        if (!downloadService.fileAlreadyDownloaded(file)) {
-                            int count = 0;
-                            while (count < RETRY_COUNT) {
-                                try {
-                                    downloadService.downloadFileFtp(file);
-                                    break;
-                                } catch (Exception e) {
-                                    count++;
-                                    log.warn(file.getName() + " Timed out download attempt. Retry:" + count);
-                                    if (RETRY_COUNT == count) {
-                                        throw e;
-                                    }
-                                }
+            try {
+                if (!downloadService.fileAlreadyDownloaded(file)) {
+                    int count = 0;
+                    while (count < RETRY_COUNT) {
+                        try {
+                            downloadService.downloadFileFtp(file);
+                            break;
+                        } catch (Exception e) {
+                            count++;
+                            log.warn(file.getName() + " Timed out download attempt. Retry:" + count);
+                            if (RETRY_COUNT == count) {
+                                throw e;
                             }
-                        } else {
-                            file.updateProgress(1);
-                            file.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
-                            file.setDownloaded(true);
                         }
-                    } catch (Exception e) {
-                        log.error("Failed download", e);
-                        throw  e;
                     }
-                    return null;
+                } else {
+                    file.updateProgress(1);
+                    file.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
+                    file.setDownloaded(true);
+                }
+            } catch (Exception e) {
+                log.error("Failed download", e);
+                throw e;
+            }
+            return null;
 //                }
 //            });
 //            file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);

@@ -327,135 +327,28 @@ public class ResultsController implements Initializable {
         });
     }
 
-    public void setSearchScene(Scene searchScene) {
-        this.searchScene = searchScene;
-    }
-
     public Scene getSearchScene() {
         return searchScene;
     }
 
-    public void setSearchController(SearchController searchController) {
-        this.searchController = searchController;
+    public void setSearchScene(Scene searchScene) {
+        this.searchScene = searchScene;
     }
 
     public SearchController getSearchController() {
         return searchController;
     }
 
-    public void setStage(Stage stage) {
-        this.stage = stage;
+    public void setSearchController(SearchController searchController) {
+        this.searchController = searchController;
     }
 
     public Stage getStage() {
         return stage;
     }
 
-    public class StartDownloadHandler implements EventHandler<ActionEvent> {
-        @Override
-        public void handle(ActionEvent actionEvent) {
-            if (StringUtils.isBlank(localDownloadDir.getText())) {
-                selectionLabel.setText("Please select a download location.");
-                return;
-            }
-            File downloadDir = new File(localDownloadDir.getText());
-            log.debug("downloadDir.isDirectory():" + downloadDir.isDirectory());
-            log.debug("downloadDir.canWrite():" + downloadDir.canWrite());
-            if (!downloadDir.isDirectory()/* || !downloadDir.canWrite()*/) {
-                selectionLabel.setText("Unable to save to selected download location.");
-                return;
-            }
-            long usableSpace = downloadDir.getUsableSpace();
-            if (usableSpace < totalSize) {
-                selectionLabel.setText("Not enough space in selected location to save all files. An additional "
-                        + Utils.getHumanReadableSize(totalSize - usableSpace) + " is required.");
-                return;
-            }
-
-            int tabIndex = fileTabPane.getSelectionModel().getSelectedIndex();
-            ObservableList<RemoteFile> files = getRemoteFiles(tabIndex);
-            List<RemoteFile> checkedFiles = new ArrayList<RemoteFile>();
-            notDoneFiles = new ArrayList<RemoteFile>();
-
-            for (RemoteFile file : files) {
-                if (file.isDownload().get()) {
-                    if (file.getTransferred() == 0 && file.getProgress() < 1) {
-                        file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
-                    }
-                    file.setSaveLocation(localDownloadDir.getText());
-                    checkedFiles.add(file);
-                }
-            }
-            if (checkedFiles.size() == 0) {
-                selectionLabel.setText("No files selected for download.");
-                return;
-            } else {
-                updateSelectionMessage();
-                for (RemoteFile file : checkedFiles) {
-                    if (!file.isDownloaded()) {
-//                        file.setFileList(notDoneFiles);
-//                        file.setController(self);
-                        notDoneFiles.add(file);
-                    }
-                }
-                if (notDoneFiles.isEmpty()) {
-                    selectionLabel.setText("All selected files have already been downloaded.");
-                    return;
-                }
-            }
-//            showLoginPopup();
-            startDownloadBtn.setDisable(true);
-            stopDownloadBtn.setDisable(false);
-            executor = Executors.newSingleThreadExecutor();
-            downloadTasks = new ArrayList<>();
-            for (final RemoteFile file : notDoneFiles) {
-                if (file.getTransferred() == 0) {
-                    file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
-                }
-                Task task = new DownloadTask(file);
-                Future<?> submit = executor.submit(task);
-                downloadTasks.add(task);
-                if (downloadTasks.size() == notDoneFiles.size()) {
-                    new Thread() {
-                        public void run() {
-                            while (!file.isDownloaded() && !stopDownloadBtn.isDisabled()) {
-                                try {
-                                    sleep(500);
-                                } catch (InterruptedException e) {
-                                    log.warn("Interrupted");
-                                }
-                            }
-                            Platform.runLater(() -> {
-                                startDownloadBtn.setDisable(false);
-                                stopDownloadBtn.setDisable(true);
-                            });
-                        }
-                    }.start();
-                }
-            }
-        }
-    }
-
-    private class StopDownloadHandler implements EventHandler<ActionEvent> {
-        @Override
-        public void handle(ActionEvent actionEvent) {
-            startDownloadBtn.setDisable(false);
-            stopDownloadBtn.setDisable(true);
-            log.debug("Stopping downloads");
-            selectionLabel.setText("Downloading stopped by user! Click Start Download to resume.");
-            if (executor != null) {
-                List<Runnable> runnables = executor.shutdownNow();
-            }
-            for (int r = 0; r < notDoneFiles.size(); r++) {
-                RemoteFile file = notDoneFiles.get(r);
-                if (file.getProgress() == ProgressIndicator.INDETERMINATE_PROGRESS) {
-                    file.updateProgress(0);
-                }
-                if (!file.isDownloaded()) {
-                    downloadTasks.get(r).cancel();
-                }
-            }
-        }
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 
     private void setupDownloadDirBtn() {
@@ -636,6 +529,136 @@ public class ResultsController implements Initializable {
         selectAllBtn.setOnAction(new SelectAllHandler());
     }
 
+    private ObservableList<RemoteFile> getRemoteFiles(int tabIndex) {
+        switch (tabIndex) {
+            case 0:
+                return fastqFiles;
+            case 1:
+                return submittedFiles;
+            default:
+                return sraFiles;
+        }
+    }
+
+    private void setupBackBtn() {
+        backBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                selectionLabel.setText("");
+                searchController.clearFields();
+                Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+                primaryStage.setScene(searchScene);
+            }
+        });
+    }
+
+    public class StartDownloadHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            if (StringUtils.isBlank(localDownloadDir.getText())) {
+                selectionLabel.setText("Please select a download location.");
+                return;
+            }
+            File downloadDir = new File(localDownloadDir.getText());
+            log.debug("downloadDir.isDirectory():" + downloadDir.isDirectory());
+            log.debug("downloadDir.canWrite():" + downloadDir.canWrite());
+            if (!downloadDir.isDirectory()/* || !downloadDir.canWrite()*/) {
+                selectionLabel.setText("Unable to save to selected download location.");
+                return;
+            }
+            long usableSpace = downloadDir.getUsableSpace();
+            if (usableSpace < totalSize) {
+                selectionLabel.setText("Not enough space in selected location to save all files. An additional "
+                        + Utils.getHumanReadableSize(totalSize - usableSpace) + " is required.");
+                return;
+            }
+
+            int tabIndex = fileTabPane.getSelectionModel().getSelectedIndex();
+            ObservableList<RemoteFile> files = getRemoteFiles(tabIndex);
+            List<RemoteFile> checkedFiles = new ArrayList<RemoteFile>();
+            notDoneFiles = new ArrayList<RemoteFile>();
+
+            for (RemoteFile file : files) {
+                if (file.isDownload().get()) {
+                    if (file.getTransferred() == 0 && file.getProgress() < 1) {
+                        file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+                    }
+                    file.setSaveLocation(localDownloadDir.getText());
+                    checkedFiles.add(file);
+                }
+            }
+            if (checkedFiles.size() == 0) {
+                selectionLabel.setText("No files selected for download.");
+                return;
+            } else {
+                updateSelectionMessage();
+                for (RemoteFile file : checkedFiles) {
+                    if (!file.isDownloaded()) {
+//                        file.setFileList(notDoneFiles);
+//                        file.setController(self);
+                        notDoneFiles.add(file);
+                    }
+                }
+                if (notDoneFiles.isEmpty()) {
+                    selectionLabel.setText("All selected files have already been downloaded.");
+                    return;
+                }
+            }
+//            showLoginPopup();
+            startDownloadBtn.setDisable(true);
+            stopDownloadBtn.setDisable(false);
+            executor = Executors.newSingleThreadExecutor();
+            downloadTasks = new ArrayList<>();
+            for (final RemoteFile file : notDoneFiles) {
+                if (file.getTransferred() == 0) {
+                    file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+                }
+                Task task = new DownloadTask(file);
+                Future<?> submit = executor.submit(task);
+                downloadTasks.add(task);
+                if (downloadTasks.size() == notDoneFiles.size()) {
+                    new Thread() {
+                        public void run() {
+                            while (!file.isDownloaded() && !stopDownloadBtn.isDisabled()) {
+                                try {
+                                    sleep(500);
+                                } catch (InterruptedException e) {
+                                    log.warn("Interrupted");
+                                }
+                            }
+                            Platform.runLater(() -> {
+                                startDownloadBtn.setDisable(false);
+                                stopDownloadBtn.setDisable(true);
+                            });
+                        }
+                    }.start();
+                }
+            }
+        }
+    }
+
+    private class StopDownloadHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            startDownloadBtn.setDisable(false);
+            stopDownloadBtn.setDisable(true);
+            log.debug("Stopping downloads");
+            selectionLabel.setText("Downloading stopped by user! Click Start Download to resume.");
+            if (executor != null) {
+                List<Runnable> runnables = executor.shutdownNow();
+            }
+            for (int r = 0; r < notDoneFiles.size(); r++) {
+                RemoteFile file = notDoneFiles.get(r);
+                if (file.getProgress() == ProgressIndicator.INDETERMINATE_PROGRESS) {
+                    file.updateProgress(0);
+                }
+                if (!file.isDownloaded()) {
+                    downloadTasks.get(r).cancel();
+                }
+            }
+        }
+    }
+
     private class SelectAllHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
@@ -662,29 +685,6 @@ public class ResultsController implements Initializable {
             selectAllBtn.setOnAction(new SelectAllHandler());
             selectAllBtn.setText("Select All");
         }
-    }
-
-    private ObservableList<RemoteFile> getRemoteFiles(int tabIndex) {
-        switch (tabIndex) {
-            case 0:
-                return fastqFiles;
-            case 1:
-                return submittedFiles;
-            default:
-                return sraFiles;
-        }
-    }
-
-    private void setupBackBtn() {
-        backBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                selectionLabel.setText("");
-                searchController.clearFields();
-                Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-                primaryStage.setScene(searchScene);
-            }
-        });
     }
 
 

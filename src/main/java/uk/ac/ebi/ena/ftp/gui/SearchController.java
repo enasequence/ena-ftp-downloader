@@ -28,22 +28,16 @@ import java.util.*;
 
 public class SearchController implements Initializable {
 
+    public static final String ERA_ID_PATTERN = "[ESDR]R[ASPXRZ][0-9]{6,}";
     private final static Logger log = LoggerFactory.getLogger(SearchController.class);
-
     @FXML
     private TextField accession, report;
-
     @FXML
     private Button accessionBtn, reportBtn;
-
     @FXML
     private Label fileErrorLabel;
-
     private Scene resultsScene;
     private ResultsController resultsController;
-
-    public static final String ERA_ID_PATTERN = "[ESDR]R[ASPXRZ][0-9]{6,}";
-
 
     @Override // This method is called by the FXMLLoader when initialization is complete
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
@@ -174,20 +168,20 @@ public class SearchController implements Initializable {
         return map;
     }
 
-    public void setResultsScene(Scene resultsScene) {
-        this.resultsScene = resultsScene;
-    }
-
     public Scene getResultsScene() {
         return resultsScene;
     }
 
-    public void setResultsController(ResultsController resultsController) {
-        this.resultsController = resultsController;
+    public void setResultsScene(Scene resultsScene) {
+        this.resultsScene = resultsScene;
     }
 
     public ResultsController getResultsController() {
         return resultsController;
+    }
+
+    public void setResultsController(ResultsController resultsController) {
+        this.resultsController = resultsController;
     }
 
     public void showError(String message) {

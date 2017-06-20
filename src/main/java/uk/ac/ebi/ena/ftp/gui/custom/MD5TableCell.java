@@ -18,10 +18,8 @@ public class MD5TableCell extends TableCell<RemoteFile, String> {
 
     public static final String SUCCESS_ICON = "accept";
     public static final String LOADING_ICON = "loading";
-    private final static Logger log = LoggerFactory.getLogger(MD5TableCell.class);
     public static final String ERROR_ICON = "cross";
-
-
+    private final static Logger log = LoggerFactory.getLogger(MD5TableCell.class);
     VBox vb;
     ImageView imageView;
 
@@ -43,7 +41,7 @@ public class MD5TableCell extends TableCell<RemoteFile, String> {
     protected void updateItem(String item, boolean empty) {
         if (item != null) {
             if (ERROR_ICON.equals(item)) {
-                imageView.setImage(new Image( item + ".png"));
+                imageView.setImage(new Image(item + ".png"));
                 Tooltip.install(imageView, new Tooltip("File did not download correctly. Please try again later."));
             } else if (SUCCESS_ICON.equals(item)) {
                 imageView.setImage(new Image(item + ".png"));

@@ -15,9 +15,8 @@ import java.util.List;
  * Created by suranj on 27/05/2016.
  */
 public class WarehouseQuery {
-    private final static Logger log = LoggerFactory.getLogger(WarehouseQuery.class);
-
     public static final String ERA_ANALYSIS_ID_PATTERN = "[ESDR]RZ[0-9]+";
+    private final static Logger log = LoggerFactory.getLogger(WarehouseQuery.class);
 
     public List<RemoteFile> query(String accession, String type) {
         // URL stump for programmatic query of files
@@ -58,9 +57,9 @@ public class WarehouseQuery {
                 String[] parts = fileStrings.get(f).split("\\s");
                 if (StringUtils.contains(parts[0], ";")) {
                     String[] fileParts = parts[0].split(";");
-                    String[]  sizeParts = parts[1].split(";");
+                    String[] sizeParts = parts[1].split(";");
                     String[] md5Parts = parts[2].split(";");
-                    for (int p = 0; p< fileParts.length; p++) {
+                    for (int p = 0; p < fileParts.length; p++) {
                         RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(fileParts[p], "/"), Long.parseLong(sizeParts[p]), fileParts[p], md5Parts[p]);
                         files.add(file);
 
