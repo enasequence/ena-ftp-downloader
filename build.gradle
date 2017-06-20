@@ -4,7 +4,6 @@ version '1.0'
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'application'
-apply plugin: 'edu.sc.seis.macAppBundle'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -18,11 +17,6 @@ repositories {
     flatDir {
         dirs 'lib'
     }
-}
-
-macAppBundle {
-    mainClassName = "com.example.myApp.Start"
-    certIdentity = "ENA File Downloader"
 }
 
 
@@ -39,7 +33,6 @@ buildscript {
         }
     }
     dependencies {
-        classpath "gradle.plugin.edu.sc.seis:macAppBundle:2.1.5"
     }
 }
 
