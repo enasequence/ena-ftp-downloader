@@ -1,4 +1,4 @@
-# ena-browser-file-downloader
+# ena-file-downloader
 
 GUI application for bulk downloading of run/analysis files from FTP.
 
@@ -31,22 +31,33 @@ files in Fastq, Submitted or SRA types.
 Click the Load Report File button to select a previously generated report file. The file will be parsed and the available
 file data will be listed in the Results window. The Report file shuold contain at least one of the following file
 URL columns.
+
 fastq_ftp
+
 submitted_ftp
+
 sra_ftp
 
 Additionally, we recommend that when you generate the report file you include the support columns for whichever file
 type/s you want to download/
+
 i.e.
+
 fastq_bytes
+
 fastq_md5
+
 submitted_bytes
+
 submitted_md5
+
 sra_bytes
+
 sra_md5
 
 The *_bytes column data allows the Downloader to track how much space is required for the download and to show the download
 progress for each file.
+
 The *_md5 column data allows the Downloader to calculate the MD5 checksum of the file after downloading it and compare it
 to the original MD5 to verify that the file has been downloaded without errors.
 
