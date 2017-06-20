@@ -10,6 +10,15 @@ import javafx.util.Callback;
  * Created by suranj on 01/06/2016.
  */
 public class ProgressBarTableCell<S> extends TableCell<S, Double> {
+    private final ProgressBar progressBar;
+    private ObservableValue observable;
+    public ProgressBarTableCell() {
+        this.getStyleClass().add("progress-bar-table-cell");
+        this.progressBar = new ProgressBar(0.0);
+        progressBar.setPrefWidth(290);
+        setGraphic(progressBar);
+    }
+
     public static <S> Callback<TableColumn<S, Double>, TableCell<S, Double>> forTableColumn() {
         return new Callback<TableColumn<S, Double>, TableCell<S, Double>>() {
             @Override
@@ -19,17 +28,8 @@ public class ProgressBarTableCell<S> extends TableCell<S, Double> {
         };
     }
 
-    private final ProgressBar progressBar;
-    private ObservableValue observable;
-
-    public ProgressBarTableCell() {
-        this.getStyleClass().add("progress-bar-table-cell");
-        this.progressBar = new ProgressBar(0.0);
-        progressBar.setPrefWidth(290);
-        setGraphic(progressBar);
-    }
-
-    @Override public void updateItem(Double item, boolean empty) {
+    @Override
+    public void updateItem(Double item, boolean empty) {
         super.updateItem(item, empty);
 
         if (empty) {

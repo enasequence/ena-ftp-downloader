@@ -7,11 +7,11 @@ import javafx.beans.property.*;
  * Created by suranj on 27/05/2016.
  */
 public class RemoteFile {
+    public static final int NUM_ITERATIONS = 100;
     private SimpleBooleanProperty download;
     private String name;
-    private long size, transferred=0;
+    private long size, transferred = 0;
     private String path;
-
     private String saveLocation;
     private String md5;
     private DoubleProperty progress;
@@ -29,7 +29,6 @@ public class RemoteFile {
         this.progress = new SimpleDoubleProperty(0);
         this.successIcon = new SimpleStringProperty();
     }
-
 
     public SimpleBooleanProperty isDownload() {
         return download;
@@ -67,10 +66,6 @@ public class RemoteFile {
         return download;
     }
 
-
-    public static final int NUM_ITERATIONS = 100;
-
-
     /*@Override
     protected Void call() throws Exception {
 
@@ -87,12 +82,12 @@ public class RemoteFile {
         });
     }
 
-    public void setSaveLocation(String saveLocation) {
-        this.saveLocation = saveLocation;
-    }
-
     public String getSaveLocation() {
         return saveLocation;
+    }
+
+    public void setSaveLocation(String saveLocation) {
+        this.saveLocation = saveLocation;
     }
 
     public String getMd5() {
@@ -123,12 +118,12 @@ public class RemoteFile {
         return progress.get();
     }
 
-    public DoubleProperty progressProperty() {
-        return progress;
-    }
-
     public void setProgress(double progress) {
         this.progress.set(progress);
+    }
+
+    public DoubleProperty progressProperty() {
+        return progress;
     }
 
     public StringProperty successIconProperty() {
@@ -139,11 +134,11 @@ public class RemoteFile {
         this.successIcon.set(icon);
     }
 
-    public void setLocalPath(String localPath) {
-        this.localPath = localPath;
-    }
-
     public String getLocalPath() {
         return localPath;
+    }
+
+    public void setLocalPath(String localPath) {
+        this.localPath = localPath;
     }
 }

@@ -15,24 +15,19 @@ public class Utils {
         if (bytes < 1024) {
             result = bytes + " Bytes";
         } else if (bytes < Math.pow(1024, 2)) {
-            inFormat = (bytes/Math.pow(1024, 1));
-            //result = new Double(df.format(inFormat)).doubleValue() + " KB";
+            inFormat = (bytes / Math.pow(1024, 1));
             result = df.format(inFormat) + " KB";
         } else if (bytes < Math.pow(1024, 3)) {
-            inFormat = (bytes/Math.pow(1024, 2));
-            //result = new Double(df.format(inFormat)).doubleValue() + " MB";
+            inFormat = (bytes / Math.pow(1024, 2));
             result = df.format(inFormat) + " MB";
         } else if (bytes < Math.pow(1024, 4)) {
-            inFormat = (bytes/Math.pow(1024, 3));
-            //result = new Double(df.format(inFormat)).doubleValue() + " GB";
+            inFormat = (bytes / Math.pow(1024, 3));
             result = df.format(inFormat) + " GB";
         } else if (bytes < Math.pow(1024, 5)) {
-            inFormat = (bytes/Math.pow(1024, 4));
-            //result = new Double(df.format(inFormat)).doubleValue() + " TB";
+            inFormat = (bytes / Math.pow(1024, 4));
             result = df.format(inFormat) + " TB";
         } else if (bytes < Math.pow(1024, 6)) {
-            inFormat = (bytes/Math.pow(1024, 5));
-            //result = new Double(df.format(inFormat)).doubleValue() + " PB";
+            inFormat = (bytes / Math.pow(1024, 5));
             result = df.format(inFormat) + " PB";
         }
 

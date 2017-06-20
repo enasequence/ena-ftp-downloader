@@ -17,6 +17,10 @@ public class Main extends Application {
     public static Parameters parameters;
     public static Stage stage;
 
+    public static void main(String[] args) {
+        launch(args);
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
@@ -54,11 +58,6 @@ public class Main extends Application {
         } catch (Exception e) {
             log.error("Error in main", e);
         }
-    }
-
-
-    public static void main(String[] args) {
-        launch(args);
     }
 
     @Override

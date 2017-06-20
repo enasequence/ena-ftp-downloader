@@ -22,12 +22,10 @@ import java.net.SocketTimeoutException;
  * @author www.codejava.net
  */
 public class CommonsFTPUtility {
-    private final static Logger log = LoggerFactory.getLogger(CommonsFTPUtility.class);
-
-
     // FTP server information
     public static final int BUFFER_SIZE = 8192; //2097152;// 2MB
     public static final int TIMEOUT = 5000;
+    private final static Logger log = LoggerFactory.getLogger(CommonsFTPUtility.class);
     private String host = "ftp.sra.ebi.ac.uk";
     private int port = 21;
     private String username = "anonymous";
