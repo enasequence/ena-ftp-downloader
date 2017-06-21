@@ -3,11 +3,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<AnchorPane prefHeight="175.0" prefWidth="675.0" xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml" fx:controller="uk.ac.ebi.ena.ftp.gui.SearchController">
+<AnchorPane xmlns:fx="http://javafx.com/fxml" prefHeight="175.0" prefWidth="675.0"
+            xmlns="http://javafx.com/javafx" fx:controller="uk.ac.ebi.ena.ftp.gui.SearchController">
     <stylesheets>
         <URL value="@gui.css"/>
     </stylesheets>
@@ -53,14 +52,16 @@
                         </ImageView>
                     </graphic>
                     <tooltip>
-                        <Tooltip text="When generating the file report in the ENA Browser, also select the corresponding bytes and md5 columns for the file types you want."/>
+                        <Tooltip
+                                text="When generating the file report in the ENA Browser, also select the corresponding bytes and md5 columns for the file types you want."/>
                     </tooltip>
                 </Label>
             </children>
         </HBox>
         <HBox alignment="CENTER_LEFT" layoutX="30.0" layoutY="110.0">
             <children>
-                <Label fx:id="fileErrorLabel" text="Enter an accession or select a previously generated report file from the file system."/>
+                <Label fx:id="fileErrorLabel"
+                       text="Enter an accession or select a previously generated report file from the file system."/>
             </children>
         </HBox>
     </children>

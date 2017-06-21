@@ -8,6 +8,7 @@ import uk.ac.ebi.ena.ftp.model.RemoteFile;
 import uk.ac.ebi.ena.ftp.service.DownloadService;
 
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by suranj on 01/08/2016.
@@ -17,18 +18,19 @@ public class DownloadTask extends Task<Void> {
     private final static Logger log = LoggerFactory.getLogger(DownloadTask.class);
 
     private final RemoteFile file;
+    private CountDownLatch latch;
     private DownloadService downloadService = new DownloadService();
+    private boolean countedDown;
 
-    public DownloadTask(RemoteFile file) {
+    public DownloadTask(RemoteFile file, CountDownLatch latch) {
         this.file = file;
+        this.latch = latch;
     }
 
     @Override
     protected Void call() throws Exception {
         try {
-            /*AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                @Override
-                public Object run() {*/
+
             try {
                 if (!downloadService.fileAlreadyDownloaded(file)) {
                     int count = 0;
@@ -44,19 +46,16 @@ public class DownloadTask extends Task<Void> {
                             }
                         }
                     }
-                } else {
-                    file.updateProgress(1);
-                    file.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
-                    file.setDownloaded(true);
                 }
+                file.updateProgress(1);
+                file.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
+                file.setDownloaded(true);
+                succeeded();
             } catch (Exception e) {
                 log.error("Failed download", e);
                 throw e;
             }
             return null;
-//                }
-//            });
-//            file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
 
         } catch (Exception e) {
             log.error("Failed download", e);
@@ -67,7 +66,10 @@ public class DownloadTask extends Task<Void> {
             } catch (Exception ex) {
                 log.error("Error deleting failed file:" + file.getLocalPath());
             }
+            this.failed();
             throw e;
+        } finally {
+            couuntdownLatch();
         }
     }
 
@@ -88,6 +90,23 @@ public class DownloadTask extends Task<Void> {
 //            }
         } catch (Exception e) {
             log.error("Failed cancel:", e);
+        } finally {
+            couuntdownLatch();
         }
     }
+
+    private void couuntdownLatch() {
+        log.info("countdown latch:" + countedDown);
+        if (!countedDown) {
+            countedDown = true;
+            try {
+                latch.countDown();
+                log.info("latched");
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+
 }

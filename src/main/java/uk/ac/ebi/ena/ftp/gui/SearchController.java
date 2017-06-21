@@ -113,23 +113,40 @@ public class SearchController implements Initializable {
     private Map<String, List<RemoteFile>> parseReportFile(File reportFile) {
         Map<String, List<RemoteFile>> map = new HashMap<>();
         int fastqIndex = -1;
+        int fastqBytesIndex = -1;
+        int fastqMd5Index = -1;
+
         int submittedIndex = -1;
+        int submittedBytesIndex = -1;
+        int submittedMd5Index = -1;
+
         int sraIndex = -1;
+        int sraBytesIndex = -1;
+        int sraMd5Index = -1;
+
         try {
             List<String> lines = IOUtils.readLines(new FileReader(reportFile));
-            String[] headers = StringUtils.splitPreserveAllTokens(lines.get(0), "\t");
-            for (int h = 0; h < headers.length; h++) {
-                String header = headers[h];
-                if (StringUtils.equals(header, "fastq_ftp")) {
-                    map.put("fastq", new ArrayList<RemoteFile>());
-                    fastqIndex = h;
-                } else if (StringUtils.equals(header, "submitted_ftp")) {
-                    map.put("submitted", new ArrayList<RemoteFile>());
-                    submittedIndex = h;
-                } else if (StringUtils.equals(header, "sra_ftp")) {
-                    map.put("sra", new ArrayList<RemoteFile>());
-                    sraIndex = h;
-                }
+            String[] headersSplit = StringUtils.splitPreserveAllTokens(lines.get(0), "\t");
+            List<String> headers = Arrays.asList(headersSplit);
+            fastqIndex = headers.indexOf("fastq_ftp");
+            if (fastqIndex > -1) {
+                map.put("fastq", new ArrayList<RemoteFile>());
+                fastqBytesIndex = headers.indexOf("fastq_bytes");
+                fastqMd5Index = headers.indexOf("fastq_md5");
+            }
+
+            submittedIndex = headers.indexOf("submitted_ftp");
+            if (submittedIndex > -1) {
+                map.put("submitted", new ArrayList<RemoteFile>());
+                submittedBytesIndex = headers.indexOf("submitted_bytes");
+                submittedMd5Index = headers.indexOf("submitted_md5");
+            }
+
+            sraIndex = headers.indexOf("sra_ftp");
+            if (sraIndex > -1) {
+                map.put("sra", new ArrayList<RemoteFile>());
+                sraBytesIndex = headers.indexOf("sra_bytes");
+                sraMd5Index = headers.indexOf("sra_md5");
             }
 
             if (!map.isEmpty()) {
@@ -138,30 +155,67 @@ public class SearchController implements Initializable {
                     if (fastqIndex > -1) {
                         String fastqFilesStr = fields[fastqIndex];
                         if (StringUtils.isNotBlank(fastqFilesStr)) {
-                            for (String fastqFile : StringUtils.split(fastqFilesStr, ";")) {
-                                map.get("fastq").add(new RemoteFile(StringUtils.substringAfterLast(fastqFile, "/"), 0, fastqFile, ""));
+                            String[] files = StringUtils.split(fastqFilesStr, ";");
+                            String[] bytes = null;
+                            String[] md5s = null;
+                            for (int f = 0; f < files.length; f++) {
+                                String fastqFile = files[f];
+                                if (fastqBytesIndex > -1) {
+                                    bytes = StringUtils.split(fields[fastqBytesIndex], ";");
+                                }
+                                if (fastqMd5Index > -1) {
+                                    md5s = StringUtils.split(fields[fastqMd5Index], ";");
+                                }
+                                RemoteFile remoteFile = new RemoteFile(StringUtils.substringAfterLast(fastqFile, "/"),
+                                        fastqBytesIndex > -1 ? Long.parseLong(bytes[f]) : 0, fastqFile,
+                                        fastqMd5Index > -1 ? md5s[f] : null);
+                                log.info(remoteFile.toString());
+                                map.get("fastq").add(remoteFile);
                             }
                         }
                     }
                     if (submittedIndex > -1) {
                         String submittedFilesStr = fields[submittedIndex];
                         if (StringUtils.isNotBlank(submittedFilesStr)) {
-                            for (String submittedFile : StringUtils.split(submittedFilesStr, ";")) {
-                                map.get("submitted").add(new RemoteFile(StringUtils.substringAfterLast(submittedFile, "/"), 0, submittedFile, ""));
+                            String[] files = StringUtils.split(submittedFilesStr, ";");
+                            String[] bytes = null;
+                            String[] md5s = null;
+                            for (int f = 0; f < files.length; f++) {
+                                String submittedFile = files[f];
+                                if (submittedBytesIndex > -1) {
+                                    bytes = StringUtils.split(fields[submittedBytesIndex], ";");
+                                }
+                                if (submittedMd5Index > -1) {
+                                    md5s = StringUtils.split(fields[submittedMd5Index], ";");
+                                }
+                                map.get("submitted").add(new RemoteFile(StringUtils.substringAfterLast(submittedFile, "/"),
+                                        submittedBytesIndex > -1 ? Long.parseLong(bytes[f]) : 0, submittedFile,
+                                        submittedMd5Index > -1 ? md5s[f] : null));
                             }
                         }
-                    }
-                    if (sraIndex > -1) {
-                        String sraFilesStr = fields[sraIndex];
-                        if (StringUtils.isNotBlank(sraFilesStr)) {
-                            for (String sraFile : StringUtils.split(sraFilesStr, ";")) {
-                                map.get("sra").add(new RemoteFile(StringUtils.substringAfterLast(sraFile, "/"), 0, sraFile, ""));
+                        if (sraIndex > -1) {
+                            String sraFilesStr = fields[sraIndex];
+                            if (StringUtils.isNotBlank(sraFilesStr)) {
+                                String[] files = StringUtils.split(sraFilesStr, ";");
+                                String[] bytes = null;
+                                String[] md5s = null;
+                                for (int f = 0; f < files.length; f++) {
+                                    String sraFile = files[f];
+                                    if (sraBytesIndex > -1) {
+                                        bytes = StringUtils.split(fields[sraBytesIndex], ";");
+                                    }
+                                    if (sraMd5Index > -1) {
+                                        md5s = StringUtils.split(fields[sraMd5Index], ";");
+                                    }
+                                    map.get("sra").add(new RemoteFile(StringUtils.substringAfterLast(sraFile, "/"),
+                                            sraBytesIndex > -1 ? Long.parseLong(bytes[f]) : 0, sraFile,
+                                            sraMd5Index > -1 ? md5s[f] : null));
+                                }
                             }
                         }
                     }
                 }
             }
-
         } catch (Exception e) {
             log.error("Error", e);
         }

@@ -39,6 +39,8 @@ public class MD5TableCell extends TableCell<RemoteFile, String> {
 
     @Override
     protected void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+
         if (item != null) {
             if (ERROR_ICON.equals(item)) {
                 imageView.setImage(new Image(item + ".png"));
