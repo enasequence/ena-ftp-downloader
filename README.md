@@ -41,6 +41,31 @@ file data will be listed in the Results window.
 
 ## Results Window
 
+1. Local Download Directory
+Select a location on your file system which you have write access to.
+The Downloader will calculate the total size of the files you select for downloading
+and check if the selected file system location has enough space.
+
+2. Remote Files
+The available files are displayed separately by type.
+* FASTQ
+* Submitted
+* SRA
+
+If there are no files available of a given type, the corresponding tab will be disabled.
+
+Use the checkboxes in the Download column to selectively pick the files you want or click Select All.
+
+Click the Start Download button to download the selected files in the currently active tab sequentially.
+
+Note: Start Download only acts on the files selected in the current tab. To download files in a different tab, please
+wait for the current downloads to complete.
+
+If a file you've selected for downloading already exists in the selected
+download directory, and if the MD5 information for the file is available (either from and accession search or
+included in the loaded Report file) the Downloader will compute the MD5 checksum of the existing file
+ and compare it against the target MD5. If the MD5 is verified, the Downloader will 
+  mark the file as successfully downloaded and move on.
 
 ### Requirements for the File Report
 The Report file should contain at least one of the following file

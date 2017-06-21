@@ -48,7 +48,7 @@ public class Main extends Application {
             firstPaneController.setResultsController(secondPaneController);
             secondPaneController.setSearchController(firstPaneController);
 
-            primaryStage.setTitle("ENA File Downloader");
+            primaryStage.setTitle("ENA FTP Downloader");
             primaryStage.setScene(searchScene);
             primaryStage.setResizable(false);
             primaryStage.getIcons().add(new Image("http://www.ebi.ac.uk/web_guidelines/images/logos/ena/ena_100x100.png"));

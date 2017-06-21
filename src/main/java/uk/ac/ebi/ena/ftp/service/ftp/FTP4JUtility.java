@@ -119,13 +119,14 @@ public class FTP4JUtility {
                                         }
                                         return;
                                     }
-//                                    remoteFile.cancel(true);
+                                    log.debug("md5 matched");
+                                }
+                                if (remoteFile.getSize() == 0) {
+                                    remoteFile.setSize(downloadFile.length());
                                 }
                                 remoteFile.updateProgress(1);
-                                remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
-                                log.debug("md5 matched");
                                 remoteFile.setDownloaded(true);
-
+                                remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                             } catch (IOException e) {
                                 log.error("Error", e);
                             }

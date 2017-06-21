@@ -48,6 +48,9 @@ public class DownloadService {
                 }
             } else {
                 log.debug("Existing file md5 matched");
+                if (remoteFile.getSize() == 0) {
+                    remoteFile.setSize(downloadFile.length());
+                }
                 return true;
             }
 //            } catch (IOException e) {

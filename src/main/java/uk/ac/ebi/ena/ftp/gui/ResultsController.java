@@ -2,13 +2,14 @@ package uk.ac.ebi.ena.ftp.gui;
 
 import javafx.application.Platform;
 import javafx.beans.Observable;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -23,7 +24,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Pair;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +34,9 @@ import uk.ac.ebi.ena.ftp.service.WarehouseQuery;
 import uk.ac.ebi.ena.ftp.utils.Utils;
 
 import java.io.File;
-import java.io.FileReader;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -181,14 +181,7 @@ public class ResultsController implements Initializable {
                 });
         downloadColumn.setEditable(true);
 
-        TableColumn<RemoteFile, String> sizeColumn = (TableColumn<RemoteFile, String>) columns.get(2);
-
-        sizeColumn.setCellValueFactory(
-                file -> {
-                    SimpleStringProperty property = new SimpleStringProperty();
-                    property.setValue(file.getValue().getSize() > 0 ? Utils.getHumanReadableSize(file.getValue().getSize()) : "N/A");
-                    return property;
-                });
+        setupSizeColumn(tableView);
 
         final ObservableList<RemoteFile> finalTableFiles = tableFiles;// copying to final var use inside inner class
         tableFiles.addListener(new ListChangeListener<RemoteFile>() {
@@ -200,25 +193,45 @@ public class ResultsController implements Initializable {
         tableView.setItems(tableFiles);
         addProgressColumn(tableView);
         addIconColumn(tableView);
+
+        tableView.setOnScroll(new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                tableView.refresh();
+            }
+
+        });
+    }
+
+    private void setupSizeColumn(TableView<RemoteFile> tableView) {
+        TableColumn<RemoteFile, String> sizeColumn = (TableColumn<RemoteFile, String>) tableView.getColumns().get(2);
+        PropertyValueFactory<RemoteFile, String> size = new PropertyValueFactory<>("hrSize");
+        sizeColumn.setCellValueFactory(size);
     }
 
     private void addIconColumn(TableView<RemoteFile> tableView) {
         ObservableList columns = tableView.getColumns();
 
         if (columns.size() < 5) {
-            TableColumn<RemoteFile, String> progressCol = new TableColumn<>("MD5 OK");
-            progressCol.setPrefWidth(60);
-            progressCol.setResizable(false);
+            TableColumn<RemoteFile, String> iconCol = new TableColumn<>("MD5 OK");
+            iconCol.setPrefWidth(60);
+            iconCol.setResizable(false);
             PropertyValueFactory<RemoteFile, String> progress = new PropertyValueFactory<>("successIcon");
-            progressCol.setCellValueFactory(progress);
-            progressCol.setCellFactory(new Callback<TableColumn<RemoteFile, String>, TableCell<RemoteFile, String>>() {
+//            iconCol.setCellValueFactory(
+//                    file -> {
+//                SimpleStringProperty property = new SimpleStringProperty();
+//                property.setValue(file.getValue().getMd5() != null ? "" : "N/A");
+//                return property;
+//            });
+            iconCol.setCellValueFactory(progress);
+            iconCol.setCellFactory(new Callback<TableColumn<RemoteFile, String>, TableCell<RemoteFile, String>>() {
                 @Override
                 public TableCell<RemoteFile, String> call(TableColumn<RemoteFile, String> param) {
                     TableCell<RemoteFile, String> cell = new MD5TableCell();
                     return cell;
                 }
             });
-            columns.add(4, progressCol);
+            columns.add(4, iconCol);
         }
     }
 
@@ -412,118 +425,6 @@ public class ResultsController implements Initializable {
         }
     }
 
-    private Map<String, List<RemoteFile>> parseReportFile(File reportFile) {
-        Map<String, List<RemoteFile>> map = new HashMap<>();
-        int fastqIndex = -1;
-        int fastqBytesIndex = -1;
-        int fastqMd5Index = -1;
-
-        int submittedIndex = -1;
-        int submittedBytesIndex = -1;
-        int submittedMd5Index = -1;
-
-        int sraIndex = -1;
-        int sraBytesIndex = -1;
-        int sraMd5Index = -1;
-
-        try {
-            List<String> lines = IOUtils.readLines(new FileReader(reportFile));
-            String[] headersSplit = StringUtils.splitPreserveAllTokens(lines.get(0), "\t");
-            List<String> headers = Arrays.asList(headersSplit);
-            fastqIndex = headers.indexOf("fastq_ftp");
-            if (fastqIndex > -1) {
-                map.put("fastq", new ArrayList<RemoteFile>());
-                fastqBytesIndex = headers.indexOf("fastq_bytes");
-                fastqMd5Index = headers.indexOf("fastq_md5");
-                ;
-            }
-
-            submittedIndex = headers.indexOf("submitted_ftp");
-            if (submittedIndex > -1) {
-                map.put("submitted", new ArrayList<RemoteFile>());
-                submittedBytesIndex = headers.indexOf("submitted_bytes");
-                submittedMd5Index = headers.indexOf("submitted_md5");
-                ;
-            }
-
-            sraIndex = headers.indexOf("sra_ftp");
-            if (sraIndex > -1) {
-                map.put("sra", new ArrayList<RemoteFile>());
-                sraBytesIndex = headers.indexOf("sra_bytes");
-                sraMd5Index = headers.indexOf("sra_md5");
-                ;
-            }
-
-            if (!map.isEmpty()) {
-                for (int r = 1; r < lines.size(); r++) {
-                    String[] fields = StringUtils.splitPreserveAllTokens(lines.get(r), "\t");
-                    if (fastqIndex > -1) {
-                        String fastqFilesStr = fields[fastqIndex];
-                        if (StringUtils.isNotBlank(fastqFilesStr)) {
-                            String[] files = StringUtils.split(fastqFilesStr, ";");
-                            String[] bytes = null;
-                            String[] md5s = null;
-                            for (int f = 0; f < files.length; f++) {
-                                String fastqFile = files[f];
-                                if (fastqBytesIndex > -1) {
-                                    bytes = StringUtils.split(fields[fastqBytesIndex], ";");
-                                }
-                                if (fastqMd5Index > -1) {
-                                    md5s = StringUtils.split(fields[fastqMd5Index], ";");
-                                }
-                                map.get("fastq").add(new RemoteFile(StringUtils.substringAfterLast(fastqFile, "/"),
-                                        fastqBytesIndex > -1 ? Long.parseLong(bytes[f]) : 0, fastqFile,
-                                        fastqMd5Index > -1 ? md5s[f] : null));
-                            }
-                        }
-                    }
-                    if (submittedIndex > -1) {
-                        String submittedFilesStr = fields[submittedIndex];
-                        if (StringUtils.isNotBlank(submittedFilesStr)) {
-                            String[] files = StringUtils.split(submittedFilesStr, ";");
-                            String[] bytes = null;
-                            String[] md5s = null;
-                            for (int f = 0; f < files.length; f++) {
-                                String submittedFile = files[f];
-                                if (submittedBytesIndex > -1) {
-                                    bytes = StringUtils.split(fields[submittedBytesIndex], ";");
-                                }
-                                if (submittedMd5Index > -1) {
-                                    md5s = StringUtils.split(fields[submittedMd5Index], ";");
-                                }
-                                map.get("submitted").add(new RemoteFile(StringUtils.substringAfterLast(submittedFile, "/"),
-                                        submittedBytesIndex > -1 ? Long.parseLong(bytes[f]) : 0, submittedFile,
-                                        submittedMd5Index > -1 ? md5s[f] : null));
-                            }
-                        }
-                        if (sraIndex > -1) {
-                            String sraFilesStr = fields[sraIndex];
-                            if (StringUtils.isNotBlank(sraFilesStr)) {
-                                String[] files = StringUtils.split(sraFilesStr, ";");
-                                String[] bytes = null;
-                                String[] md5s = null;
-                                for (int f = 0; f < files.length; f++) {
-                                    String sraFile = files[f];
-                                    if (sraBytesIndex > -1) {
-                                        bytes = StringUtils.split(fields[sraBytesIndex], ";");
-                                    }
-                                    if (sraMd5Index > -1) {
-                                        md5s = StringUtils.split(fields[sraMd5Index], ";");
-                                    }
-                                    map.get("sra").add(new RemoteFile(StringUtils.substringAfterLast(sraFile, "/"),
-                                            sraBytesIndex > -1 ? Long.parseLong(bytes[f]) : 0, sraFile,
-                                            sraMd5Index > -1 ? md5s[f] : null));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error", e);
-        }
-        return map;
-    }
 
     private void setupSelectAllBtn() {
         selectAllBtn.setOnAction(new SelectAllHandler());
@@ -607,13 +508,16 @@ public class ResultsController implements Initializable {
 //            showLoginPopup();
             startDownloadBtn.setDisable(true);
             stopDownloadBtn.setDisable(false);
+            CountDownLatch latch = new CountDownLatch(notDoneFiles.size());
             executor = Executors.newSingleThreadExecutor();
             downloadTasks = new ArrayList<>();
             for (final RemoteFile file : notDoneFiles) {
                 if (file.getTransferred() == 0) {
                     file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
                 }
-                Task task = new DownloadTask(file);
+                Task task = new DownloadTask(file, latch);
+                task.setOnFailed(new TaskFailedHandler());
+                task.setOnSucceeded(new TaskSucceedHandler(file));
                 Future<?> submit = executor.submit(task);
                 downloadTasks.add(task);
                 if (downloadTasks.size() == notDoneFiles.size()) {
@@ -634,6 +538,32 @@ public class ResultsController implements Initializable {
                     }.start();
                 }
             }
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        log.info("latch waiting");
+                        latch.await();
+                        int count = 0;
+                        for (int r = 0; r < notDoneFiles.size(); r++) {
+                            RemoteFile file = notDoneFiles.get(r);
+                            log.info(file.getName() + " " + count);
+                            if (file.isDownloaded()) {
+                                count++;
+                            }
+                        }
+                        if (count == notDoneFiles.size()) {
+                            int finalCount = count;
+                            Platform.runLater(() -> {
+                                selectionLabel.setText(finalCount + (finalCount == 1 ? " file has " : " files have ") + "been successfully downloaded.");
+                            });
+                        }
+
+                    } catch (InterruptedException E) {
+                        // handle
+                    }
+                }
+            }.start();
         }
     }
 
@@ -688,6 +618,40 @@ public class ResultsController implements Initializable {
     }
 
 
+    private class TaskFailedHandler implements EventHandler<javafx.concurrent.WorkerStateEvent> {
+        @Override
+        public void handle(WorkerStateEvent event) {
+            startDownloadBtn.setDisable(false);
+            stopDownloadBtn.setDisable(true);
+            log.debug("Stopping downloads");
+            selectionLabel.setText("Downloading stopped due to an error.");
+            if (executor != null) {
+                List<Runnable> runnables = executor.shutdownNow();
+            }
+            for (int r = 0; r < notDoneFiles.size(); r++) {
+                RemoteFile file = notDoneFiles.get(r);
+                if (file.getProgress() == ProgressIndicator.INDETERMINATE_PROGRESS) {
+                    file.updateProgress(0);
+                }
+                if (!file.isDownloaded()) {
+                    downloadTasks.get(r).cancel();
+                }
+            }
+        }
+    }
+
+    private class TaskSucceedHandler implements EventHandler<WorkerStateEvent> {
+        private RemoteFile file;
+
+        public TaskSucceedHandler(RemoteFile file) {
+            this.file = file;
+        }
+
+        @Override
+        public void handle(WorkerStateEvent event) {
+            selectionLabel.setText(file.getName() + " downloaded.");
+        }
+    }
 }
 
 

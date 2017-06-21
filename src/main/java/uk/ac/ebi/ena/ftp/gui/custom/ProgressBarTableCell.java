@@ -12,6 +12,7 @@ import javafx.util.Callback;
 public class ProgressBarTableCell<S> extends TableCell<S, Double> {
     private final ProgressBar progressBar;
     private ObservableValue observable;
+
     public ProgressBarTableCell() {
         this.getStyleClass().add("progress-bar-table-cell");
         this.progressBar = new ProgressBar(0.0);

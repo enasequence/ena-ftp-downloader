@@ -2,6 +2,8 @@ package uk.ac.ebi.ena.ftp.model;
 
 import javafx.application.Platform;
 import javafx.beans.property.*;
+import org.apache.commons.lang3.StringUtils;
+import uk.ac.ebi.ena.ftp.utils.Utils;
 
 /**
  * Created by suranj on 27/05/2016.
@@ -11,6 +13,8 @@ public class RemoteFile {
     private SimpleBooleanProperty download;
     private String name;
     private long size, transferred = 0;
+    private StringProperty hrSize;
+
     private String path;
     private String saveLocation;
     private String md5;
@@ -24,10 +28,19 @@ public class RemoteFile {
         this.download = new SimpleBooleanProperty(false);
         this.name = name;
         this.size = size;
+        if (size == 0) {
+            this.hrSize = new SimpleStringProperty("N/A");
+        } else {
+            this.hrSize = new SimpleStringProperty(Utils.getHumanReadableSize(size));
+        }
         this.path = path;
         this.md5 = md5;
+        if (StringUtils.isBlank(md5)) {
+            this.successIcon = new SimpleStringProperty("N/A");
+        } else {
+            this.successIcon = new SimpleStringProperty();
+        }
         this.progress = new SimpleDoubleProperty(0);
-        this.successIcon = new SimpleStringProperty();
     }
 
     public SimpleBooleanProperty isDownload() {
@@ -52,6 +65,7 @@ public class RemoteFile {
 
     public void setSize(long size) {
         this.size = size;
+        setHrSize(Utils.getHumanReadableSize(size));
     }
 
     public String getPath() {
@@ -66,13 +80,6 @@ public class RemoteFile {
         return download;
     }
 
-    /*@Override
-    protected Void call() throws Exception {
-
-    }
-
-
-*/
     public void updateProgress(final double percentCompleted) {
         Platform.runLater(new Runnable() {
             @Override
@@ -140,5 +147,35 @@ public class RemoteFile {
 
     public void setLocalPath(String localPath) {
         this.localPath = localPath;
+    }
+
+
+    public String getHrSize() {
+        return hrSize.get();
+    }
+
+    public void setHrSize(String hrSize) {
+        this.hrSize.set(hrSize);
+    }
+
+    public StringProperty hrSizeProperty() {
+        return hrSize;
+    }
+
+    @Override
+    public String toString() {
+        return "RemoteFile{" +
+                "download=" + download +
+                ", name='" + name + '\'' +
+                ", size=" + size +
+                ", transferred=" + transferred +
+                ", path='" + path + '\'' +
+                ", saveLocation='" + saveLocation + '\'' +
+                ", md5='" + md5 + '\'' +
+                ", progress=" + progress +
+                ", downloaded=" + downloaded +
+                ", successIcon=" + successIcon +
+                ", localPath='" + localPath + '\'' +
+                '}';
     }
 }
