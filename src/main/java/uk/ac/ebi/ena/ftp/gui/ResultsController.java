@@ -92,6 +92,7 @@ public class ResultsController implements Initializable {
 
     private void setupTables(Map<String, List<RemoteFile>> fileListMap) {
 
+        boolean tabHasFiles = false;
         List<RemoteFile> queryFastq = fileListMap.get("fastq");
         if (queryFastq != null && queryFastq.size() > 0) {
             fastqFiles = FXCollections.observableArrayList(new Callback<RemoteFile, Observable[]>() {
@@ -103,6 +104,8 @@ public class ResultsController implements Initializable {
             fastqFiles.addAll(queryFastq);
             setupTable(fastqFileTable, fastqFiles);
             fastqTab.setDisable(false);
+            tabHasFiles = true;
+            fileTabPane.getSelectionModel().select(fastqTab);
         } else {
             fastqTab.setDisable(true);
         }
@@ -117,6 +120,10 @@ public class ResultsController implements Initializable {
             submittedFiles.addAll(querySubmitted);
             setupTable(submittedFileTable, submittedFiles);
             submittedTab.setDisable(false);
+            if (!tabHasFiles) {
+                tabHasFiles = true;
+                fileTabPane.getSelectionModel().select(submittedTab);
+            }
         } else {
             submittedTab.setDisable(true);
         }
@@ -131,6 +138,10 @@ public class ResultsController implements Initializable {
             sraFiles.addAll(querySra);
             setupTable(sraFileTable, sraFiles);
             sraTab.setDisable(false);
+            if (!tabHasFiles) {
+                tabHasFiles = true;
+                fileTabPane.getSelectionModel().select(sraTab);
+            }
         } else {
             sraTab.setDisable(true);
         }
