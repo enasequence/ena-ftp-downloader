@@ -38,7 +38,7 @@ public class WarehouseQuery {
             return new ArrayList<>();
 
         } catch (Exception e) {
-            log.error("Error with warehouse query", e);
+            log.warn("Error with warehouse query", e);
         }
         return new ArrayList<>();
     }
