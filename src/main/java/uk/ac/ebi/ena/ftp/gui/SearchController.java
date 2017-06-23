@@ -1,6 +1,7 @@
 package uk.ac.ebi.ena.ftp.gui;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -12,6 +13,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -20,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
+import uk.ac.ebi.ena.ftp.service.WarehouseQuery;
 
 import java.io.File;
 import java.io.FileReader;
@@ -28,7 +32,7 @@ import java.util.*;
 
 public class SearchController implements Initializable {
 
-    public static final String ERA_ID_PATTERN = "[ESDR]R[ASPXRZ][0-9]{6,}";
+    public static final String ERA_ID_PATTERN = "([ESDR]R[ASPXRZ][0-9]{6,}|SAMEA[0-9]{6,}|SAM[ND][0-9]{8,})";
     private final static Logger log = LoggerFactory.getLogger(SearchController.class);
     @FXML
     private TextField accession, report;
@@ -43,38 +47,49 @@ public class SearchController implements Initializable {
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
         log.debug("initialize");
 
-        setupAccessionBtn();
+        accessionBtn.setOnAction(new AcccessionSearchButtonHandler());
+        accession.setOnKeyPressed(new AcccessionSearchEnterHandler());
         setupReportBtn();
     }
 
-    private void setupAccessionBtn() {
-        accessionBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                /*Platform.runLater(new Runnable() {
-                    @Override public void run() {
-                        accessionBtn.setText("Loading...");
-                        accessionBtn.setGraphic(getLoadingImage());
-                        accessionBtn.setDisable(true);
+    private void handleAccessionSearch(Event actionEvent) {
+        this.fileErrorLabel.setText("");
+        String acc = accession.getText();
+        if (StringUtils.isBlank(acc)) {
+            showError("Please enter accession.");
+            return;
+        }
+        if (!acc.matches(ERA_ID_PATTERN)) {
+            showError("Please enter a valid accession.");
+            return;
+        }
 
-                    }
-                });*/
-                String acc = accession.getText();
-                if (StringUtils.isBlank(acc)) {
-                    showError("Please enter accession.");
-                    return;
-                }
-                if (!acc.matches(ERA_ID_PATTERN)) {
-                    showError("Please enter a valid accession.");
-                    return;
-                }
+        Map<String, List<RemoteFile>> stringListMap = doWarehouseSearch(acc);
+        if (stringListMap.size() == 0) {
+            showError("No downloadable files were found for the accession " + acc);
+            return;
+        }
+        Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+        resultsController.renderResults(stringListMap);
+        primaryStage.setScene(resultsScene);
+    }
 
-                Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-                resultsController.renderResults(new Search(acc));
-                primaryStage.setScene(resultsScene);
-
-            }
-        });
+    private Map<String, List<RemoteFile>> doWarehouseSearch(String acc) {
+        Map<String, List<RemoteFile>> map = new HashMap<>();
+        WarehouseQuery warehouseQuery = new WarehouseQuery();
+        List<RemoteFile> queryFastq = warehouseQuery.query(acc, "fastq");
+        if (queryFastq.size() > 0) {
+            map.put("fastq", queryFastq);
+        }
+        List<RemoteFile> querySubmitted = warehouseQuery.query(acc, "submitted");
+        if (querySubmitted.size() > 0) {
+            map.put("submitted", querySubmitted);
+        }
+        List<RemoteFile> querySra = warehouseQuery.query(acc, "sra");
+        if (querySra.size() > 0) {
+            map.put("sra", querySra);
+        }
+        return map;
     }
 
     private void setupReportBtn() {
@@ -94,7 +109,7 @@ public class SearchController implements Initializable {
                         return;
                     }
                     Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-                    resultsController.renderResults(new Search(fileListMap));
+                    resultsController.renderResults(fileListMap);
                     primaryStage.setScene(resultsScene);
                 }
             }
@@ -250,6 +265,30 @@ public class SearchController implements Initializable {
 //        reportBtn.setGraphic(null);
         report.clear();
         fileErrorLabel.setText("");
+    }
+
+    class AcccessionSearchButtonHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+                /*Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        accessionBtn.setText("Loading...");
+                        accessionBtn.setGraphic(getLoadingImage());
+                        accessionBtn.setDisable(true);
+
+                    }
+                });*/
+            handleAccessionSearch(actionEvent);
+        }
+    }
+
+    class AcccessionSearchEnterHandler implements EventHandler<KeyEvent> {
+        @Override
+        public void handle(KeyEvent actionEvent) {
+            if (actionEvent.getCode() == KeyCode.ENTER) {
+                handleAccessionSearch(actionEvent);
+            }
+        }
     }
 }
 

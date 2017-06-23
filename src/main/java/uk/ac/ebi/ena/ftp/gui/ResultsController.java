@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.ftp.gui.custom.MD5TableCell;
 import uk.ac.ebi.ena.ftp.gui.custom.ProgressBarTableCell;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
-import uk.ac.ebi.ena.ftp.service.WarehouseQuery;
 import uk.ac.ebi.ena.ftp.utils.Utils;
 
 import java.io.File;
@@ -83,24 +82,18 @@ public class ResultsController implements Initializable {
 
     }
 
-    public void renderResults(Search search) {
+    public void renderResults(Map<String, List<RemoteFile>> results) {
         setupDownloadDirBtn();
-        if (StringUtils.isNotBlank(search.getAccession())) {
-            setupTables(search.getAccession());
-        } else {
-            setupTables(search.getReportFileMap());
-        }
+        setupTables(results);
         setupSelectAllBtn();
         setupBackBtn();
         setupDownloadButtons();
     }
 
+    private void setupTables(Map<String, List<RemoteFile>> fileListMap) {
 
-    private void setupTables(String acc) {
-        WarehouseQuery warehouseQuery = new WarehouseQuery();
-
-        List<RemoteFile> queryFastq = warehouseQuery.query(acc, "fastq");
-        if (queryFastq.size() > 0) {
+        List<RemoteFile> queryFastq = fileListMap.get("fastq");
+        if (queryFastq != null && queryFastq.size() > 0) {
             fastqFiles = FXCollections.observableArrayList(new Callback<RemoteFile, Observable[]>() {
                 @Override
                 public Observable[] call(RemoteFile param) {
@@ -113,9 +106,8 @@ public class ResultsController implements Initializable {
         } else {
             fastqTab.setDisable(true);
         }
-
-        List<RemoteFile> querySubmitted = warehouseQuery.query(acc, "submitted");
-        if (querySubmitted.size() > 0) {
+        List<RemoteFile> querySubmitted = fileListMap.get("submitted");
+        if (querySubmitted != null && querySubmitted.size() > 0) {
             submittedFiles = FXCollections.observableArrayList(new Callback<RemoteFile, Observable[]>() {
                 @Override
                 public Observable[] call(RemoteFile param) {
@@ -128,9 +120,8 @@ public class ResultsController implements Initializable {
         } else {
             submittedTab.setDisable(true);
         }
-
-        List<RemoteFile> querySra = warehouseQuery.query(acc, "sra");
-        if (querySra.size() > 0) {
+        List<RemoteFile> querySra = fileListMap.get("sra");
+        if (querySra != null && querySra.size() > 0) {
             sraFiles = FXCollections.observableArrayList(new Callback<RemoteFile, Observable[]>() {
                 @Override
                 public Observable[] call(RemoteFile param) {
@@ -202,6 +193,7 @@ public class ResultsController implements Initializable {
 
         });
     }
+
 
     private void setupSizeColumn(TableView<RemoteFile> tableView) {
         TableColumn<RemoteFile, String> sizeColumn = (TableColumn<RemoteFile, String>) tableView.getColumns().get(2);
@@ -365,52 +357,6 @@ public class ResultsController implements Initializable {
                 updateSelectionMessage();
             }
         });
-    }
-
-    private void setupTables(Map<String, List<RemoteFile>> fileListMap) {
-
-        List<RemoteFile> queryFastq = fileListMap.get("fastq");
-        if (queryFastq.size() > 0) {
-            fastqFiles = FXCollections.observableArrayList(new Callback<RemoteFile, Observable[]>() {
-                @Override
-                public Observable[] call(RemoteFile param) {
-                    return new Observable[]{param.downloadProperty()};
-                }
-            });
-            fastqFiles.addAll(queryFastq);
-            setupTable(fastqFileTable, fastqFiles);
-            fastqTab.setDisable(false);
-        } else {
-            fastqTab.setDisable(true);
-        }
-        List<RemoteFile> querySubmitted = fileListMap.get("submitted");
-        if (querySubmitted.size() > 0) {
-            submittedFiles = FXCollections.observableArrayList(new Callback<RemoteFile, Observable[]>() {
-                @Override
-                public Observable[] call(RemoteFile param) {
-                    return new Observable[]{param.downloadProperty()};
-                }
-            });
-            submittedFiles.addAll(querySubmitted);
-            setupTable(submittedFileTable, submittedFiles);
-            submittedTab.setDisable(false);
-        } else {
-            submittedTab.setDisable(true);
-        }
-        List<RemoteFile> querySra = fileListMap.get("sra");
-        if (querySra.size() > 0) {
-            sraFiles = FXCollections.observableArrayList(new Callback<RemoteFile, Observable[]>() {
-                @Override
-                public Observable[] call(RemoteFile param) {
-                    return new Observable[]{param.downloadProperty()};
-                }
-            });
-            sraFiles.addAll(querySra);
-            setupTable(sraFileTable, sraFiles);
-            sraTab.setDisable(false);
-        } else {
-            sraTab.setDisable(true);
-        }
     }
 
 

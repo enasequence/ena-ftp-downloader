@@ -4,6 +4,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.ena.ftp.gui.custom.MD5TableCell;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 import uk.ac.ebi.ena.ftp.service.ftp.CommonsFTPUtility;
 import uk.ac.ebi.ena.ftp.service.ftp.FTP4JUtility;
@@ -48,6 +49,7 @@ public class DownloadService {
                 }
             } else {
                 log.debug("Existing file md5 matched");
+                remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                 if (remoteFile.getSize() == 0) {
                     remoteFile.setSize(downloadFile.length());
                 }

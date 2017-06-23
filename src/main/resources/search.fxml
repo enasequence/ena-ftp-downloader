@@ -11,7 +11,7 @@
         <URL value="@gui.css"/>
     </stylesheets>
     <children>
-        <HBox fx:id="accessionHBox" alignment="CENTER_LEFT" layoutX="26.0" layoutY="20.0" prefHeight="32.0"
+        <HBox fx:id="accessionHBox" spacing="5" alignment="CENTER_LEFT" layoutX="26.0" layoutY="20.0" prefHeight="32.0"
               prefWidth="600.0">
             <children>
                 <Label fx:id="accessionLabel" prefHeight="21.0" prefWidth="100.0" text="Accession:"/>
@@ -32,7 +32,7 @@
                 <Label text="OR"/>
             </children>
         </HBox>
-        <HBox fx:id="reportHBox" alignment="CENTER_LEFT" layoutX="26.0" layoutY="69.0" prefHeight="32.0"
+        <HBox fx:id="reportHBox" spacing="5" alignment="CENTER_LEFT" layoutX="26.0" layoutY="69.0" prefHeight="32.0"
               prefWidth="684.0">
             <children>
                 <Label fx:id="reportLabel" layoutX="21.0" layoutY="46.0" prefHeight="21.0" prefWidth="100.0"

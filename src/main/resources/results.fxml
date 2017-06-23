@@ -8,13 +8,15 @@
 <?import javafx.scene.text.Font?>
 <?import uk.ac.ebi.ena.ftp.gui.custom.*?>
 <?import java.net.URL?>
-<VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+<VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+      minWidth="-Infinity"
       prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.111"
       fx:controller="uk.ac.ebi.ena.ftp.gui.ResultsController">
     <children>
         <AnchorPane prefWidth="800.0">
             <children>
-                <HBox fx:id="downloadHBox" alignment="CENTER_LEFT" layoutX="26.0" layoutY="20.0" prefHeight="32.0"
+                <HBox fx:id="downloadHBox" spacing="5" alignment="CENTER_LEFT" layoutX="26.0" layoutY="20.0"
+                      prefHeight="32.0"
                       prefWidth="710.0">
                     <children>
                         <Label fx:id="localDownloadDirLabel" layoutX="21.0" layoutY="46.0" prefHeight="21.0"
@@ -24,7 +26,7 @@
                                 <Tooltip text="Select location to save files"/>
                             </tooltip>
                         </TextField>
-                        <Button fx:id="localDownloadDirBtn" mnemonicParsing="false" text="..."/>
+                        <Button fx:id="localDownloadDirBtn" mnemonicParsing="false" text="Browse"/>
                     </children>
                 </HBox>
             </children>
