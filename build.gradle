@@ -1,5 +1,5 @@
 group 'uk.ac.ebi.ena'
-version 'v1.0-beta.1'
+version 'v1.0'
 
 apply plugin: 'java'
 apply plugin: 'idea'
