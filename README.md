@@ -31,22 +31,27 @@ java -jar [path-to-file]/ena-ftp-downloader-[version].jar
 # Usage
 
 ## Search Window
+
 1. Accession search
+
 Enter a valid accession into the Accession field and click Search. The Results window will be loaded with the available
 files in Fastq, Submitted or SRA types.
 
 2. Load a pre-generated File Report file.
+
 Click the Load Report File button to select a previously generated report file. The file will be parsed and the available
 file data will be listed in the Results window. 
 
 ## Results Window
 
 1. Local Download Directory
+
 Select a location on your file system which you have write access to.
 The Downloader will calculate the total size of the files you select for downloading
-and check if the selected file system location has enough space.
+and check if the selected file system location has enough free space.
 
 2. Remote Files
+
 The available files are displayed separately by type.
 * FASTQ
 * Submitted
@@ -62,23 +67,33 @@ Note: Start Download only acts on the files selected in the current tab. To down
 wait for the current downloads to complete.
 
 If a file you've selected for downloading already exists in the selected
-download directory, and if the MD5 information for the file is available (either from and accession search or
+download directory, and if the MD5 information for the file is available (either from an accession search or
 included in the loaded Report file) the Downloader will compute the MD5 checksum of the existing file
  and compare it against the target MD5. If the MD5 is verified, the Downloader will 
   mark the file as successfully downloaded and move on.
 
 ### Requirements for the File Report
-The Report file should contain at least one of the following file
+
+1. The file is a plain text file with the contents in Tab Separated values fomat
+
+2. The file must contain the column headers
+
+3. The Report file should contain at least one of the following file
 URL columns.
 
 * fastq_ftp
 * submitted_ftp
 * sra_ftp
 
-Additionally, we recommend that when you generate the report file you include the support columns for whichever file
+4. Additionally, we recommend that when you generate the report file you include the support columns for whichever file
 type/s you want to download.
 
-i.e.
+* *_bytes : The length of the file in bytes. Allows the Downloader to track how much space is required for the download and to show the download
+progress for each file.
+
+* *_md5 : The MD5 checksum of the file. Allows the Downloader to calculate the MD5 checksum of the file after downloading it and compare it to the original MD5 to verify that the file has been downloaded without errors.
+
+e.g.
 
 * fastq_bytes
 * fastq_md5
@@ -87,13 +102,7 @@ i.e.
 * sra_bytes
 * sra_md5
 
-The *_bytes column data allows the Downloader to track how much space is required for the download and to show the download
-progress for each file.
-
-The *_md5 column data allows the Downloader to calculate the MD5 checksum of the file after downloading it and compare it
-to the original MD5 to verify that the file has been downloaded without errors.
-
-The order of the columns in the report file is not important.
+5. The order of the columns in the report file is insignificant.
 
 # Error Handling
 1. In case of a failed/partial download, the Downloader will attempt to clean up any remnants. It is recommended that
