@@ -46,7 +46,8 @@ file data will be listed in the Results window.
 
 1. Local Download Directory
 
-Select a location on your file system which you have write access to.
+Select a location on your file system which you have write access to. You can edit this field and manually enter a path as well.
+If the entered path does not exist, the Downloader will attempt to create the directory for you.
 The Downloader will calculate the total size of the files you select for downloading
 and check if the selected file system location has enough free space.
 
@@ -107,3 +108,5 @@ e.g.
 # Error Handling
 1. In case of a failed/partial download, the Downloader will attempt to clean up any remnants. It is recommended that
 you ensure the file download destination is cleaned of any partial files before you re-attempt downloads.
+
+

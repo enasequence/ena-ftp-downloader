@@ -216,21 +216,9 @@ public class ResultsController implements Initializable {
             TableColumn<RemoteFile, String> iconCol = new TableColumn<>("MD5 OK");
             iconCol.setPrefWidth(60);
             iconCol.setResizable(false);
-            PropertyValueFactory<RemoteFile, String> progress = new PropertyValueFactory<>("successIcon");
-//            iconCol.setCellValueFactory(
-//                    file -> {
-//                SimpleStringProperty property = new SimpleStringProperty();
-//                property.setValue(file.getValue().getMd5() != null ? "" : "N/A");
-//                return property;
-//            });
-            iconCol.setCellValueFactory(progress);
-            iconCol.setCellFactory(new Callback<TableColumn<RemoteFile, String>, TableCell<RemoteFile, String>>() {
-                @Override
-                public TableCell<RemoteFile, String> call(TableColumn<RemoteFile, String> param) {
-                    TableCell<RemoteFile, String> cell = new MD5TableCell();
-                    return cell;
-                }
-            });
+            PropertyValueFactory<RemoteFile, String> successIcon = new PropertyValueFactory<>("successIcon");
+            iconCol.setCellValueFactory(successIcon);
+            iconCol.setCellFactory(MD5TableCell.<RemoteFile>forTableColumn());
             columns.add(4, iconCol);
         }
     }
@@ -445,6 +433,8 @@ public class ResultsController implements Initializable {
         backBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                selectAllBtn.setOnAction(new SelectAllHandler());
+                selectAllBtn.setText("Select All");
                 selectionLabel.setText("");
                 searchController.clearFields();
                 Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
@@ -461,9 +451,17 @@ public class ResultsController implements Initializable {
                 return;
             }
             File downloadDir = new File(localDownloadDir.getText());
+            try {
+                if (!downloadDir.exists()) {
+                    downloadDir.mkdirs();
+                }
+            } catch (Exception e) {
+                selectionLabel.setText("The selected folder does not exist, and could not be created.");
+                return;
+            }
             log.debug("downloadDir.isDirectory():" + downloadDir.isDirectory());
             log.debug("downloadDir.canWrite():" + downloadDir.canWrite());
-            if (!downloadDir.isDirectory()/* || !downloadDir.canWrite()*/) {
+            if (!downloadDir.isDirectory() || !downloadDir.canWrite()) {
                 selectionLabel.setText("Unable to save to selected download location.");
                 return;
             }
