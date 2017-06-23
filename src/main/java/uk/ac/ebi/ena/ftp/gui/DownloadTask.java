@@ -1,5 +1,6 @@
 package uk.ac.ebi.ena.ftp.gui;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +50,13 @@ public class DownloadTask extends Task<Void> {
                 }
                 file.updateProgress(1);
                 log.debug("calling success:" + file.getName());
-                file.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                 file.setDownloaded(true);
-                succeeded();
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        succeeded();
+                    }
+                });
             } catch (Exception e) {
                 log.error("Failed download", e);
                 throw e;

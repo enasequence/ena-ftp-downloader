@@ -126,7 +126,6 @@ public class FTP4JUtility {
                                 remoteFile.updateProgress(1);
                                 remoteFile.setDownloaded(true);
                                 log.debug("calling success after end:" + remoteFile.getName());
-                                remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                             } catch (IOException e) {
                                 log.error("Error", e);
                             }

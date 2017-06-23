@@ -39,6 +39,15 @@ public class MD5TableCell<RemoteFile> extends TableCell<RemoteFile, String> {
         }
     }
 
+    public static <RemoteFile> Callback<TableColumn<RemoteFile, String>, TableCell<RemoteFile, String>> forTableColumn() {
+        return new Callback<TableColumn<RemoteFile, String>, TableCell<RemoteFile, String>>() {
+            @Override
+            public TableCell<RemoteFile, String> call(TableColumn<RemoteFile, String> param) {
+                return new MD5TableCell<RemoteFile>();
+            }
+        };
+    }
+
     @Override
     protected void updateItem(String item, boolean empty) {
         super.updateItem(item, empty);
@@ -60,14 +69,5 @@ public class MD5TableCell<RemoteFile> extends TableCell<RemoteFile, String> {
                 }
             });
         }
-    }
-
-    public static <RemoteFile> Callback<TableColumn<RemoteFile, String>, TableCell<RemoteFile, String>> forTableColumn() {
-        return new Callback<TableColumn<RemoteFile, String>, TableCell<RemoteFile, String>>() {
-            @Override
-            public TableCell<RemoteFile, String> call(TableColumn<RemoteFile, String> param) {
-                return new MD5TableCell<RemoteFile>();
-            }
-        };
     }
 }
