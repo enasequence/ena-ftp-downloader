@@ -11,7 +11,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Installation
 
-Download the release .zip file and extract it to a location of your choice. The archive contains an executable jar which contains all dependencies.
+Download the latest release (.zip file) from the Releases section and extract it to a location of your choice. The archive contains an executable jar which contains all dependencies.
 
 # Dependencies
 
