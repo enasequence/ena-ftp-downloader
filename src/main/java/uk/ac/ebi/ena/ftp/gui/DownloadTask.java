@@ -48,6 +48,7 @@ public class DownloadTask extends Task<Void> {
                     }
                 }
                 file.updateProgress(1);
+                log.debug("calling success:" + file.getName());
                 file.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                 file.setDownloaded(true);
                 succeeded();

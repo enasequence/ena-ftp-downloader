@@ -57,10 +57,6 @@ public class FTP4JUtility {
         log.debug("connected:" + StringUtils.join(connect));
         ftpClient.login(username, password);
         log.debug("logged in");
-//        } catch (IOException ex) {
-//            log.error();
-//            throw new FTPException("I/O error: " + ex.getMessage());
-//        }
     }
 
 
@@ -109,7 +105,7 @@ public class FTP4JUtility {
                                     String md5 = DigestUtils.md5Hex(fis);
                                     fis.close();
                                     if (!StringUtils.equals(md5, remoteFile.getMd5())) {
-                                        log.debug("Error");
+                                        log.debug("MD5 Error");
                                         remoteFile.updateProgress(0);
                                         remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON);
                                         try {
@@ -118,6 +114,9 @@ public class FTP4JUtility {
                                             log.error("Error deleting failed file:" + remoteFile.getLocalPath());
                                         }
                                         return;
+                                    } else {
+                                        log.debug("calling success after md5:" + remoteFile.getName());
+                                        remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                                     }
                                     log.debug("md5 matched");
                                 }
@@ -126,6 +125,7 @@ public class FTP4JUtility {
                                 }
                                 remoteFile.updateProgress(1);
                                 remoteFile.setDownloaded(true);
+                                log.debug("calling success after end:" + remoteFile.getName());
                                 remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                             } catch (IOException e) {
                                 log.error("Error", e);

@@ -53,9 +53,6 @@ public class DownloadService {
                 }
                 return true;
             }
-//            } catch (IOException e) {
-//                e.log.error();
-//            }
         }
         return false;
     }
