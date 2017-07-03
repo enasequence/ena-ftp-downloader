@@ -17,6 +17,17 @@ Download the latest release (.zip file) from the Releases section and extract it
 
 Requires [Java 8 runtime environment](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html).
 
+## Note for OpenJDK users
+Please note that this application is written using JavaFX and requires the JavaFX libraries to be available in your Java runtime. If your installation of OpenJDK does not include the JavaFX libraries by default, you would either need to install the OpenJFX libraries using
+```
+sudo apt-get install openjfx
+```
+(or the equivalent for your Operating System) , 
+
+or 
+
+install and use the Oracle Java runtime.
+
 # Execution
 
 The jar is an executable file. In Windows you should be able to run it via a double-click. Alternatively, on all platforms you can use the command line:
