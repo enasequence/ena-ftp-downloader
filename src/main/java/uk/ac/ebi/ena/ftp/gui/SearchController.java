@@ -7,10 +7,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -36,8 +33,16 @@ public class SearchController implements Initializable {
     private final static Logger log = LoggerFactory.getLogger(SearchController.class);
     @FXML
     private TextField accession, report;
+
     @FXML
-    private Button accessionBtn, reportBtn;
+    private TextArea query;
+
+    @FXML
+    private Button accessionBtn, reportBtn, searchBtn;
+
+    @FXML
+    private RadioButton runFilesRadio, analysisFilesRadio;
+
     @FXML
     private Label fileErrorLabel;
     private Scene resultsScene;
@@ -50,6 +55,7 @@ public class SearchController implements Initializable {
         accessionBtn.setOnAction(new AcccessionSearchButtonHandler());
         accession.setOnKeyPressed(new AcccessionSearchEnterHandler());
         setupReportBtn();
+        setupSearchBtn();
     }
 
     private void handleAccessionSearch(Event actionEvent) {
@@ -75,21 +81,37 @@ public class SearchController implements Initializable {
     }
 
     private Map<String, List<RemoteFile>> doWarehouseSearch(String acc) {
-        Map<String, List<RemoteFile>> map = new HashMap<>();
         WarehouseQuery warehouseQuery = new WarehouseQuery();
-        List<RemoteFile> queryFastq = warehouseQuery.query(acc, "fastq");
-        if (queryFastq.size() > 0) {
-            map.put("fastq", queryFastq);
-        }
-        List<RemoteFile> querySubmitted = warehouseQuery.query(acc, "submitted");
-        if (querySubmitted.size() > 0) {
-            map.put("submitted", querySubmitted);
-        }
-        List<RemoteFile> querySra = warehouseQuery.query(acc, "sra");
-        if (querySra.size() > 0) {
-            map.put("sra", querySra);
-        }
+        Map<String, List<RemoteFile>> map = warehouseQuery.query(acc);
         return map;
+    }
+
+    private Map<String, List<RemoteFile>> doPortalSearch(String result, String query) {
+        WarehouseQuery warehouseQuery = new WarehouseQuery();
+        Map<String, List<RemoteFile>> map = warehouseQuery.portalQuery(result, query);
+        return map;
+    }
+
+    private void handlePortalSearch(Event actionEvent) {
+        this.fileErrorLabel.setText("");
+        String query = this.query.getText();
+        if (StringUtils.isBlank(query)) {
+            showError("Please enter query.");
+            return;
+        }
+        String result = "read_run";
+        if (this.analysisFilesRadio.isSelected()) {
+            result = "analysis";
+        }
+
+        Map<String, List<RemoteFile>> stringListMap = doPortalSearch(result, query);
+        if (stringListMap.size() == 0) {
+            showError("No downloadable files were found for the accession " + query);
+            return;
+        }
+        Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+        resultsController.renderResults(stringListMap);
+        primaryStage.setScene(resultsScene);
     }
 
     private void setupReportBtn() {
@@ -112,6 +134,32 @@ public class SearchController implements Initializable {
                     resultsController.renderResults(fileListMap);
                     primaryStage.setScene(resultsScene);
                 }
+            }
+        });
+    }
+
+
+    private void setupSearchBtn() {
+        searchBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Map<String, List<RemoteFile>> fileListMap = new HashMap<>();
+                if (StringUtils.isBlank(query.getText())) {
+                    showError("Please enter search query string.");
+                    return;
+                }
+                if (runFilesRadio.isSelected()) {
+                     fileListMap = doPortalSearch("read_run", query.getText());
+                } else if (analysisFilesRadio.isSelected()) {
+                    fileListMap = doPortalSearch("analysis", query.getText());
+                } else {
+                    showError("Please select result type to search in.");
+                    return;
+                }
+
+                Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+                resultsController.renderResults(fileListMap);
+                primaryStage.setScene(resultsScene);
             }
         });
     }
