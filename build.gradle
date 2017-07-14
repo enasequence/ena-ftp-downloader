@@ -1,0 +1,67 @@
+group 'uk.ac.ebi.ena'
+version 'v1.0'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+mainClassName = "uk.ac.ebi.ena.ftp.gui.Main"
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+run {
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+
+task copyToLib(type: Copy) {
+    into "$buildDir/output/lib"
+    from configurations.runtime
+}
+
+jar {
+    dependsOn configurations.compile
+    from {
+        (configurations.compile).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    } {
+        exclude "META-INF/**"
+        exclude "LICENSE"
+    }
+    manifest {
+        attributes 'Implementation-Title': 'ENA FTP Downloader',
+                'Implementation-Version': version,
+                'Main-Class': 'uk.ac.ebi.ena.ftp.gui.Main',
+                'Permissions': 'all-permissions',
+                'Application-Name': 'ENA FTP Downloader'
+    }
+}
+
+
+dependencies {
+    compile group: 'commons-net', name: 'commons-net', version: '3.5'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
+    compile 'commons-io:commons-io:2.4'
+    compile name:'ftp4j', version: '1.7.2'
+    compile name:'javafx-dialogs', version: '0.0.4'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
