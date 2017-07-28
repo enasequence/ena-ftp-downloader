@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.ftp.model.RemoteFile;
 
+import java.io.BufferedInputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -73,12 +74,14 @@ public class WarehouseQuery {
             }
         }
         String url = "https://www.ebi.ac.uk/ena/portal/api/search?query=" + query + "&result=" + resultDomain + "&fields=" + fields;
+        System.out.println(url);
         try {
             // Build URL, Connect and get results reader
             List<String> fileStrings = null;
             URL enaQuery = new URL(url);
             URLConnection yc = enaQuery.openConnection();
-            fileStrings = IOUtils.readLines(yc.getInputStream());
+            fileStrings = IOUtils.readLines(new BufferedInputStream(yc.getInputStream()));
+            System.out.println(fileStrings.size());
             yc.getInputStream().close();
             if (fileStrings.size() > 1) {
                 return parseFileReport(fileStrings, types, 1);
@@ -105,8 +108,8 @@ public class WarehouseQuery {
                 map.put(type, new ArrayList<>());
             }
             for (int f = 1; f < fileStrings.size(); f++) {// skip header line
-                if (StringUtils.isNotBlank(fileStrings.get(f))) {
-                    String[] parts = fileStrings.get(f).split("\\s");
+                if (StringUtils.isNotBlank(StringUtils.trim(fileStrings.get(f)))) {
+                    String[] parts = fileStrings.get(f).split("\\t", -1);// get all elements including trailing empty
                     int typeIndex = skipFields;
                     for (String type : types) {
                         if (parts.length > typeIndex) {

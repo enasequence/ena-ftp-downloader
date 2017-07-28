@@ -1,5 +1,7 @@
 package uk.ac.ebi.ena.ftp.gui;
 
+import javafx.application.HostServices;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -44,18 +46,30 @@ public class SearchController implements Initializable {
     private RadioButton runFilesRadio, analysisFilesRadio;
 
     @FXML
+    private Hyperlink searchHelpLink;
+
+    @FXML
+    private ImageView accLoadingImg, reportLoadingImg, searchLoadingImg;
+
+    @FXML
     private Label fileErrorLabel;
     private Scene resultsScene;
     private ResultsController resultsController;
+    private HostServices hostServices;
 
     @Override // This method is called by the FXMLLoader when initialization is complete
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
         log.debug("initialize");
+//        searchLoadingImg.setVisible(false);
 
-        accessionBtn.setOnAction(new AcccessionSearchButtonHandler());
-        accession.setOnKeyPressed(new AcccessionSearchEnterHandler());
+        setupAccBtn();
         setupReportBtn();
         setupSearchBtn();
+    }
+
+    private void setupAccBtn() {
+        accessionBtn.setOnAction(new AcccessionSearchButtonHandler());
+        accession.setOnKeyPressed(new AcccessionSearchEnterHandler());
     }
 
     private void handleAccessionSearch(Event actionEvent) {
@@ -69,15 +83,20 @@ public class SearchController implements Initializable {
             showError("Please enter a valid accession.");
             return;
         }
+        try {
+            accLoadingImg.setVisible(true);
 
-        Map<String, List<RemoteFile>> stringListMap = doWarehouseSearch(acc);
-        if (stringListMap.size() == 0) {
-            showError("No downloadable files were found for the accession " + acc);
-            return;
+            Map<String, List<RemoteFile>> stringListMap = doWarehouseSearch(acc);
+            if (stringListMap.size() == 0) {
+                showError("No downloadable files were found for the accession " + acc);
+                return;
+            }
+            Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+            resultsController.renderResults(stringListMap);
+            primaryStage.setScene(resultsScene);
+        } finally {
+            accLoadingImg.setVisible(false);
         }
-        Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-        resultsController.renderResults(stringListMap);
-        primaryStage.setScene(resultsScene);
     }
 
     private Map<String, List<RemoteFile>> doWarehouseSearch(String acc) {
@@ -92,28 +111,6 @@ public class SearchController implements Initializable {
         return map;
     }
 
-    private void handlePortalSearch(Event actionEvent) {
-        this.fileErrorLabel.setText("");
-        String query = this.query.getText();
-        if (StringUtils.isBlank(query)) {
-            showError("Please enter query.");
-            return;
-        }
-        String result = "read_run";
-        if (this.analysisFilesRadio.isSelected()) {
-            result = "analysis";
-        }
-
-        Map<String, List<RemoteFile>> stringListMap = doPortalSearch(result, query);
-        if (stringListMap.size() == 0) {
-            showError("No downloadable files were found for the accession " + query);
-            return;
-        }
-        Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-        resultsController.renderResults(stringListMap);
-        primaryStage.setScene(resultsScene);
-    }
-
     private void setupReportBtn() {
         reportBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -121,18 +118,23 @@ public class SearchController implements Initializable {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Select report file");
                 File reportFile = fileChooser.showOpenDialog(reportBtn.getScene().getWindow());
-                if (reportFile != null) {
-                    report.setText(reportFile.getAbsolutePath());
+                try {
+                    if (reportFile != null) {
+                        report.setText(reportFile.getAbsolutePath());
+                        reportLoadingImg.setVisible(true);
 //                    reportBtn.setGraphic(getLoadingImage());
-                    Map<String, List<RemoteFile>> fileListMap = parseReportFile(reportFile);
-                    if (fileListMap.size() == 0) {
-                        showError("File is not in the desired format, or does not contain necessary information.");
-                        reportBtn.setText("Load Report File");
-                        return;
+                        Map<String, List<RemoteFile>> fileListMap = parseReportFile(reportFile);
+                        if (fileListMap.size() == 0) {
+                            showError("File is not in the desired format, or does not contain necessary information.");
+                            reportBtn.setText("Load Report File");
+                            return;
+                        }
+                        Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+                        resultsController.renderResults(fileListMap);
+                        primaryStage.setScene(resultsScene);
                     }
-                    Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-                    resultsController.renderResults(fileListMap);
-                    primaryStage.setScene(resultsScene);
+                } finally {
+                    reportLoadingImg.setVisible(false);
                 }
             }
         });
@@ -143,24 +145,47 @@ public class SearchController implements Initializable {
         searchBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                Map<String, List<RemoteFile>> fileListMap = new HashMap<>();
+                showError("");
                 if (StringUtils.isBlank(query.getText())) {
                     showError("Please enter search query string.");
                     return;
                 }
-                if (runFilesRadio.isSelected()) {
-                     fileListMap = doPortalSearch("read_run", query.getText());
-                } else if (analysisFilesRadio.isSelected()) {
-                    fileListMap = doPortalSearch("analysis", query.getText());
-                } else {
-                    showError("Please select result type to search in.");
-                    return;
-                }
+                try {
+                    Platform.runLater(() -> {
+                        searchLoadingImg.setVisible(true);
 
-                Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-                resultsController.renderResults(fileListMap);
-                primaryStage.setScene(resultsScene);
+                    });
+
+                    Platform.runLater(() -> {
+                        System.out.println("starting thread");
+                        Map<String, List<RemoteFile>> fileListMap = new HashMap<>();
+                        if (runFilesRadio.isSelected()) {
+                            fileListMap = doPortalSearch("read_run", query.getText());
+                        } else if (analysisFilesRadio.isSelected()) {
+                            fileListMap = doPortalSearch("analysis", query.getText());
+                        } else {
+                            showError("Please select result type to search in.");
+                            return;
+                        }
+                        if (fileListMap.size() == 0) {
+                            showError("No downloadable files were found for the given query and result type.");
+                            return;
+                        }
+
+                        Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+                        resultsController.renderResults(fileListMap);
+                        primaryStage.setScene(resultsScene);
+                        searchLoadingImg.setVisible(false);
+                    });
+
+                } finally {
+//                    searchLoadingImg.setVisible(false);
+                }
             }
+        });
+
+        searchHelpLink.setOnAction(t -> {
+            this.hostServices.showDocument("http://www.ebi.ac.uk/ena/browse/search-rest");
         });
     }
 
@@ -313,6 +338,14 @@ public class SearchController implements Initializable {
 //        reportBtn.setGraphic(null);
         report.clear();
         fileErrorLabel.setText("");
+    }
+
+    public void setHostServices(HostServices hostServices) {
+        this.hostServices = hostServices;
+    }
+
+    public HostServices getHostServices() {
+        return hostServices;
     }
 
     class AcccessionSearchButtonHandler implements EventHandler<ActionEvent> {
