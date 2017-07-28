@@ -111,6 +111,28 @@ public class SearchController implements Initializable {
         return map;
     }
 
+    private void handlePortalSearch(Event actionEvent) {
+        this.fileErrorLabel.setText("");
+        String query = this.query.getText();
+        if (StringUtils.isBlank(query)) {
+            showError("Please enter query.");
+            return;
+        }
+        String result = "read_run";
+        if (this.analysisFilesRadio.isSelected()) {
+            result = "analysis";
+        }
+
+        Map<String, List<RemoteFile>> stringListMap = doPortalSearch(result, query);
+        if (stringListMap.size() == 0) {
+            showError("No downloadable files were found for the accession " + query);
+            return;
+        }
+        Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+        resultsController.renderResults(stringListMap);
+        primaryStage.setScene(resultsScene);
+    }
+
     private void setupReportBtn() {
         reportBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -186,6 +208,32 @@ public class SearchController implements Initializable {
 
         searchHelpLink.setOnAction(t -> {
             this.hostServices.showDocument("http://www.ebi.ac.uk/ena/browse/search-rest");
+        });
+    }
+
+
+    private void setupSearchBtn() {
+        searchBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Map<String, List<RemoteFile>> fileListMap = new HashMap<>();
+                if (StringUtils.isBlank(query.getText())) {
+                    showError("Please enter search query string.");
+                    return;
+                }
+                if (runFilesRadio.isSelected()) {
+                     fileListMap = doPortalSearch("read_run", query.getText());
+                } else if (analysisFilesRadio.isSelected()) {
+                    fileListMap = doPortalSearch("analysis", query.getText());
+                } else {
+                    showError("Please select result type to search in.");
+                    return;
+                }
+
+                Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+                resultsController.renderResults(fileListMap);
+                primaryStage.setScene(resultsScene);
+            }
         });
     }
 

@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
+<?import java.net.URL?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import java.net.URL?>
+<?import javafx.scene.layout.Pane?>
 <AnchorPane prefHeight="274.0" prefWidth="834.0" xmlns="http://javafx.com/javafx/8.0.112"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.ac.ebi.ena.ftp.gui.SearchController">
     <stylesheets>
-        <URL value="@gui.css"/>
+        <URL value="@gui.css" />
     </stylesheets>
     <children>
-        <HBox fx:id="accessionHBox" alignment="CENTER_LEFT" layoutX="26.0" layoutY="20.0" prefHeight="32.0"
-              prefWidth="600.0" spacing="5">
+        <HBox fx:id="accessionHBox" alignment="CENTER_LEFT" layoutX="26.0" layoutY="20.0" prefHeight="32.0" prefWidth="600.0" spacing="5">
             <children>
-                <Label fx:id="accessionLabel" prefHeight="21.0" prefWidth="100.0" text="Accession:"/>
+                <Label fx:id="accessionLabel" prefHeight="21.0" prefWidth="100.0" text="Accession:" />
                 <TextField fx:id="accession" editable="true" prefHeight="25.0" prefWidth="400.0">
                     <tooltip>
-                        <Tooltip text="Type in accession"/>
+                        <Tooltip text="Type in accession" />
                     </tooltip>
                 </TextField>
                 <Button fx:id="accessionBtn" mnemonicParsing="false" prefHeight="25.0" prefWidth="81.0" text="Search">
                     <tooltip>
-                        <Tooltip text="Search for accession and load file list"/>
+                        <Tooltip text="Search for accession and load file list" />
                     </tooltip>
                 </Button>
                 <ImageView fx:id="accLoadingImg" fitHeight="25" fitWidth="25" visible="false">
@@ -33,31 +39,29 @@
         </HBox>
         <HBox alignment="CENTER_LEFT" layoutX="26.0" layoutY="55.0">
             <children>
-                <Label prefHeight="22.0" prefWidth="17.0" text="OR"/>
+                <Label prefHeight="22.0" prefWidth="17.0" text="OR" />
             </children>
         </HBox>
-        <HBox fx:id="reportHBox" alignment="CENTER_LEFT" layoutX="26.0" layoutY="80.0" prefHeight="32.0"
-              prefWidth="684.0" spacing="5">
+        <HBox fx:id="reportHBox" alignment="CENTER_LEFT" layoutX="26.0" layoutY="80.0" prefHeight="32.0" prefWidth="684.0" spacing="5">
             <children>
-                <Label fx:id="reportLabel" layoutX="21.0" layoutY="46.0" prefHeight="21.0" prefWidth="100.0"
-                       text="Report File:"/>
+                <Label fx:id="reportLabel" layoutX="21.0" layoutY="46.0" prefHeight="21.0" prefWidth="100.0" text="Report File:" />
                 <TextField fx:id="report" editable="true" prefHeight="25.0" prefWidth="400.0">
                     <tooltip>
-                        <Tooltip text="Select file report"/>
+                        <Tooltip text="Select file report" />
                     </tooltip>
                 </TextField>
-                <Button fx:id="reportBtn" mnemonicParsing="false" text="Load Report File"/>
+                <Button fx:id="reportBtn" mnemonicParsing="false" text="Load Report File" />
                 <Label fx:id="helpBtn" mnemonicParsing="false">
                     <graphic>
                         <ImageView fitWidth="25" preserveRatio="true" smooth="true">
                             <image>
-                                <Image url="@help.png"/>
+                                <Image url="@help.png" />
                             </image>
                         </ImageView>
                     </graphic>
                     <tooltip>
                         <Tooltip
-                                text="When generating the file report in the ENA Browser, also select the corresponding bytes and md5 columns for the file types you want."/>
+                                text="When generating the file report in the ENA Browser, also select the corresponding bytes and md5 columns for the file types you want." />
                     </tooltip>
                 </Label>
                 <ImageView fx:id="reportLoadingImg" fitHeight="25" fitWidth="25" visible="false">

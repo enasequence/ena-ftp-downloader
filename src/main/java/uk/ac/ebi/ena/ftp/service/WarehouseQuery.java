@@ -100,16 +100,15 @@ public class WarehouseQuery {
         return "read_run";
     }
 
-    private Map<String, List<RemoteFile>> parseFileReport(List<String> fileStrings, String[] types, int skipFields) {
-        Map<String, List<RemoteFile>> map = new HashMap<>();
+    private Map<String,List<RemoteFile>> parseFileReport(List<String> fileStrings, String[] types, int skipFields) {
+        Map<String,List<RemoteFile> > map = new HashMap<>();
         try {
 
             for (String type : types) {
                 map.put(type, new ArrayList<>());
-            }
-            for (int f = 1; f < fileStrings.size(); f++) {// skip header line
-                if (StringUtils.isNotBlank(StringUtils.trim(fileStrings.get(f)))) {
-                    String[] parts = fileStrings.get(f).split("\\t", -1);// get all elements including trailing empty
+        }for (int f = 1; f < fileStrings.size(); f++) {// skip header line
+            if (StringUtils.isNotBlank(StringUtils.trim(fileStrings.get(f)))) {
+                String[] parts = fileStrings.get(f).split("\\t", -1);// get all elements including trailing empty
                     int typeIndex = skipFields;
                     for (String type : types) {
                         if (parts.length > typeIndex) {
@@ -117,18 +116,25 @@ public class WarehouseQuery {
                             if (StringUtils.isBlank(parts[0 + typeIndex])) {
                                 continue;
                             }
-                            if (StringUtils.contains(parts[0 + typeIndex], ";")) {
-                                String[] fileParts = parts[0 + typeIndex].split(";");
-                                String[] sizeParts = parts[1 + typeIndex].split(";");
-                                String[] md5Parts = parts[2 + typeIndex].split(";");
-                                for (int p = 0; p < fileParts.length; p++) {
-                                    RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(fileParts[p], "/"), Long.parseLong(sizeParts[p]), fileParts[p], md5Parts[p]);
-                                    files.add(file);
-                                }
-                            } else {
-                                RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(parts[0 + typeIndex], "/"), Long.parseLong(parts[1 + typeIndex]), parts[0 + typeIndex], parts[2 + typeIndex]);
-                                files.add(file);
-                            }
+                int typeIndex = skipFields;
+                    for (String type : types) {
+                        if (parts.length > typeIndex) {
+                            List<RemoteFile> files = map.get(type);
+                            if (StringUtils.isBlank(parts[0 + typeIndex])) {
+                                continue;
+                            }if (StringUtils.contains(parts[0+ typeIndex], ";")) {
+                    String[] fileParts = parts[0+ typeIndex].split(";");
+                    String[]  sizeParts = parts[1+ typeIndex].split(";");
+                    String[] md5Parts = parts[2+ typeIndex].split(";");
+                    for (int p = 0; p< fileParts.length; p++) {
+                        RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(fileParts[p], "/"), Long.parseLong(sizeParts[p]), fileParts[p], md5Parts[p]);
+                        files.add(file);
+}
+                    }
+
+                 else {
+                    RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(parts[0+ typeIndex], "/"), Long.parseLong(parts[1+ typeIndex]), parts[0+ typeIndex], parts[2+ typeIndex]);
+                    files.add(file);}
                         }
                         typeIndex += 3;
                     }

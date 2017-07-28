@@ -196,6 +196,13 @@ public class ResultsController implements Initializable {
         addProgressColumn(tableView);
         addIconColumn(tableView);
 
+        tableView.setOnScroll(new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                tableView.refresh();
+            }
+
+        });
         tableView.setOnScrollFinished(new EventHandler() {
             @Override
             public void handle(Event event) {
