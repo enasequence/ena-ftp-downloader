@@ -7,6 +7,7 @@ import java.text.DecimalFormat;
  */
 public class Utils {
 
+    public static final String[] UNITS = new String[] {"Bytes", "KB", "MB", "GB", "TB", "PB"};
     public static String getHumanReadableSize(long bytes) { // expects bytes
         String result = "";
         DecimalFormat df = new DecimalFormat("#,##0.00");

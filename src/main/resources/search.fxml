@@ -1,16 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.URL?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.layout.Pane?>
+<?import java.net.URL?>
 <AnchorPane prefHeight="274.0" prefWidth="834.0" xmlns="http://javafx.com/javafx/8.0.112"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.ac.ebi.ena.ftp.gui.SearchController">
     <stylesheets>
@@ -122,7 +115,7 @@
                 <Button fx:id="searchBtn" layoutX="500" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0"
                         text="Portal Search">
                     <tooltip>
-                        <Tooltip text="Only the first 100,000 records will be retrieved."></Tooltip>
+                        <Tooltip text="Perform warehouse search"></Tooltip>
                     </tooltip>
                 </Button>
                 <ImageView fx:id="searchLoadingImg" fitHeight="25" fitWidth="25" visible="false">

@@ -201,39 +201,15 @@ public class SearchController implements Initializable {
                     });
 
                 } finally {
-//                    searchLoadingImg.setVisible(false);
+                    Platform.runLater(() -> {
+                        searchLoadingImg.setVisible(false);
+                    });
                 }
             }
         });
 
         searchHelpLink.setOnAction(t -> {
             this.hostServices.showDocument("http://www.ebi.ac.uk/ena/browse/search-rest");
-        });
-    }
-
-
-    private void setupSearchBtn() {
-        searchBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                Map<String, List<RemoteFile>> fileListMap = new HashMap<>();
-                if (StringUtils.isBlank(query.getText())) {
-                    showError("Please enter search query string.");
-                    return;
-                }
-                if (runFilesRadio.isSelected()) {
-                     fileListMap = doPortalSearch("read_run", query.getText());
-                } else if (analysisFilesRadio.isSelected()) {
-                    fileListMap = doPortalSearch("analysis", query.getText());
-                } else {
-                    showError("Please select result type to search in.");
-                    return;
-                }
-
-                Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-                resultsController.renderResults(fileListMap);
-                primaryStage.setScene(resultsScene);
-            }
         });
     }
 

@@ -73,7 +73,7 @@ public class WarehouseQuery {
                 fields += ",";
             }
         }
-        String url = "https://www.ebi.ac.uk/ena/portal/api/search?query=" + query + "&result=" + resultDomain + "&fields=" + fields;
+        String url = "https://www.ebi.ac.uk/ena/portal/api/search?query=" + query + "&result=" + resultDomain + "&fields=" + fields + "&limit=0&download=true";
         System.out.println(url);
         try {
             // Build URL, Connect and get results reader
@@ -109,13 +109,6 @@ public class WarehouseQuery {
         }for (int f = 1; f < fileStrings.size(); f++) {// skip header line
             if (StringUtils.isNotBlank(StringUtils.trim(fileStrings.get(f)))) {
                 String[] parts = fileStrings.get(f).split("\\t", -1);// get all elements including trailing empty
-                    int typeIndex = skipFields;
-                    for (String type : types) {
-                        if (parts.length > typeIndex) {
-                            List<RemoteFile> files = map.get(type);
-                            if (StringUtils.isBlank(parts[0 + typeIndex])) {
-                                continue;
-                            }
                 int typeIndex = skipFields;
                     for (String type : types) {
                         if (parts.length > typeIndex) {

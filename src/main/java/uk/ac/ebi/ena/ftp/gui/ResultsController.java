@@ -24,6 +24,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Pair;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import static uk.ac.ebi.ena.ftp.utils.Utils.UNITS;
 
 public class ResultsController implements Initializable {
 
@@ -217,6 +220,19 @@ public class ResultsController implements Initializable {
         TableColumn<RemoteFile, String> sizeColumn = (TableColumn<RemoteFile, String>) tableView.getColumns().get(2);
         PropertyValueFactory<RemoteFile, String> size = new PropertyValueFactory<>("hrSize");
         sizeColumn.setCellValueFactory(size);
+        sizeColumn.setComparator(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                int unit1 = ArrayUtils.indexOf(UNITS, StringUtils.substringAfterLast(o1, " "));
+                int unit2 = ArrayUtils.indexOf(UNITS, StringUtils.substringAfterLast(o2, " "));
+                if (unit1 == unit2) {
+                    int size1 = (int) ((Float.parseFloat(StringUtils.replace(StringUtils.substringBeforeLast(o1, " "), ",", ""))) * 100);
+                    int size2 = (int) (Float.parseFloat(StringUtils.replace(StringUtils.substringBeforeLast(o2, " "), ",", "")) * 100);
+                    return (size1 - size2) ;
+                }
+                return unit1 - unit2;
+            }
+        });
     }
 
     private void addIconColumn(TableView<RemoteFile> tableView) {
