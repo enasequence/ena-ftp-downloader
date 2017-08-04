@@ -52,10 +52,14 @@ public class SearchController implements Initializable {
     private ImageView accLoadingImg, reportLoadingImg, searchLoadingImg;
 
     @FXML
+    private TitledPane accTPane, reportTPane, searchTPane;
+
+    @FXML
     private Label fileErrorLabel;
     private Scene resultsScene;
     private ResultsController resultsController;
     private HostServices hostServices;
+    private Stage stage;
 
     @Override // This method is called by the FXMLLoader when initialization is complete
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
@@ -70,6 +74,7 @@ public class SearchController implements Initializable {
     private void setupAccBtn() {
         accessionBtn.setOnAction(new AcccessionSearchButtonHandler());
         accession.setOnKeyPressed(new AcccessionSearchEnterHandler());
+        accTPane.heightProperty().addListener((obs, oldHeight, newHeight) -> stage.sizeToScene());
     }
 
     private void handleAccessionSearch(Event actionEvent) {
@@ -160,6 +165,9 @@ public class SearchController implements Initializable {
                 }
             }
         });
+
+        reportTPane.heightProperty().addListener((obs, oldHeight, newHeight) -> stage.sizeToScene());
+
     }
 
 
@@ -211,6 +219,8 @@ public class SearchController implements Initializable {
         searchHelpLink.setOnAction(t -> {
             this.hostServices.showDocument("http://www.ebi.ac.uk/ena/browse/search-rest");
         });
+
+        searchTPane.heightProperty().addListener((obs, oldHeight, newHeight) -> stage.sizeToScene());
     }
 
     private Node getLoadingImage() {
@@ -370,6 +380,10 @@ public class SearchController implements Initializable {
 
     public HostServices getHostServices() {
         return hostServices;
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 
     class AcccessionSearchButtonHandler implements EventHandler<ActionEvent> {

@@ -39,6 +39,7 @@ public class Main extends Application {
 
             // injecting second scene into the controller of the first scene
             SearchController firstPaneController = (SearchController) firstPaneLoader.getController();
+            firstPaneController.setStage(stage);
             firstPaneController.setResultsScene(resultScene);
             firstPaneController.setHostServices(getHostServices());
 

@@ -1,6 +1,5 @@
 package uk.ac.ebi.ena.ftp.gui.custom;
 
-import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -29,7 +28,7 @@ public class MD5TableCell<RemoteFile> extends TableCell<RemoteFile, String> {
         if (StringUtils.equals(this.getItem(), "N/A")) {
             setText("N/A");
         } else {
-            VBox vb = new VBox();
+            vb = new VBox();
             vb.setAlignment(Pos.CENTER);
             imageView = new ImageView();
             imageView.setFitHeight(20);
@@ -43,7 +42,7 @@ public class MD5TableCell<RemoteFile> extends TableCell<RemoteFile, String> {
         return new Callback<TableColumn<RemoteFile, String>, TableCell<RemoteFile, String>>() {
             @Override
             public TableCell<RemoteFile, String> call(TableColumn<RemoteFile, String> param) {
-                return new MD5TableCell<RemoteFile>();
+                return new MD5TableCell<>();
             }
         };
     }
@@ -51,23 +50,22 @@ public class MD5TableCell<RemoteFile> extends TableCell<RemoteFile, String> {
     @Override
     protected void updateItem(String item, boolean empty) {
         super.updateItem(item, empty);
-        if (item != null) {
-            log.debug("item:" + item);
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (ERROR_ICON.equals(item)) {
-                        imageView.setImage(new Image(item + ".png"));
-                        Tooltip.install(imageView, new Tooltip("File did not download correctly. Please try again later."));
-                    } else if (SUCCESS_ICON.equals(item)) {
-                        imageView.setImage(new Image(item + ".png"));
-                        Tooltip.install(imageView, new Tooltip("File fully downloaded. MD5 checksum verified."));
-                    } else if (LOADING_ICON.equals(item)) {
-                        imageView.setImage(new Image(item + ".gif"));
-                        Tooltip.install(imageView, new Tooltip("Calculating MD5."));
-                    }
-                }
-            });
+
+        if (empty || item == null) {
+            setText(null);
+            setGraphic(null);
+        } else {
+            if (ERROR_ICON.equals(item)) {
+                imageView.setImage(new Image(item + ".png"));
+                Tooltip.install(imageView, new Tooltip("File did not download correctly. Please try again later."));
+            } else if (SUCCESS_ICON.equals(item)) {
+                imageView.setImage(new Image(item + ".png"));
+                Tooltip.install(imageView, new Tooltip("File fully downloaded. MD5 checksum verified."));
+            } else if (LOADING_ICON.equals(item)) {
+                imageView.setImage(new Image(item + ".gif"));
+                Tooltip.install(imageView, new Tooltip("Calculating MD5."));
+            }
+            setGraphic(vb);
         }
     }
 }

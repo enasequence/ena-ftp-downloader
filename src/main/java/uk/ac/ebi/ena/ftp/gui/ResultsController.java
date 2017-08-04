@@ -225,10 +225,11 @@ public class ResultsController implements Initializable {
             public int compare(String o1, String o2) {
                 int unit1 = ArrayUtils.indexOf(UNITS, StringUtils.substringAfterLast(o1, " "));
                 int unit2 = ArrayUtils.indexOf(UNITS, StringUtils.substringAfterLast(o2, " "));
-                if (unit1 == unit2) {
+
+                if (unit1 == unit2 && unit1 != -1) {
                     int size1 = (int) ((Float.parseFloat(StringUtils.replace(StringUtils.substringBeforeLast(o1, " "), ",", ""))) * 100);
                     int size2 = (int) (Float.parseFloat(StringUtils.replace(StringUtils.substringBeforeLast(o2, " "), ",", "")) * 100);
-                    return (size1 - size2) ;
+                    return (size1 - size2);
                 }
                 return unit1 - unit2;
             }
