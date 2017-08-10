@@ -1,9 +1,9 @@
-package uk.ac.ebi.ena.ftp.gui.custom;
+package uk.ac.ebi.ena.downloader.gui.custom;
 
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
-import uk.ac.ebi.ena.ftp.model.RemoteFile;
+import uk.ac.ebi.ena.downloader.model.RemoteFile;
 
 /**
  * Created by suranj on 27/05/2016.

@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.ftp.gui.custom;
+package uk.ac.ebi.ena.downloader.gui.custom;
 
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ProgressBar;

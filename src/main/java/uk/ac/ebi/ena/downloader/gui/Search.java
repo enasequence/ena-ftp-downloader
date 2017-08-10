@@ -1,6 +1,6 @@
-package uk.ac.ebi.ena.ftp.gui;
+package uk.ac.ebi.ena.downloader.gui;
 
-import uk.ac.ebi.ena.ftp.model.RemoteFile;
+import uk.ac.ebi.ena.downloader.model.RemoteFile;
 
 import java.util.List;
 import java.util.Map;

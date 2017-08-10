@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
 <AnchorPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="uk.ac.ebi.ena.ftp.gui.SearchController">
+            fx:controller="uk.ac.ebi.ena.downloader.gui.SearchController">
     <padding>
         <Insets bottom="10.0" left="10.0" right="0.0" top="10.0"/>
     </padding>
@@ -14,6 +14,72 @@
         <URL value="@gui.css"/>
     </stylesheets>
     <VBox>
+        <TitledPane fx:id="settingsTPane" animated="true" text="Settings: Currently using FTP" expanded="false"
+                    layoutY="50.0">
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="0.0" top="10.0"/>
+            </padding>
+            <content>
+                <VBox>
+                    <HBox spacing="5">
+                        <Label text="Download Method:"/>
+                        <Pane prefWidth="70.0"/>
+                        <Label fx:id="ftpLabel" text="FTP"/>
+                        <RadioButton fx:id="ftpRadio" selected="true">
+                            <tooltip>
+                                <Tooltip text="Download from FTP server"/>
+                            </tooltip>
+                            <toggleGroup>
+                                <ToggleGroup fx:id="method"/>
+                            </toggleGroup>
+                        </RadioButton>
+                        <Pane prefWidth="25.0"/>
+                        <Label fx:id="asperaLabel" text="Aspera"/>
+                        <RadioButton fx:id="asperaRadio" toggleGroup="$method">
+                            <tooltip>
+                                <Tooltip text="Download from Aspera server, using preinstalled Aspera Connect client"/>
+                            </tooltip>
+                        </RadioButton>
+                    </HBox>
+                    <VBox fx:id="asperaConfig" spacing="5" visible="false">
+                        <padding>
+                            <Insets bottom="10.0" left="20.0" right="0.0" top="10.0"/>
+                        </padding>
+                        <HBox spacing="5">
+                            <Label text="Aspera Executable location:"/>
+                            <Pane prefWidth="22.0"/>
+                            <TextField fx:id="asperaExe" editable="true" prefHeight="25.0" prefWidth="400.0">
+                                <tooltip>
+                                    <Tooltip text="Select Aspera Connect executable"/>
+                                </tooltip>
+                            </TextField>
+                            <Button fx:id="asperaExeBtn" mnemonicParsing="false" text="Aspera Connect executable"/>
+                        </HBox>
+                        <HBox spacing="5">
+                            <Label text="Aspera Certificate location:"/>
+                            <Pane prefWidth="25.0"/>
+                            <TextField fx:id="asperaSsh" editable="true" prefHeight="25.0" prefWidth="400.0">
+                                <tooltip>
+                                    <Tooltip text="Select Aspera SSH certificate"/>
+                                </tooltip>
+                            </TextField>
+                            <Button fx:id="asperaSshBtn" mnemonicParsing="false" text="Aspera certificate"/>
+                        </HBox>
+                        <HBox spacing="5">
+                            <Label text="Aspera parameters:"/>
+                            <Pane prefWidth="65.0"/>
+                            <TextField fx:id="asperaParams" editable="true" prefHeight="25.0" prefWidth="400.0"
+                                       text="-QT -l 300m">
+                                <tooltip>
+                                    <Tooltip text="Edit download parameters"/>
+                                </tooltip>
+                            </TextField>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </content>
+        </TitledPane>
+
         <Accordion>
             <padding>
                 <Insets bottom="10.0" left="10.0" right="0.0" top="10.0"/>
@@ -37,11 +103,6 @@
                                         <Tooltip text="Search for accession and load file list"/>
                                     </tooltip>
                                 </Button>
-                                <ImageView fx:id="accLoadingImg" fitHeight="25" fitWidth="25" visible="false">
-                                    <image>
-                                        <Image url="@loading.gif"/>
-                                    </image>
-                                </ImageView>
                             </children>
                         </HBox>
                     </content>
@@ -60,8 +121,9 @@
                                         <Tooltip text="Select file report"/>
                                     </tooltip>
                                 </TextField>
-                                <Button fx:id="reportBtn" mnemonicParsing="false" text="Load Report File"/>
-                                <Label fx:id="helpBtn" mnemonicParsing="false">
+                                <Button fx:id="reportBtn" mnemonicParsing="false" text="Load Report File"></Button>
+                                <Button fx:id="reportHelpBtn" mnemonicParsing="false"
+                                        style="-fx-background-color: transparent;">
                                     <graphic>
                                         <ImageView fitWidth="25" preserveRatio="true" smooth="true">
                                             <image>
@@ -69,16 +131,7 @@
                                             </image>
                                         </ImageView>
                                     </graphic>
-                                    <tooltip>
-                                        <Tooltip
-                                                text="When generating the file report in the ENA Browser, also select the corresponding bytes and md5 columns for the file types you want."/>
-                                    </tooltip>
-                                </Label>
-                                <ImageView fx:id="reportLoadingImg" fitHeight="25" fitWidth="25" visible="false">
-                                    <image>
-                                        <Image url="@loading.gif"/>
-                                    </image>
-                                </ImageView>
+                                </Button>
                             </children>
                         </HBox>
                     </content>
@@ -139,11 +192,7 @@
                                             <Tooltip text="Perform warehouse search"/>
                                         </tooltip>
                                     </Button>
-                                    <ImageView fx:id="searchLoadingImg" fitHeight="25" fitWidth="25" visible="false">
-                                        <image>
-                                            <Image url="@loading.gif"/>
-                                        </image>
-                                    </ImageView>
+
                                 </children>
                             </HBox>
                         </VBox>

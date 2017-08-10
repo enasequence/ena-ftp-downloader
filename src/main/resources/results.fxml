@@ -6,12 +6,11 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<?import uk.ac.ebi.ena.ftp.gui.custom.*?>
+<?import uk.ac.ebi.ena.downloader.gui.custom.*?>
 <?import java.net.URL?>
-<VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-      minWidth="-Infinity"
+<VBox xmlns:fx="http://javafx.com/fxml/1"
       prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.111"
-      fx:controller="uk.ac.ebi.ena.ftp.gui.ResultsController">
+      fx:controller="uk.ac.ebi.ena.downloader.gui.ResultsController">
     <children>
         <AnchorPane prefWidth="800.0">
             <children>

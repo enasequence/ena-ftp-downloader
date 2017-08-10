@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.ftp.service.ftp;
+package uk.ac.ebi.ena.downloader.service.ftp;
 
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -10,7 +10,7 @@ import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.ena.ftp.model.RemoteFile;
+import uk.ac.ebi.ena.downloader.model.RemoteFile;
 
 import java.io.*;
 import java.net.SocketTimeoutException;

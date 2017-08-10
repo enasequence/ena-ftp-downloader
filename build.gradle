@@ -1,5 +1,5 @@
 group 'uk.ac.ebi.ena'
-version 'v1.0'
+version 'v1.1'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -8,7 +8,7 @@ apply plugin: 'application'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-mainClassName = "uk.ac.ebi.ena.ftp.gui.Main"
+mainClassName = "uk.ac.ebi.ena.downloader.gui.Main"
 
 repositories {
     mavenCentral()
@@ -48,7 +48,7 @@ jar {
     manifest {
         attributes 'Implementation-Title': 'ENA FTP Downloader',
                 'Implementation-Version': version,
-                'Main-Class': 'uk.ac.ebi.ena.ftp.gui.Main',
+                'Main-Class': 'uk.ac.ebi.ena.downloader.gui.Main',
                 'Permissions': 'all-permissions',
                 'Application-Name': 'ENA FTP Downloader'
     }
@@ -61,7 +61,7 @@ dependencies {
     compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
     compile 'commons-io:commons-io:2.4'
     compile name:'ftp4j', version: '1.7.2'
-    compile name:'javafx-dialogs', version: '0.0.4'
+    compile 'org.controlsfx:controlsfx:8.40.13'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }

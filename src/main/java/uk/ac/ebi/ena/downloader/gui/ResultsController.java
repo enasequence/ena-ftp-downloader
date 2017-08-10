@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.ftp.gui;
+package uk.ac.ebi.ena.downloader.gui;
 
 import javafx.application.Platform;
 import javafx.beans.Observable;
@@ -28,10 +28,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.ena.ftp.gui.custom.MD5TableCell;
-import uk.ac.ebi.ena.ftp.gui.custom.ProgressBarTableCell;
-import uk.ac.ebi.ena.ftp.model.RemoteFile;
-import uk.ac.ebi.ena.ftp.utils.Utils;
+import uk.ac.ebi.ena.downloader.gui.custom.MD5TableCell;
+import uk.ac.ebi.ena.downloader.gui.custom.ProgressBarTableCell;
+import uk.ac.ebi.ena.downloader.model.DownloadSettings;
+import uk.ac.ebi.ena.downloader.model.RemoteFile;
+import uk.ac.ebi.ena.downloader.utils.Utils;
 
 import java.io.File;
 import java.net.URL;
@@ -41,7 +42,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static uk.ac.ebi.ena.ftp.utils.Utils.UNITS;
+import static uk.ac.ebi.ena.downloader.utils.Utils.UNITS;
 
 public class ResultsController implements Initializable {
 
@@ -76,6 +77,7 @@ public class ResultsController implements Initializable {
     private Scene searchScene;
     private SearchController searchController;
     private Stage stage;
+    private DownloadSettings downloadSettings;
 
 
     @Override // This method is called by the FXMLLoader when initialization is complete
@@ -85,7 +87,8 @@ public class ResultsController implements Initializable {
 
     }
 
-    public void renderResults(Map<String, List<RemoteFile>> results) {
+    public void renderResults(Map<String, List<RemoteFile>> results, DownloadSettings downloadSettings) {
+        this.downloadSettings = downloadSettings;
         setupDownloadDirBtn();
         setupTables(results);
         setupSelectAllBtn();
@@ -485,6 +488,7 @@ public class ResultsController implements Initializable {
                 }
             }
 //            showLoginPopup();
+
             startDownloadBtn.setDisable(true);
             stopDownloadBtn.setDisable(false);
             CountDownLatch latch = new CountDownLatch(notDoneFiles.size());
@@ -494,7 +498,8 @@ public class ResultsController implements Initializable {
                 if (file.getTransferred() == 0) {
                     file.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
                 }
-                Task task = new DownloadTask(file, latch);
+
+                Task task = new DownloadTask(file, latch, downloadSettings);
                 task.setOnFailed(new TaskFailedHandler());
                 task.setOnSucceeded(new TaskSucceedHandler(file));
                 Future<?> submit = executor.submit(task);
@@ -618,6 +623,8 @@ public class ResultsController implements Initializable {
             }
         }
     }
+
+
 
     private class TaskSucceedHandler implements EventHandler<WorkerStateEvent> {
         private RemoteFile file;

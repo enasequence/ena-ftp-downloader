@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.ftp.gui;
+package uk.ac.ebi.ena.downloader.gui;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

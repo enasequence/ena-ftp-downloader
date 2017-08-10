@@ -1,13 +1,15 @@
-package uk.ac.ebi.ena.ftp.service;
+package uk.ac.ebi.ena.downloader.service;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.ena.ftp.gui.custom.MD5TableCell;
-import uk.ac.ebi.ena.ftp.model.RemoteFile;
-import uk.ac.ebi.ena.ftp.service.ftp.CommonsFTPUtility;
-import uk.ac.ebi.ena.ftp.service.ftp.FTP4JUtility;
+import uk.ac.ebi.ena.downloader.gui.custom.MD5TableCell;
+import uk.ac.ebi.ena.downloader.model.DownloadSettings;
+import uk.ac.ebi.ena.downloader.model.RemoteFile;
+import uk.ac.ebi.ena.downloader.service.aspera.AsperaUtility;
+import uk.ac.ebi.ena.downloader.service.ftp.CommonsFTPUtility;
+import uk.ac.ebi.ena.downloader.service.ftp.FTP4JUtility;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,11 +22,19 @@ public class DownloadService {
     private final static Logger log = LoggerFactory.getLogger(CommonsFTPUtility.class);
 
     private FTP4JUtility util = new FTP4JUtility();
+    private AsperaUtility asperaUtility = new AsperaUtility();
 
     public Void downloadFileFtp(final RemoteFile remoteFile) throws Exception {
         util.connect();
         util.downloadFile(remoteFile);
         util.disconnect();
+        log.debug(remoteFile.getName() + " download completed.");
+        log.debug("end");
+        return null;
+    }
+
+    public Void downloadFileAspera(final RemoteFile remoteFile, DownloadSettings downloadSettings) throws Exception {
+        asperaUtility.downloadFile(remoteFile, downloadSettings);
         log.debug(remoteFile.getName() + " download completed.");
         log.debug("end");
         return null;

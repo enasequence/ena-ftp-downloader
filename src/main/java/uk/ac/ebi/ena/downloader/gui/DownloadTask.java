@@ -1,12 +1,12 @@
-package uk.ac.ebi.ena.ftp.gui;
+package uk.ac.ebi.ena.downloader.gui;
 
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.ena.ftp.gui.custom.MD5TableCell;
-import uk.ac.ebi.ena.ftp.model.RemoteFile;
-import uk.ac.ebi.ena.ftp.service.DownloadService;
+import uk.ac.ebi.ena.downloader.gui.custom.MD5TableCell;
+import uk.ac.ebi.ena.downloader.model.DownloadSettings;
+import uk.ac.ebi.ena.downloader.model.RemoteFile;
+import uk.ac.ebi.ena.downloader.service.DownloadService;
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
@@ -20,12 +20,14 @@ public class DownloadTask extends Task<Void> {
 
     private final RemoteFile file;
     private CountDownLatch latch;
+    private DownloadSettings downloadSettings;
     private DownloadService downloadService = new DownloadService();
     private boolean countedDown;
 
-    public DownloadTask(RemoteFile file, CountDownLatch latch) {
+    public DownloadTask(RemoteFile file, CountDownLatch latch, DownloadSettings downloadSettings) {
         this.file = file;
         this.latch = latch;
+        this.downloadSettings = downloadSettings;
     }
 
     @Override
@@ -37,7 +39,11 @@ public class DownloadTask extends Task<Void> {
                     int count = 0;
                     while (count < RETRY_COUNT) {
                         try {
-                            downloadService.downloadFileFtp(file);
+                            if (downloadSettings.getMethod() == DownloadSettings.Method.FTP) {
+                                downloadService.downloadFileFtp(file);
+                            } else {
+                                downloadService.downloadFileAspera(file, downloadSettings);
+                            }
                             break;
                         } catch (Exception e) {
                             count++;
@@ -51,12 +57,13 @@ public class DownloadTask extends Task<Void> {
                 file.updateProgress(1);
                 log.debug("calling success:" + file.getName());
                 file.setDownloaded(true);
-                Platform.runLater(new Runnable() {
+                succeeded();
+                /*Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        succeeded();
+
                     }
-                });
+                });*/
             } catch (Exception e) {
                 log.error("Failed download", e);
                 throw e;

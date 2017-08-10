@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.ftp.utils;
+package uk.ac.ebi.ena.downloader.utils;
 
 import java.text.DecimalFormat;
 

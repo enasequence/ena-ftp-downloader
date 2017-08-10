@@ -1,9 +1,9 @@
-package uk.ac.ebi.ena.ftp.model;
+package uk.ac.ebi.ena.downloader.model;
 
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import org.apache.commons.lang3.StringUtils;
-import uk.ac.ebi.ena.ftp.utils.Utils;
+import uk.ac.ebi.ena.downloader.utils.Utils;
 
 /**
  * Created by suranj on 27/05/2016.
