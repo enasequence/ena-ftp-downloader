@@ -1,6 +1,6 @@
-# ena-ftp-downloader
+# ENA File Downloader version 1.1
 
-Graphical user interface (GUI) for bulk downloading of run/analysis files from ENA via FTP.
+Graphical user interface (GUI) for bulk downloading of run/analysis files from ENA via FTP or Aspera.
 
 
 # License
@@ -32,16 +32,23 @@ install and use the Oracle Java runtime.
 
 The jar is an executable file. In Windows you should be able to run it via a double-click. Alternatively, on all platforms you can use the command line:
 ```
-java -jar [path-to-file]/ena-ftp-downloader-[version].jar
+java -jar [path-to-file]/ena-file-downloader-[version].jar
 ```
 
-# Usage
+# Search Window
 
-## Accession search
+## Settings
+
+Choose how to download file. Options are FTP (default) and Aspera. If you select Aspera, a panel will open where you can enter the
+paths to your Aspera Connect client installation. If you choose to "Save Settings", a file containing the entered configuration will
+be created in the same location as the ena-file-downloader jar. If the File Downloader finds such a saved configuration file,
+it will load the settings on start.
+
+## Download By Accession
 
 Enter a valid study, project, run, experiment, analysis, submission or sample accession into the Accession field and click Search. The Results window will be loaded with the available files in Fastq, Submitted or SRA types (one tab for each type).
 
-## Load pre-generated File report
+## Download By Report File
 
 Click the Load Report File button to select a previously generated report file. The file will be parsed and the available
 file data will be listed in the Results window.
@@ -52,13 +59,20 @@ file data will be listed in the Results window.
 
 2. The report file must contain the column headers
 
-3. The report file should contain at least one of the following file URL columns.
+3. The report file should contain at least one of the following file URL columns, depending on the download method.
+
+For FTP Downloads
 - fastq_ftp
 - submitted_ftp
 - sra_ftp
 
+For Aspera Downloads
+- fastq_aspera
+- submitted_aspera
+- sra_aspera
+
 4. Additionally, we recommend that when you generate the report file you include the support columns for whichever file
-type/s you want to download. Note that if these columns are not available in the report, the FTP Downloader will not be able to display progress bars and do file integrity checks.
+type/s you want to download. Note that if these columns are not available in the report, the File Downloader will not be able to display progress bars and do file integrity checks.
 - [format]_bytes : The length of the file in bytes. Allows the Downloader to track how much space is required for the download and to show the download progress for each file.
 - [format]_md5 : The MD5 checksum of the file. Allows the Downloader to calculate the MD5 checksum of the file after downloading it and compare it to the original MD5 to verify that the file has been downloaded without errors.
 
@@ -72,7 +86,13 @@ e.g.
 
 Note: The order of the columns in the report file is insignificant.
 
-## Fetching results and downloading files
+## Download By Search
+
+Type in a query string, choose the required file type and click "Portal Search" to perform a Warehouse search against
+[ENA Portal API](https://www.ebi.ac.uk/ena/portal/api)
+
+
+# Results Window
 
 ### Local Download Directory
 
@@ -95,6 +115,6 @@ If a file you've selected for downloading already exists in the selected downloa
 In case of a failed/partial download, the Downloader will attempt to clean up any remnants. It is recommended that
 you ensure the file download destination is cleaned of any partial files before you re-attempt downloads.
 
-Should you have any problems please contact us at datasubs@ebi.ac.uk with "FTP Downloader problem" in the subject line.
+Should you have any problems please contact us at datasubs@ebi.ac.uk with "File Downloader problem" in the subject line.
 
 
