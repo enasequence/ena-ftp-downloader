@@ -8,3 +8,17 @@
     -fx-background-repeat: no-repeat;
     -fx-background-position:left;
 }
+
+.titled-pane > .title
+{
+    -fx-background-color: #6dab49;
+    -fx-font-weight: bold;
+}
+
+#settingsTPane.titled-pane > .title,
+#asperaConfig.titled-pane > .title
+{
+    -fx-background-color: #e9b400;
+    -fx-font-weight: normal;
+}
+

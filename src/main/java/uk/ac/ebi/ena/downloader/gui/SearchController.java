@@ -36,11 +36,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.ExecutionException;
 
 public class SearchController implements Initializable {
 
-    public static final String ERA_ID_PATTERN = "([ESDR]R[ASPXRZ][0-9]{6,}|SAMEA[0-9]{6,}|SAM[ND][0-9]{8,})";
+    public static final String ERA_ID_PATTERN = "([ESDR]R[ASPXRZ][0-9]{6,}|SAMEA[0-9]{6,}|SAM[ND][0-9]{8,}|PRJ[A-Z]{2}[0-9]+)";
     private final static Logger log = LoggerFactory.getLogger(SearchController.class);
     public static final String PLEASE_WAIT = "Please wait...";
     @FXML
@@ -122,15 +121,6 @@ public class SearchController implements Initializable {
         asperaSaveBtn.setOnAction(event -> saveAsperaSettings());
         loadAsperaSettings();
 
-       /* Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                Pane title = (Pane) settingsTPane.lookup(".title");
-                if (title != null) {
-                    title.setVisible(false);
-                }
-            }
-        });*/
         settingsTPane.heightProperty().addListener((obs, oldHeight, newHeight) -> stage.sizeToScene());
     }
 
@@ -175,7 +165,7 @@ public class SearchController implements Initializable {
         if (extURL.endsWith(".jar"))   // from getCodeSource
             extURL = extURL.substring(0, extURL.lastIndexOf("/"));
         else {  // from getResource
-            String suffix = "/"+(this.getClass().getName()).replace(".", "/")+".class";
+            String suffix = "/" + (this.getClass().getName()).replace(".", "/") + ".class";
             extURL = extURL.replace(suffix, "");
             if (extURL.startsWith("jar:") && extURL.endsWith(".jar!"))
                 extURL = extURL.substring(4, extURL.lastIndexOf("/"));
@@ -191,7 +181,7 @@ public class SearchController implements Initializable {
         // convert url to File
         try {
             return new File(url.toURI());
-        } catch(URISyntaxException ex) {
+        } catch (URISyntaxException ex) {
             return new File(url.getPath());
         }
     }
@@ -287,20 +277,16 @@ public class SearchController implements Initializable {
         });
         reportLoadBtn.setOnAction(event -> {
             showMessage(PLEASE_WAIT, Images.LOADING);
-
+            try {
+                downloadSettings = getDownloadSettings();
+            } catch (Exception e) {
+                showMessage(e.getMessage(), Images.EXCLAMATION);
+                return;
+            }
             File reportFile = new File(report.getText());
             new Thread(() -> {
-//                Future<Map<String, List<RemoteFile>>> fileListMapFuture = new ReportParser().parseExternalReportFile(reportFile, downloadSettings.getMethod());
                 Map<String, List<RemoteFile>> fileListMap = new ReportParser().parseExternalReportFile(reportFile, downloadSettings.getMethod());
 
-                /*Map<String, List<RemoteFile>> fileListMap = null;
-                try {
-                    fileListMap = fileListMapFuture.get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }*/
                 if (fileListMap == null || fileListMap.size() == 0) {
                     showMessage("File is not in the desired format, or does not contain necessary information.", Images.WARNING);
                     return;
@@ -319,27 +305,16 @@ public class SearchController implements Initializable {
             @Override
             public void handle(ActionEvent actionEvent) {
                 clearMessage();
-                try {
-                    downloadSettings = getDownloadSettings();
-                } catch (Exception e) {
-                    showMessage(e.getMessage(), Images.EXCLAMATION);
-                    return;
-                }
+
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Select report file");
                 File reportFile = fileChooser.showOpenDialog(reportBtn.getScene().getWindow());
                 try {
                     if (reportFile != null) {
                         report.setText(reportFile.getAbsolutePath());
-//                        Platform.runLater(() ->
-
-//                        toggleBtnImage(reportBtn, true);
-
 
                     }
                 } finally {
-//                    toggleImage(reportLoadingLabel, false);
-//                    toggleBtnImage(reportBtn, false);
                 }
             }
         });
@@ -347,25 +322,6 @@ public class SearchController implements Initializable {
         reportTPane.heightProperty().addListener((obs, oldHeight, newHeight) -> stage.sizeToScene());
 
     }
-
-    /*private void toggleBtnImage(Button reportBtn, boolean show) {
-        Platform.runLater(() -> {
-            if (show) {
-                reportBtn.setGraphic(getLoadingImage());
-            } else {
-                reportBtn.setGraphic(null);
-            }
-        });
-    }*/
-
-    private void toggleWait(Button button, String message) {
-
-        Platform.runLater(() -> {
-            reportBtn.setText(message);
-
-        });
-    }
-
 
     private void setupSearchBtn() {
         searchBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -386,19 +342,13 @@ public class SearchController implements Initializable {
 //                    Platform.runLater(() -> {
                     new Thread(() -> {
                         Map<String, List<RemoteFile>> fileListMap = new HashMap<>();
-                        try {
-                            if (runFilesRadio.isSelected()) {
-                                fileListMap = new WarehouseQuery().doPortalSearch("read_run", query.getText(), downloadSettings.getMethod()).get();
-                            } else if (analysisFilesRadio.isSelected()) {
-                                fileListMap = new WarehouseQuery().doPortalSearch("analysis", query.getText(), downloadSettings.getMethod()).get();
-                            } else {
-                                showMessage("Please select result type to search in.", Images.WARNING);
-                                return;
-                            }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
+                        if (runFilesRadio.isSelected()) {
+                            fileListMap = new WarehouseQuery().doPortalSearch("read_run", query.getText(), downloadSettings.getMethod());
+                        } else if (analysisFilesRadio.isSelected()) {
+                            fileListMap = new WarehouseQuery().doPortalSearch("analysis", query.getText(), downloadSettings.getMethod());
+                        } else {
+                            showMessage("Please select result type to search in.", Images.WARNING);
+                            return;
                         }
                         if (fileListMap == null || fileListMap.size() == 0) {
                             showMessage("No downloadable files were found for the given query and result type.", Images.WARNING);

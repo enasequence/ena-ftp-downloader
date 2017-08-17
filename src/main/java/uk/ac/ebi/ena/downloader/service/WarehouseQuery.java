@@ -14,9 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * Created by suranj on 27/05/2016.
@@ -25,40 +22,35 @@ public class WarehouseQuery {
     public static final String ERA_ANALYSIS_ID_PATTERN = "[ESDR]RZ[0-9]+";
     private final static Logger log = LoggerFactory.getLogger(WarehouseQuery.class);
 
-    final ExecutorService pool = Executors.newFixedThreadPool(1);
-
-
-    /*public Future<Map<String, List<RemoteFile>>> doWarehouseSearch(String acc, DownloadSettings.Method method) {
-        return this.pool.submit(() -> {
-            WarehouseQuery warehouseQuery = new WarehouseQuery();
-            Map<String, List<RemoteFile>> map = warehouseQuery.query(acc, method);
-            return map;
-        });
-    }*/
     public Map<String, List<RemoteFile>> doWarehouseSearch(String acc, DownloadSettings.Method method) {
         WarehouseQuery warehouseQuery = new WarehouseQuery();
         Map<String, List<RemoteFile>> map = warehouseQuery.query(acc, method);
         return map;
     }
 
-    public Future<Map<String, List<RemoteFile>>> doPortalSearch(String result, String query, DownloadSettings.Method method) {
-        return this.pool.submit(() -> {
-            WarehouseQuery warehouseQuery = new WarehouseQuery();
-            Map<String, List<RemoteFile>> map = warehouseQuery.portalQuery(result, query, method);
-            return map;
-        });
+    public Map<String, List<RemoteFile>> doPortalSearch(String result, String query, DownloadSettings.Method method) {
+        WarehouseQuery warehouseQuery = new WarehouseQuery();
+        Map<String, List<RemoteFile>> map = warehouseQuery.portalQuery(result, query.trim(), method);
+        return map;
     }
 
     public Map<String, List<RemoteFile>> query(String accession, DownloadSettings.Method method) {
         // URL stump for programmatic query of files
         String resultDomain = getResultDomain(accession);
         String[] types = {};
+        String fields = "";
+        String accField = "";
         if (resultDomain.equals("analysis")) {
             types = new String[]{"submitted"};
+            accField = "analysis_accession";
         } else {
             types = new String[]{"fastq", "submitted", "sra"};
+            accField = "run_accession";
         }
-        String fields = "";
+
+        fields += accField + ",";
+
+
         for (int t = 0; t < types.length; t++) {
             String type = types[t];
             fields += type + "_" + method.name().toLowerCase() + "," + type + "_bytes," + type + "_md5";
@@ -76,10 +68,9 @@ public class WarehouseQuery {
             fileStrings = IOUtils.readLines(yc.getInputStream());
             yc.getInputStream().close();
             if (fileStrings.size() > 1) {
-                return parseFileReport(fileStrings, types, 0);
+                return parseFileReport(fileStrings, types);
             }
             return new HashMap<>();
-
         } catch (Exception e) {
             log.warn("Error with warehouse query", e);
         }
@@ -100,6 +91,7 @@ public class WarehouseQuery {
             fields += type + "_" + method.name().toLowerCase() + "," + type + "_bytes," + type + "_md5";
             if (t < types.length - 1) {
                 fields += ",";
+
             }
         }
         String url = "https://www.ebi.ac.uk/ena/portal/api/search?query=\"" + query + "\"&result=" + resultDomain + "&fields=" + fields + "&limit=0&download=true";
@@ -113,7 +105,7 @@ public class WarehouseQuery {
             System.out.println(fileStrings.size());
             yc.getInputStream().close();
             if (fileStrings.size() > 1) {
-                return parseFileReport(fileStrings, types, 1);
+                return parseFileReport(fileStrings, types);
             }
             return new HashMap<>();
 
@@ -130,17 +122,16 @@ public class WarehouseQuery {
         return "read_run";
     }
 
-    private Map<String, List<RemoteFile>> parseFileReport(List<String> fileStrings, String[] types, int skipFields) {
+    private Map<String, List<RemoteFile>> parseFileReport(List<String> fileStrings, String[] types) {
         Map<String, List<RemoteFile>> map = new HashMap<>();
         try {
-
             for (String type : types) {
                 map.put(type, new ArrayList<>());
             }
             for (int f = 1; f < fileStrings.size(); f++) {// skip header line
                 if (StringUtils.isNotBlank(StringUtils.trim(fileStrings.get(f)))) {
                     String[] parts = fileStrings.get(f).split("\\t", -1);// get all elements including trailing empty
-                    int typeIndex = skipFields;
+                    int typeIndex = 1; // 0th field is accession
                     for (String type : types) {
                         if (parts.length > typeIndex) {
                             List<RemoteFile> files = map.get(type);
@@ -152,11 +143,13 @@ public class WarehouseQuery {
                                 String[] sizeParts = parts[1 + typeIndex].split(";");
                                 String[] md5Parts = parts[2 + typeIndex].split(";");
                                 for (int p = 0; p < fileParts.length; p++) {
-                                    RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(fileParts[p], "/"), Long.parseLong(sizeParts[p]), fileParts[p], md5Parts[p]);
+                                    RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(fileParts[p], "/"),
+                                            Long.parseLong(sizeParts[p]), fileParts[p], md5Parts[p], parts[0]);
                                     files.add(file);
                                 }
                             } else {
-                                RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(parts[0 + typeIndex], "/"), Long.parseLong(parts[1 + typeIndex]), parts[0 + typeIndex], parts[2 + typeIndex]);
+                                RemoteFile file = new RemoteFile(StringUtils.substringAfterLast(parts[0 + typeIndex], "/"),
+                                        Long.parseLong(parts[1 + typeIndex]), parts[0 + typeIndex], parts[2 + typeIndex], parts[0]);
                                 files.add(file);
                             }
                         }

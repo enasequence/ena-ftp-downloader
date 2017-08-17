@@ -109,14 +109,12 @@ public class DownloadTask extends Task<Void> {
     }
 
     private void couuntdownLatch() {
-        log.info("countdown latch:" + countedDown);
         if (!countedDown) {
             countedDown = true;
             try {
                 latch.countDown();
-                log.info("latched");
             } catch (Exception e) {
-
+                log.error("latch error", e);
             }
         }
     }

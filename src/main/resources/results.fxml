@@ -9,14 +9,14 @@
 <?import uk.ac.ebi.ena.downloader.gui.custom.*?>
 <?import java.net.URL?>
 <VBox xmlns:fx="http://javafx.com/fxml/1"
-      prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.111"
+      prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.111"
       fx:controller="uk.ac.ebi.ena.downloader.gui.ResultsController">
     <children>
-        <AnchorPane prefWidth="800.0">
+        <AnchorPane prefWidth="900.0">
             <children>
                 <HBox fx:id="downloadHBox" spacing="5" alignment="CENTER_LEFT" layoutX="26.0" layoutY="20.0"
                       prefHeight="32.0"
-                      prefWidth="710.0">
+                      prefWidth="810.0">
                     <children>
                         <Label fx:id="localDownloadDirLabel" layoutX="21.0" layoutY="46.0" prefHeight="21.0"
                                prefWidth="195.0" text="Local Download Directory:"/>
@@ -30,16 +30,16 @@
                 </HBox>
             </children>
         </AnchorPane>
-        <AnchorPane prefHeight="465.0" prefWidth="800.0">
+        <AnchorPane prefHeight="465.0" prefWidth="900.0">
             <children>
                 <Label fx:id="remoteFilesLabel" layoutX="25.0" layoutY="14.0" text="Remote Files">
                     <font>
                         <Font name="System Bold" size="15.0"/>
                     </font>
                 </Label>
-                <BorderPane layoutY="41.0" prefHeight="385.0" prefWidth="800.0">
+                <BorderPane layoutY="41.0" prefHeight="385.0" prefWidth="900.0">
                     <bottom>
-                        <Pane prefHeight="38.0" prefWidth="761.0" BorderPane.alignment="CENTER">
+                        <Pane prefHeight="38.0" prefWidth="861.0" BorderPane.alignment="CENTER">
                             <children>
                                 <Button fx:id="selectAllBtn" layoutX="14.0" layoutY="4.0" mnemonicParsing="false"
                                         text="Select All"/>
@@ -48,7 +48,7 @@
                         </Pane>
                     </bottom>
                     <center>
-                        <TabPane fx:id="fileTabPane" prefHeight="339.0" prefWidth="782.0">
+                        <TabPane fx:id="fileTabPane" prefHeight="339.0" prefWidth="882.0">
                             <tabs>
                                 <Tab text="FASTQ" fx:id="fastqTab">
                                     <content>
@@ -61,6 +61,11 @@
                                                     </cellFactory>
                                                     <cellValueFactory>
                                                         <CheckBoxCellValueFactory/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn resizable="true" text="Accession" prefWidth="100.0">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="accession"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn prefWidth="265.0" resizable="true" text="Name">
@@ -88,6 +93,11 @@
                                                     </cellFactory>
                                                     <cellValueFactory>
                                                         <CheckBoxCellValueFactory/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn resizable="true" text="Accession" prefWidth="100.0">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="accession"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn prefWidth="265.0" resizable="true" text="Name">
@@ -118,6 +128,11 @@
                                                     </cellFactory>
                                                     <cellValueFactory>
                                                         <CheckBoxCellValueFactory/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn resizable="true" text="Accession" prefWidth="100.0">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="accession"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn prefWidth="265.0" resizable="true" text="Name">

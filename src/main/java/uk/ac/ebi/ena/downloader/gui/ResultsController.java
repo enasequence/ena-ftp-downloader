@@ -47,6 +47,10 @@ import static uk.ac.ebi.ena.downloader.utils.Utils.UNITS;
 public class ResultsController implements Initializable {
 
     private final static Logger log = LoggerFactory.getLogger(ResultsController.class);
+    public static final int SIZE_COLUMN_INDEX = 3;
+    public static final int DOWNLOAD_COLUMN_INDEX = 0;
+    public static final int MD5_COLUMN_INDEX = 5;
+    public static final int PROGRESS_COLUMN_INDEX = 4;
 
     @FXML
     private TextField localDownloadDir;
@@ -171,7 +175,7 @@ public class ResultsController implements Initializable {
 
         ObservableList<TableColumn<RemoteFile, ?>> columns =
                 tableView.getColumns();
-        TableColumn<RemoteFile, Boolean> downloadColumn = (TableColumn<RemoteFile, Boolean>) columns.get(0);
+        TableColumn<RemoteFile, Boolean> downloadColumn = (TableColumn<RemoteFile, Boolean>) columns.get(DOWNLOAD_COLUMN_INDEX);
         downloadColumn.setCellValueFactory(
                 new Callback<TableColumn.CellDataFeatures<RemoteFile, Boolean>, ObservableValue<Boolean>>() {
                     @Override
@@ -220,7 +224,7 @@ public class ResultsController implements Initializable {
 
 
     private void setupSizeColumn(TableView<RemoteFile> tableView) {
-        TableColumn<RemoteFile, String> sizeColumn = (TableColumn<RemoteFile, String>) tableView.getColumns().get(2);
+        TableColumn<RemoteFile, String> sizeColumn = (TableColumn<RemoteFile, String>) tableView.getColumns().get(SIZE_COLUMN_INDEX);
         PropertyValueFactory<RemoteFile, String> size = new PropertyValueFactory<>("hrSize");
         sizeColumn.setCellValueFactory(size);
         sizeColumn.setComparator(new Comparator<String>() {
@@ -242,20 +246,20 @@ public class ResultsController implements Initializable {
     private void addIconColumn(TableView<RemoteFile> tableView) {
         ObservableList columns = tableView.getColumns();
 
-        if (columns.size() < 5) {
+        if (columns.size() < 6) {
             TableColumn<RemoteFile, String> iconCol = new TableColumn<>("MD5 OK");
             iconCol.setPrefWidth(60);
             iconCol.setResizable(false);
             PropertyValueFactory<RemoteFile, String> successIcon = new PropertyValueFactory<>("successIcon");
             iconCol.setCellValueFactory(successIcon);
             iconCol.setCellFactory(MD5TableCell.<RemoteFile>forTableColumn());
-            columns.add(4, iconCol);
+            columns.add(MD5_COLUMN_INDEX, iconCol);
         }
     }
 
     private void addProgressColumn(TableView<RemoteFile> tableView) {
         ObservableList columns = tableView.getColumns();
-        if (columns.size() < 4) {
+        if (columns.size() < MD5_COLUMN_INDEX) {
 
             TableColumn<RemoteFile, Double> progressCol = new TableColumn<>("Progress");
             progressCol.setPrefWidth(295);
@@ -263,7 +267,7 @@ public class ResultsController implements Initializable {
             PropertyValueFactory<RemoteFile, Double> progress = new PropertyValueFactory<>("progress");
             progressCol.setCellValueFactory(progress);
             progressCol.setCellFactory(ProgressBarTableCell.<RemoteFile>forTableColumn());
-            columns.add(3, progressCol);
+            columns.add(PROGRESS_COLUMN_INDEX, progressCol);
         }
     }
 
@@ -522,32 +526,29 @@ public class ResultsController implements Initializable {
                     }.start();
                 }
             }
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        log.info("latch waiting");
-                        latch.await();
-                        int count = 0;
-                        for (int r = 0; r < notDoneFiles.size(); r++) {
-                            RemoteFile file = notDoneFiles.get(r);
-                            log.info(file.getName() + " " + count);
-                            if (file.isDownloaded()) {
-                                count++;
-                            }
+            new Thread(() -> {
+                try {
+                    log.info("latch waiting");
+                    latch.await();
+                    int count = 0;
+                    for (int r = 0; r < notDoneFiles.size(); r++) {
+                        RemoteFile file = notDoneFiles.get(r);
+                        log.info(file.getName() + " " + count);
+                        if (file.isDownloaded()) {
+                            count++;
                         }
-                        if (count == notDoneFiles.size()) {
-                            int finalCount = count;
-                            Platform.runLater(() -> {
-                                selectionLabel.setText(finalCount + (finalCount == 1 ? " file has " : " files have ") + "been successfully downloaded.");
-                            });
-                        }
-
-                    } catch (InterruptedException E) {
-                        // handle
                     }
+                    if (count == notDoneFiles.size()) {
+                        int finalCount = count;
+                        Platform.runLater(() -> {
+                            selectionLabel.setText(finalCount + (finalCount == 1 ? " file has " : " files have ") + "been successfully downloaded.");
+                        });
+                    }
+
+                } catch (InterruptedException E) {
+                    // handle
                 }
-            }.start();
+            }).start();
         }
     }
 
@@ -623,7 +624,6 @@ public class ResultsController implements Initializable {
             }
         }
     }
-
 
 
     private class TaskSucceedHandler implements EventHandler<WorkerStateEvent> {

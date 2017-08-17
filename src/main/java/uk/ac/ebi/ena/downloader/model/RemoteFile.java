@@ -16,6 +16,7 @@ public class RemoteFile {
     private StringProperty hrSize;
 
     private String path;
+    private String accession;
     private String saveLocation;
     private String md5;
     private DoubleProperty progress;
@@ -24,7 +25,7 @@ public class RemoteFile {
     private String localPath;
 
 
-    public RemoteFile(String name, long size, String path, String md5) {
+    public RemoteFile(String name, long size, String path, String md5, String accession) {
         this.download = new SimpleBooleanProperty(false);
         this.name = name;
         this.size = size;
@@ -41,6 +42,16 @@ public class RemoteFile {
             this.successIcon = new SimpleStringProperty();
         }
         this.progress = new SimpleDoubleProperty(0);
+        this.accession = accession;
+    }
+
+
+    public String getAccession() {
+        return accession;
+    }
+
+    public void setAccession(String accession) {
+        this.accession = accession;
     }
 
     public SimpleBooleanProperty isDownload() {
@@ -138,7 +149,7 @@ public class RemoteFile {
     }
 
     public void setSuccessIcon(String icon) {
-        this.successIcon.set(icon);
+        Platform.runLater(() -> this.successIcon.set(icon));
     }
 
     public String getLocalPath() {
@@ -169,7 +180,9 @@ public class RemoteFile {
                 ", name='" + name + '\'' +
                 ", size=" + size +
                 ", transferred=" + transferred +
+                ", hrSize=" + hrSize +
                 ", path='" + path + '\'' +
+                ", accession='" + accession + '\'' +
                 ", saveLocation='" + saveLocation + '\'' +
                 ", md5='" + md5 + '\'' +
                 ", progress=" + progress +
@@ -178,4 +191,5 @@ public class RemoteFile {
                 ", localPath='" + localPath + '\'' +
                 '}';
     }
+
 }

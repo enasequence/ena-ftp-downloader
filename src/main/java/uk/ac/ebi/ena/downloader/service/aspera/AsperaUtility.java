@@ -47,7 +47,6 @@ public class AsperaUtility {
         try {
 
             final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + remoteFile.getName());
-            log.debug(downloadFile.getAbsolutePath() + ":downloadFile.canWrite():" + downloadFile.canWrite());
 
             remoteFile.setLocalPath(downloadFile.getAbsolutePath());
 
@@ -55,6 +54,7 @@ public class AsperaUtility {
                     + " -i \"" + downloadSettings.getCertificate() + "\" -P 33001 era-fasp@" + remoteFile.getPath()
                     + " \"" + remoteFile.getSaveLocation() + "\"";
             log.info(cmd);
+            log.info(remoteFile.toString());
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
             Process process = processBuilder.start();
 
@@ -65,82 +65,14 @@ public class AsperaUtility {
             while ((s = reader.readLine()) != null) {
                 System.out.println(s);
                 if (remoteFile.getSize() > 0) {
-                    if (s.startsWith(remoteFile.getName())) {
+                    if (s.startsWith(remoteFile.getName()) && remoteFile.getProgress() < 100) {
                         int progress = Integer.valueOf(StringUtils.strip(StringUtils.split(s)[1], "%"));
                         remoteFile.setTransferred(remoteFile.getSize() * (progress / 100l));
                         remoteFile.updateProgress(progress / 100.0);
-                        if (progress == 100) {
-                            new Thread() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        if (StringUtils.isNotBlank(remoteFile.getMd5())) {
-                                            remoteFile.setSuccessIcon(MD5TableCell.LOADING_ICON);
-                                            FileInputStream fis = new FileInputStream(downloadFile);
-                                            String md5 = DigestUtils.md5Hex(fis);
-                                            fis.close();
-                                            if (!StringUtils.equals(md5, remoteFile.getMd5())) {
-                                                log.debug("MD5 Error");
-                                                remoteFile.updateProgress(0);
-                                                remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON);
-                                                try {
-                                                    new File(remoteFile.getLocalPath()).delete();
-                                                } catch (Exception e) {
-                                                    log.error("Error deleting failed file:" + remoteFile.getLocalPath());
-                                                }
-                                                return;
-                                            } else {
-                                                log.debug("calling success after md5:" + remoteFile.getName());
-                                                remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
-                                            }
-                                            log.debug("md5 matched");
-                                        }
-                                        if (remoteFile.getSize() == 0) {
-                                            remoteFile.setSize(downloadFile.length());
-                                        }
-                                        remoteFile.updateProgress(1);
-                                        remoteFile.setDownloaded(true);
-                                        log.debug("calling success after end:" + remoteFile.getName());
-                                    } catch (IOException e) {
-                                        log.error("Error", e);
-                                    }
-                                }
-                            }.start();
-                        }
-                    }
-                }
-
-            }
-            reader.close();
-
-            BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            // Read command errors
-            String err = IOUtils.toString(stdError);
-            if (StringUtils.isNotBlank(err)) {
-                throw new AsperaException(err);
-            }
-
-
-           /* ftpClient.download(path, downloadFile, remoteFile.getTransferred(), new FTPDataTransferListener() {
-                @Override
-                public void started() {
-                }
-
-                @Override
-                public void transferred(int i) {
-                    if (remoteFile.getSize() > 0) {
-                        remoteFile.setTransferred(remoteFile.getTransferred() + i);
-                        double percentCompleted = (double) remoteFile.getTransferred() / (double) remoteFile.getSize();
-                        remoteFile.updateProgress(percentCompleted);
-                    }
-                }
-
-                @Override
-                public void completed() {
-                    new Thread() {
-                        @Override
-                        public void run() {
+                    } else if (s.startsWith("Completed")) {
+                        new Thread(() ->  {
                             try {
+                                log.info(remoteFile.getName() + ":" +  remoteFile.getMd5());
                                 if (StringUtils.isNotBlank(remoteFile.getMd5())) {
                                     remoteFile.setSuccessIcon(MD5TableCell.LOADING_ICON);
                                     FileInputStream fis = new FileInputStream(downloadFile);
@@ -157,7 +89,7 @@ public class AsperaUtility {
                                         }
                                         return;
                                     } else {
-                                        log.debug("calling success after md5:" + remoteFile.getName());
+                                        log.info("calling success after md5:" + remoteFile.getName());
                                         remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                                     }
                                     log.debug("md5 matched");
@@ -171,30 +103,20 @@ public class AsperaUtility {
                             } catch (IOException e) {
                                 log.error("Error", e);
                             }
-                        }
-                    }.start();
-                }
+                        }).start();
 
-                @Override
-                public void aborted() {
-                    log.debug(remoteFile.getPath() + " aborted at " + remoteFile.getTransferred());
-//                    remoteFile.updateProgress(0);
-//                    remoteFile.cancel(true);
-                }
-
-                @Override
-                public void failed() {
-                    remoteFile.updateProgress(0);
-                    remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON);
-                    try {
-                        new File(remoteFile.getLocalPath()).delete();
-                    } catch (Exception e) {
-                        log.error("Error deleting failed file:" + remoteFile.getLocalPath());
                     }
-                    disconnect();
-//                    remoteFile.cancel(true);
+
                 }
-            });*/
+            }
+            reader.close();
+
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            // Read command errors
+            String err = IOUtils.toString(stdError);
+            if (StringUtils.isNotBlank(err)) {
+                throw new AsperaException(err);
+            }
 
         } catch (IOException ex) {
             log.error("IO error", ex);
