@@ -1,6 +1,8 @@
 package uk.ac.ebi.ena.downloader.model;
 
-public class DownloadSettings {
+import java.io.Serializable;
+
+public class DownloadSettings implements Serializable {
 
     public DownloadSettings(Method ftp) {
         this.method = ftp;

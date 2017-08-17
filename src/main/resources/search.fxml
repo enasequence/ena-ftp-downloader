@@ -2,10 +2,11 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<AnchorPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane prefWidth="734.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="uk.ac.ebi.ena.downloader.gui.SearchController">
     <padding>
         <Insets bottom="10.0" left="10.0" right="0.0" top="10.0"/>
@@ -14,13 +15,13 @@
         <URL value="@gui.css"/>
     </stylesheets>
     <VBox>
-        <TitledPane fx:id="settingsTPane" animated="true" text="Settings: Currently using FTP" expanded="false"
-                    layoutY="50.0">
+        <TitledPane fx:id="settingsTPane" animated="true" expanded="true" layoutY="50.0"
+                    text="Settings: Currently using FTP">
             <padding>
                 <Insets bottom="10.0" left="20.0" right="0.0" top="10.0"/>
             </padding>
             <content>
-                <VBox>
+                <VBox spacing="5">
                     <HBox spacing="5">
                         <Label text="Download Method:"/>
                         <Pane prefWidth="70.0"/>
@@ -41,51 +42,68 @@
                             </tooltip>
                         </RadioButton>
                     </HBox>
-                    <VBox fx:id="asperaConfig" spacing="5" visible="false">
-                        <padding>
-                            <Insets bottom="10.0" left="20.0" right="0.0" top="10.0"/>
-                        </padding>
-                        <HBox spacing="5">
-                            <Label text="Aspera Executable location:"/>
-                            <Pane prefWidth="22.0"/>
-                            <TextField fx:id="asperaExe" editable="true" prefHeight="25.0" prefWidth="400.0">
-                                <tooltip>
-                                    <Tooltip text="Select Aspera Connect executable"/>
-                                </tooltip>
-                            </TextField>
-                            <Button fx:id="asperaExeBtn" mnemonicParsing="false" text="Aspera Connect executable"/>
-                        </HBox>
-                        <HBox spacing="5">
-                            <Label text="Aspera Certificate location:"/>
-                            <Pane prefWidth="25.0"/>
-                            <TextField fx:id="asperaSsh" editable="true" prefHeight="25.0" prefWidth="400.0">
-                                <tooltip>
-                                    <Tooltip text="Select Aspera SSH certificate"/>
-                                </tooltip>
-                            </TextField>
-                            <Button fx:id="asperaSshBtn" mnemonicParsing="false" text="Aspera certificate"/>
-                        </HBox>
-                        <HBox spacing="5">
-                            <Label text="Aspera parameters:"/>
-                            <Pane prefWidth="65.0"/>
-                            <TextField fx:id="asperaParams" editable="true" prefHeight="25.0" prefWidth="400.0"
-                                       text="-QT -l 300m">
-                                <tooltip>
-                                    <Tooltip text="Edit download parameters"/>
-                                </tooltip>
-                            </TextField>
-                        </HBox>
-                    </VBox>
+                    <TitledPane fx:id="asperaConfig" expanded="false" visible="false" text="Aspera Client Configuration">
+                        <content>
+                            <VBox spacing="5">
+                                <HBox spacing="5">
+                                    <Label text="Aspera Executable location:"/>
+                                    <Pane prefWidth="22.0"/>
+                                    <TextField fx:id="asperaExe" editable="true" prefWidth="400.0">
+                                        <tooltip>
+                                            <Tooltip text="Select Aspera Connect executable"/>
+                                        </tooltip>
+                                    </TextField>
+                                    <Button fx:id="asperaExeBtn" mnemonicParsing="false" text="Browse"/>
+                                </HBox>
+                                <HBox spacing="5">
+                                    <Label text="Aspera Public Key location:"/>
+                                    <Pane prefWidth="24.0"/>
+                                    <TextField fx:id="asperaSsh" editable="true" prefWidth="400.0">
+                                        <tooltip>
+                                            <Tooltip text="Select Aspera Public Key certificate"/>
+                                        </tooltip>
+                                    </TextField>
+                                    <Button fx:id="asperaSshBtn" mnemonicParsing="false" text="Browse"/>
+                                </HBox>
+                                <HBox spacing="5">
+                                    <Label text="Aspera parameters:"/>
+                                    <Pane prefWidth="65.0"/>
+                                    <TextField fx:id="asperaParams" editable="true" prefWidth="400.0"
+                                               text="-QT -l 300m">
+                                        <tooltip>
+                                            <Tooltip text="Edit download parameters"/>
+                                        </tooltip>
+                                    </TextField>
+                                </HBox>
+                                <HBox spacing="5">
+                                    <!--<Pane prefWidth="365.0"/>-->
+                                    <Region prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                                    <Button fx:id="asperaSaveBtn" mnemonicParsing="false" text="Save Settings">
+                                        <graphic>
+                                            <ImageView fitWidth="20" preserveRatio="true" smooth="true">
+                                                <image>
+                                                    <Image url="@save.png"/>
+                                                </image>
+                                            </ImageView>
+                                        </graphic>
+                                            <tooltip>
+                                                <Tooltip text="Save configuration to the file system, at the same location as the file downloader jar, to be automatically loaded next time. "/>
+                                            </tooltip>
+                                    </Button>
+                                </HBox>
+                            </VBox>
+                        </content>
+                    </TitledPane>
                 </VBox>
             </content>
         </TitledPane>
 
-        <Accordion>
+        <VBox>
             <padding>
                 <Insets bottom="10.0" left="10.0" right="0.0" top="10.0"/>
             </padding>
-            <panes>
-                <TitledPane fx:id="accTPane" animated="true" text="Download By Accession">
+            <children>
+                <TitledPane fx:id="accTPane" animated="true" expanded="true" text="Download By Accession">
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="0.0" top="10.0"/>
                     </padding>
@@ -107,7 +125,7 @@
                         </HBox>
                     </content>
                 </TitledPane>
-                <TitledPane fx:id="reportTPane" animated="true" text="Download By Report File">
+                <TitledPane fx:id="reportTPane" animated="true" expanded="true" text="Download By Report File">
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="0.0" top="10.0"/>
                     </padding>
@@ -121,7 +139,8 @@
                                         <Tooltip text="Select file report"/>
                                     </tooltip>
                                 </TextField>
-                                <Button fx:id="reportBtn" mnemonicParsing="false" text="Load Report File"></Button>
+                                <Button fx:id="reportBtn" mnemonicParsing="false" text="Browse"/>
+                                <Button fx:id="reportLoadBtn" mnemonicParsing="false" text="Load Report File" disable="true"/>
                                 <Button fx:id="reportHelpBtn" mnemonicParsing="false"
                                         style="-fx-background-color: transparent;">
                                     <graphic>
@@ -136,7 +155,7 @@
                         </HBox>
                     </content>
                 </TitledPane>
-                <TitledPane fx:id="searchTPane" animated="true" text="Download By Search">
+                <TitledPane fx:id="searchTPane" animated="true" expanded="true" text="Download By Search">
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="0.0" top="10.0"/>
                     </padding>
@@ -198,13 +217,18 @@
                         </VBox>
                     </content>
                 </TitledPane>
-            </panes>
-        </Accordion>
-        <HBox alignment="CENTER_LEFT">
+            </children>
+        </VBox>
+        <HBox alignment="CENTER_LEFT" visible="false" fx:id="errorPanel" spacing="5">
             <padding>
                 <Insets bottom="0.0" left="25.0" right="0.0" top="5.0"/>
             </padding>
             <children>
+                <ImageView fitWidth="25" preserveRatio="true" smooth="true" fx:id="labelImage">
+                    <image>
+                        <Image url="@loading.gif" />
+                    </image>
+                </ImageView>
                 <Label fx:id="fileErrorLabel" prefHeight="30.0"/>
             </children>
         </HBox>

@@ -28,12 +28,17 @@ public class WarehouseQuery {
     final ExecutorService pool = Executors.newFixedThreadPool(1);
 
 
-    public Future<Map<String, List<RemoteFile>>> doWarehouseSearch(String acc, DownloadSettings.Method method) {
+    /*public Future<Map<String, List<RemoteFile>>> doWarehouseSearch(String acc, DownloadSettings.Method method) {
         return this.pool.submit(() -> {
             WarehouseQuery warehouseQuery = new WarehouseQuery();
             Map<String, List<RemoteFile>> map = warehouseQuery.query(acc, method);
             return map;
         });
+    }*/
+    public Map<String, List<RemoteFile>> doWarehouseSearch(String acc, DownloadSettings.Method method) {
+        WarehouseQuery warehouseQuery = new WarehouseQuery();
+        Map<String, List<RemoteFile>> map = warehouseQuery.query(acc, method);
+        return map;
     }
 
     public Future<Map<String, List<RemoteFile>>> doPortalSearch(String result, String query, DownloadSettings.Method method) {
@@ -62,6 +67,7 @@ public class WarehouseQuery {
             }
         }
         String url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=" + accession + "&result=" + resultDomain + "&fields=" + fields;
+        log.info(url);
         try {
             // Build URL, Connect and get results reader
             List<String> fileStrings = null;
@@ -96,7 +102,7 @@ public class WarehouseQuery {
                 fields += ",";
             }
         }
-        String url = "https://www.ebi.ac.uk/ena/portal/api/search?query=" + query + "&result=" + resultDomain + "&fields=" + fields + "&limit=0&download=true";
+        String url = "https://www.ebi.ac.uk/ena/portal/api/search?query=\"" + query + "\"&result=" + resultDomain + "&fields=" + fields + "&limit=0&download=true";
         System.out.println(url);
         try {
             // Build URL, Connect and get results reader

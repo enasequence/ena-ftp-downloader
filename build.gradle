@@ -27,13 +27,15 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+
     }
 }
 
 task copyToLib(type: Copy) {
     into "$buildDir/output/lib"
-    from configurations.runtime
+    from configurations.compile
 }
+
 
 jar {
     dependsOn configurations.compile
@@ -46,14 +48,13 @@ jar {
         exclude "LICENSE"
     }
     manifest {
-        attributes 'Implementation-Title': 'ENA FTP Downloader',
+        attributes 'Implementation-Title': 'ENA File Downloader',
                 'Implementation-Version': version,
                 'Main-Class': 'uk.ac.ebi.ena.downloader.gui.Main',
                 'Permissions': 'all-permissions',
-                'Application-Name': 'ENA FTP Downloader'
+                'Application-Name': 'ENA File Downloader'
     }
 }
-
 
 dependencies {
     compile group: 'commons-net', name: 'commons-net', version: '3.5'

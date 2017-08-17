@@ -12,15 +12,15 @@ import java.io.FileReader;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class ReportParser {
     private final static Logger log = LoggerFactory.getLogger(ReportParser.class);
 
     final ExecutorService pool = Executors.newFixedThreadPool(1);
 
-    public Future<Map<String, List<RemoteFile>>> parseExternalReportFile(File reportFile, DownloadSettings.Method method) {
-        return pool.submit(() -> {
+//    public Future<Map<String, List<RemoteFile>>> parseExternalReportFile(File reportFile, DownloadSettings.Method method) {
+//        return pool.submit(() -> {
+            public Map<String, List<RemoteFile>> parseExternalReportFile(File reportFile, DownloadSettings.Method method) {
             Map<String, List<RemoteFile>> map = new HashMap<>();
             int fastqIndex = -1;
             int fastqBytesIndex = -1;
@@ -130,7 +130,7 @@ public class ReportParser {
                 log.error("Error", e);
             }
             return map;
-        });
+//        });
     }
 
 }
