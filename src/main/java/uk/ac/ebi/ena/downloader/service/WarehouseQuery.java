@@ -136,6 +136,7 @@ public class WarehouseQuery {
                         if (parts.length > typeIndex) {
                             List<RemoteFile> files = map.get(type);
                             if (StringUtils.isBlank(parts[0 + typeIndex])) {
+                                typeIndex += 3;
                                 continue;
                             }
                             if (StringUtils.contains(parts[0 + typeIndex], ";")) {
