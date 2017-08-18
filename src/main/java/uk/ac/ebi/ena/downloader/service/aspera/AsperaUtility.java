@@ -13,6 +13,9 @@ import uk.ac.ebi.ena.downloader.model.RemoteFile;
 import uk.ac.ebi.ena.downloader.service.ftp.FTPException;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A utility class that provides functionality for downloading files from a FTP
@@ -50,12 +53,19 @@ public class AsperaUtility {
 
             remoteFile.setLocalPath(downloadFile.getAbsolutePath());
 
-            String cmd = "\"" + downloadSettings.getExecutable() + "\" " + downloadSettings.getParameters()
-                    + " -i \"" + downloadSettings.getCertificate() + "\" -P 33001 era-fasp@" + remoteFile.getPath()
-                    + " \"" + remoteFile.getSaveLocation() + "\"";
-            log.info(cmd);
-            log.info(remoteFile.toString());
-            ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+            List<String> commands = new ArrayList<>();
+            commands.add(downloadSettings.getExecutable());
+            commands.addAll(Arrays.asList(downloadSettings.getParameters().split("\\s")));
+            commands.add("-P");
+            commands.add("33001");
+            commands.add("-i");
+            commands.add(downloadSettings.getCertificate());
+            commands.add("era-fasp@" + remoteFile.getPath());
+            commands.add(remoteFile.getSaveLocation());
+
+            ProcessBuilder processBuilder = new ProcessBuilder(commands);
+            log.info(StringUtils.join(processBuilder.command(), " "));
+
             Process process = processBuilder.start();
 
             // Get input streams
@@ -63,7 +73,10 @@ public class AsperaUtility {
 
             String s = null;
             while ((s = reader.readLine()) != null) {
-                System.out.println(s);
+                log.info(s);
+                if (StringUtils.contains(s, "Store key in cache? (y/n)")) {
+                    process.getOutputStream().write("y".getBytes());
+                }
                 if (remoteFile.getSize() > 0) {
                     if (s.startsWith(remoteFile.getName()) && remoteFile.getProgress() < 100) {
                         int progress = Integer.valueOf(StringUtils.strip(StringUtils.split(s)[1], "%"));

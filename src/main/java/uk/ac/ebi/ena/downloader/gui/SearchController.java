@@ -128,14 +128,18 @@ public class SearchController implements Initializable {
         try {
             DownloadSettings downloadSettings = getDownloadSettings();
             File jarDir = getJarDir();//new File(ClassLoader.getSystemClassLoader().getResource(".").getPath());
-            System.out.println(jarDir.getAbsolutePath());
+            log.info(jarDir.getAbsolutePath());
             if (!jarDir.canWrite()) {
                 showMessage("Unable to save settings file to " + jarDir.getAbsolutePath() + ". Please make sure it has write access.", Images.EXCLAMATION);
             }
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(new File(jarDir.getAbsolutePath() + File.separator + "ena-file-downloader.settings")));
+            File file = new File(jarDir.getAbsolutePath() + File.separator + "ena-file-downloader.settings");
+            log.info(file.getAbsolutePath());
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(file));
             objectOutputStream.writeObject(downloadSettings);
             objectOutputStream.close();
+            showMessage("Configuration saved to " + file.getAbsolutePath(), Images.TICK);
         } catch (Exception e) {
+            log.error("Error saving settings", e);
             showMessage(e.getMessage(), Images.EXCLAMATION);
             return;
         }
@@ -200,9 +204,11 @@ public class SearchController implements Initializable {
                     asperaSsh.setText(o.getCertificate());
                     asperaParams.setText(o.getParameters());
                     downloadSettings = o;
+                    showMessage("Configuration loaded from " + settings.getAbsolutePath(), Images.TICK);
                 }
             }
         } catch (Exception e) {
+            log.error("Error saving settings", e);
             showMessage(e.getMessage(), Images.EXCLAMATION);
         }
     }
@@ -454,7 +460,7 @@ public class SearchController implements Initializable {
         if (ftpRadio.isSelected()) {
             return new DownloadSettings(DownloadSettings.Method.FTP);
         } else {
-            if (StringUtils.isBlank(asperaExe.getText()) || !new File(asperaExe.getText()).exists()) {
+            if (StringUtils.isBlank(asperaExe.getText()) || (!"ascp".equals(asperaExe.getText()) && !(asperaExe.getText().contains("ascp") && new File(asperaExe.getText()).exists()))) {
                 throw new Exception("Aspera Connect client executable not found.");
             }
             if (StringUtils.isBlank(asperaSsh.getText()) || !new File(asperaSsh.getText()).exists()) {
