@@ -1,5 +1,5 @@
 group 'uk.ac.ebi.ena'
-version 'v1.1'
+version 'v1.1.1'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -38,6 +38,8 @@ task copyToLib(type: Copy) {
 
 
 jar {
+    baseName 'ena-file-downloader'
+
     dependsOn configurations.compile
     from {
         (configurations.compile).collect {
@@ -46,6 +48,7 @@ jar {
     } {
         exclude "META-INF/**"
         exclude "LICENSE"
+        exclude "controlsfx_*.properties"
     }
     manifest {
         attributes 'Implementation-Title': 'ENA File Downloader',
@@ -66,3 +69,4 @@ dependencies {
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
+
