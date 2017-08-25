@@ -2,8 +2,8 @@ package uk.ac.ebi.ena.downloader.service.aspera;
 
 
 import it.sauronsoftware.ftp4j.FTPClient;
+import javafx.scene.control.ProgressIndicator;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +49,8 @@ public class AsperaUtility {
     public void downloadFile(final RemoteFile remoteFile, DownloadSettings downloadSettings) throws Exception {
         try {
 
+            // aspera doesn't support url encoded file paths
+            // e.g. fasp.sra.ebi.ac.uk/vol1/ERA413/ERA413485/tab/TARA_018_DCM_%3C-0.22.gene.tsv for fasp.sra.ebi.ac.uk/vol1/ERA413/ERA413485/tab/TARA_018_DCM_<-0.22.gene.tsv
             final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + remoteFile.getName());
 
             remoteFile.setLocalPath(downloadFile.getAbsolutePath());
@@ -74,6 +76,10 @@ public class AsperaUtility {
             String s = null;
             while ((s = reader.readLine()) != null) {
                 log.info(s);
+                if (s.contains("Error")) {
+                    remoteFile.updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+                    throw new AsperaException(s);
+                }
                 if (StringUtils.contains(s, "Store key in cache? (y/n)")) {
                     process.getOutputStream().write("y".getBytes());
                 }
@@ -94,7 +100,7 @@ public class AsperaUtility {
                                     if (!StringUtils.equals(md5, remoteFile.getMd5())) {
                                         log.debug("MD5 Error");
                                         remoteFile.updateProgress(0);
-                                        remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON);
+                                        remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON + ":" + "MD5 Checksum verification failed.");
                                         try {
                                             new File(remoteFile.getLocalPath()).delete();
                                         } catch (Exception e) {
@@ -123,13 +129,6 @@ public class AsperaUtility {
                 }
             }
             reader.close();
-
-            BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            // Read command errors
-            String err = IOUtils.toString(stdError);
-            if (StringUtils.isNotBlank(err)) {
-                throw new AsperaException(err);
-            }
 
         } catch (IOException ex) {
             log.error("IO error", ex);

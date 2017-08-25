@@ -13,6 +13,7 @@ import uk.ac.ebi.ena.downloader.service.ftp.FTP4JUtility;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URLEncoder;
 
 /**
  * Created by suranj on 31/05/2016.
@@ -41,7 +42,7 @@ public class DownloadService {
     }
 
     public boolean fileAlreadyDownloaded(RemoteFile remoteFile) throws Exception {
-        final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + remoteFile.getName());
+        final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + URLEncoder.encode(remoteFile.getName(), "UTF-8"));
         if (downloadFile.exists()) {
 //            try {
             FileInputStream fis = new FileInputStream(downloadFile);

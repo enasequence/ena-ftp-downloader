@@ -55,9 +55,12 @@ public class MD5TableCell<RemoteFile> extends TableCell<RemoteFile, String> {
             setText(null);
             setGraphic(null);
         } else {
-            if (ERROR_ICON.equals(item)) {
-                imageView.setImage(new Image(item + ".png"));
-                Tooltip.install(imageView, new Tooltip("File did not download correctly. Please try again later."));
+            if (item.startsWith(ERROR_ICON)) {
+                String[] parts = item.split("\\:");
+                imageView.setImage(new Image(parts[0] + ".png"));
+                Tooltip tooltip = new Tooltip(parts.length > 1 ? StringUtils.substringAfter(item, ":").trim() : "File did not download correctly. Please try again later.");
+                tooltip.setWrapText(true);
+                Tooltip.install(imageView, tooltip);
             } else if (SUCCESS_ICON.equals(item)) {
                 imageView.setImage(new Image(item + ".png"));
                 Tooltip.install(imageView, new Tooltip("File fully downloaded. MD5 checksum verified."));

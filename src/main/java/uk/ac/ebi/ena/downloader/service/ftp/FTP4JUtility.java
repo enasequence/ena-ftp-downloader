@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 
 /**
  * A utility class that provides functionality for downloading files from a FTP
@@ -68,13 +69,13 @@ public class FTP4JUtility {
     public void downloadFile(final RemoteFile remoteFile) throws Exception {
         try {
 
-            final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + remoteFile.getName());
+            final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + URLEncoder.encode(remoteFile.getName(), "UTF-8"));
             log.debug(downloadFile.getAbsolutePath() + ":downloadFile.canWrite():" + downloadFile.canWrite());
 
             ftpClient.setType(FTPClient.TYPE_AUTO);
             String path = StringUtils.substringAfter(remoteFile.getPath(), this.host);
             String dir = StringUtils.substringAfter(StringUtils.substringBeforeLast(path, "/"), "/");
-            ftpClient.changeDirectory(dir);
+//            ftpClient.changeDirectory(dir);
 //            long fileSize = getFileSize(dir, StringUtils.substringAfterLast(path, "/"));
 //            log.debug(fileSize);
             log.debug("path:" + path);
@@ -107,7 +108,7 @@ public class FTP4JUtility {
                                     if (!StringUtils.equals(md5, remoteFile.getMd5())) {
                                         log.debug("MD5 Error");
                                         remoteFile.updateProgress(0);
-                                        remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON);
+                                        remoteFile.setSuccessIcon(MD5TableCell.ERROR_ICON  + ":" + "MD5 Checksum verification failed.");
                                         try {
                                             new File(remoteFile.getLocalPath()).delete();
                                         } catch (Exception e) {

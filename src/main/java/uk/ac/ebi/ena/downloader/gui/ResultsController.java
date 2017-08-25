@@ -528,7 +528,6 @@ public class ResultsController implements Initializable {
             }
             new Thread(() -> {
                 try {
-                    log.info("latch waiting");
                     latch.await();
                     int count = 0;
                     for (int r = 0; r < notDoneFiles.size(); r++) {

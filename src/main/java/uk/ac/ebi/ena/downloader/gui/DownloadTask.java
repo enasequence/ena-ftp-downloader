@@ -15,7 +15,7 @@ import java.util.concurrent.CountDownLatch;
  * Created by suranj on 01/08/2016.
  */
 public class DownloadTask extends Task<Void> {
-    private final static int RETRY_COUNT = 10;
+    private final static int RETRY_COUNT = 5;
     private final static Logger log = LoggerFactory.getLogger(DownloadTask.class);
 
     private final RemoteFile file;
@@ -58,12 +58,7 @@ public class DownloadTask extends Task<Void> {
                 log.debug("calling success:" + file.getName());
                 file.setDownloaded(true);
                 succeeded();
-                /*Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
 
-                    }
-                });*/
             } catch (Exception e) {
                 log.error("Failed download", e);
                 throw e;
@@ -73,7 +68,7 @@ public class DownloadTask extends Task<Void> {
         } catch (Exception e) {
             log.error("Failed download", e);
             file.updateProgress(0);
-            file.setSuccessIcon(MD5TableCell.ERROR_ICON);
+            file.setSuccessIcon(MD5TableCell.ERROR_ICON + ":" + e.getMessage());
             try {
                 new File(file.getLocalPath()).delete();
             } catch (Exception ex) {
@@ -82,7 +77,7 @@ public class DownloadTask extends Task<Void> {
             this.failed();
             throw e;
         } finally {
-            couuntdownLatch();
+            countdownLatch();
         }
     }
 
@@ -90,25 +85,15 @@ public class DownloadTask extends Task<Void> {
     protected void cancelled() {
         super.cancelled();
         try {
-            double progress = this.getProgress();
-//            if (!file.isDownloaded()) {
             downloadService.abortDownload();
-//                File downloadFile = new File(getSaveLocation() + File.separator + getName());
-//                boolean deleted = downloadFile.delete();
-//                if (!deleted) {
-//                    downloadFile.deleteOnExit();
-//                }
-//            } else if (progress < 0) {
-//                this.updateProgress(0);
-//            }
         } catch (Exception e) {
             log.error("Failed cancel:", e);
         } finally {
-            couuntdownLatch();
+            countdownLatch();
         }
     }
 
-    private void couuntdownLatch() {
+    private void countdownLatch() {
         if (!countedDown) {
             countedDown = true;
             try {

@@ -24,7 +24,11 @@ public class WarehouseQuery {
 
     public Map<String, List<RemoteFile>> doWarehouseSearch(String acc, DownloadSettings.Method method) {
         WarehouseQuery warehouseQuery = new WarehouseQuery();
-        Map<String, List<RemoteFile>> map = warehouseQuery.query(acc, method);
+        String resultDomain = getResultDomain(acc);
+        Map<String, List<RemoteFile>> map = warehouseQuery.query(acc, method, resultDomain);
+        if (map.isEmpty()) {
+            map = warehouseQuery.query(acc, method, resultDomain.equals("analysis") ? "read_run" : "analysis");
+        }
         return map;
     }
 
@@ -34,22 +38,15 @@ public class WarehouseQuery {
         return map;
     }
 
-    public Map<String, List<RemoteFile>> query(String accession, DownloadSettings.Method method) {
+    public Map<String, List<RemoteFile>> query(String accession, DownloadSettings.Method method, String resultDomain) {
         // URL stump for programmatic query of files
-        String resultDomain = getResultDomain(accession);
         String[] types = {};
         String fields = "";
-        String accField = "";
         if (resultDomain.equals("analysis")) {
             types = new String[]{"submitted"};
-            accField = "analysis_accession";
         } else {
             types = new String[]{"fastq", "submitted", "sra"};
-            accField = "run_accession";
         }
-
-        fields += accField + ",";
-
 
         for (int t = 0; t < types.length; t++) {
             String type = types[t];
@@ -58,7 +55,7 @@ public class WarehouseQuery {
                 fields += ",";
             }
         }
-        String url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=" + accession + "&result=" + resultDomain + "&fields=" + fields;
+        String url = "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=" + accession + "&result=" + resultDomain + "&fields=" + fields;
         log.info(url);
         try {
             // Build URL, Connect and get results reader

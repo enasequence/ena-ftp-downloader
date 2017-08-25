@@ -14,6 +14,7 @@ import uk.ac.ebi.ena.downloader.model.RemoteFile;
 
 import java.io.*;
 import java.net.SocketTimeoutException;
+import java.net.URLEncoder;
 
 /**
  * A utility class that provides functionality for downloading files from a FTP
@@ -32,14 +33,6 @@ public class CommonsFTPUtility {
     private String password = "1234";
 
     private FTPClient ftpClient = null;
-    private int replyCode;
-
-    private InputStream inputStream;
-
-    /*public FTP4JUtility() {
-        FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_L8);
-        ftpClient.configure(conf);
-    }*/
 
     /**
      * Connect and login to the server.
@@ -83,7 +76,7 @@ public class CommonsFTPUtility {
      */
     public synchronized void downloadFile(final RemoteFile remoteFile) throws Exception {
         try {
-            final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + remoteFile.getName());
+            final File downloadFile = new File(remoteFile.getSaveLocation() + File.separator + URLEncoder.encode(remoteFile.getName(), "UTF-8"));
             log.debug(downloadFile.getAbsolutePath() + ":downloadFile.canWrite():" + downloadFile.canWrite());
             log.debug("remote file:" + remoteFile.getPath());
 //            ftpClient.setType(FTPClient.TYPE_AUTO);
@@ -146,20 +139,6 @@ public class CommonsFTPUtility {
                 }
             }.start();
 
-       /*
-            InputStream inputStream = null;
-            while (inputStream == null) {
-                try {
-                    inputStream = ftpClient.retrieveFileStream(path);
-                    log.debug("input stream:" + ftpClient.getReplyString());
-                } catch (Exception e) {
-                    e.log.error();
-                    log.debug("waiting 5 sec");
-                    wait(5000);
-                }
-            }
-            log.debug("input stream:" + ftpClient.getReplyString());*/
-//            Util.copyStream(inputStream, outputStream2, (int) remoteFile.getTransferred(), remoteFile.getSize(), copyStreamListener);
 
         } catch (SocketTimeoutException ste) {
             throw ste;
@@ -211,7 +190,6 @@ public class CommonsFTPUtility {
                     }
                 } catch (Exception e) {
                     log.error("Abort fault:" + e.getMessage());
-//            throw e;
                 }
             }
         }.start();

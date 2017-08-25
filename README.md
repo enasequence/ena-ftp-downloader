@@ -1,4 +1,4 @@
-# ENA File Downloader version 1.1
+# ENA File Downloader version 1.1.1
 
 Graphical user interface (GUI) for bulk downloading of run/analysis files from ENA via FTP or Aspera.
 
@@ -9,9 +9,9 @@ Copyright 2017 EMBL - European Bioinformatics Institute Licensed under the Apach
 You may obtain a copy of the License at: http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-# Installation
+# Download
 
-Download the latest release (.zip file) from the Releases section and extract it to a location of your choice. The archive contains an executable jar which contains all dependencies.
+Download the latest release (.zip file) from the Releases section of [the GitHub project](https://github.com/enasequence/ena-ftp-downloader) and extract it to a location of your choice. The archive contains an executable jar which contains all dependencies.
 
 # Dependencies
 
