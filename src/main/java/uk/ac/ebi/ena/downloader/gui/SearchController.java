@@ -318,7 +318,14 @@ public class SearchController implements Initializable {
             }
             File reportFile = new File(report.getText());
             new Thread(() -> {
-                Map<String, List<RemoteFile>> fileListMap = new ReportParser().parseExternalReportFile(reportFile, downloadSettings.getMethod());
+                Map<String, List<RemoteFile>> fileListMap = null;
+                try {
+                     fileListMap = new ReportParser().parseExternalReportFile(reportFile, downloadSettings.getMethod());
+                } catch (Exception e) {
+                    log.error("Parsing error:", e);
+                    showMessage(e.getMessage(), Images.WARNING);
+                    return;
+                }
 
                 if (fileListMap == null || fileListMap.size() == 0) {
                     showMessage("File is not in the desired format, or does not contain necessary information.", Images.WARNING);
