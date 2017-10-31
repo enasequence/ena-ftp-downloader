@@ -1,4 +1,4 @@
-# ENA File Downloader version 1.1.1
+# ENA File Downloader version 1.2
 
 Graphical user interface (GUI) for bulk downloading of run/analysis files from ENA via FTP or Aspera.
 
@@ -94,11 +94,16 @@ Type in a query string, choose the required file type and click "Portal Search" 
 
 # Results Window
 
-### Local Download Directory
+### Local Download Folder
 
 In order to download your files you must select a location on your file system which you have write access to. You can either use the "Browse" button to select your download directory or manually enter a path into the text field. If the provided directory does not exist, the Downloader will attempt to create it for you. The total size of the files selected for downloading will be calculated and there will be a local filesystem check to ensure there is enough free space.  If there isn't sufficient space, the download will not begin and an error message will be displayed.
 
 Note: remember that if you are using the report file option and have failed to include they file size columns, this pre-download capacity check will not be performed.
+
+### Create subfolders per accession
+
+Check this checkbox to create a subfolder for each unique accession under the save location selected above. Files
+belonging to a given accession will be saved in the subfolder for said accession.
 
 ### Remote Files
 
