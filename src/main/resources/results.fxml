@@ -4,6 +4,8 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import uk.ac.ebi.ena.downloader.gui.custom.*?>
 <?import java.net.URL?>
 <VBox xmlns:fx="http://javafx.com/fxml/1"
@@ -54,6 +56,11 @@
                             <children>
                                 <Button fx:id="selectAllBtn" layoutX="14.0" layoutY="4.0" mnemonicParsing="false"
                                         text="Select All"/>
+                                <ImageView fitWidth="25" preserveRatio="true" smooth="true" fx:id="labelImage" layoutX="150.0" layoutY="9.0" visible="false">
+                                    <image>
+                                        <Image url="@loading.gif" />
+                                    </image>
+                                </ImageView>
                                 <Label fx:id="selectionLabel" layoutX="183.0" layoutY="9.0" text=""/>
                             </children>
                         </Pane>

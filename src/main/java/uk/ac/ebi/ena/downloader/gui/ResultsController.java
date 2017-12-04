@@ -37,7 +37,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -49,10 +52,12 @@ import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.downloader.gui.custom.MD5TableCell;
 import uk.ac.ebi.ena.downloader.gui.custom.ProgressBarTableCell;
 import uk.ac.ebi.ena.downloader.model.DownloadSettings;
+import uk.ac.ebi.ena.downloader.model.Images;
 import uk.ac.ebi.ena.downloader.model.RemoteFile;
 import uk.ac.ebi.ena.downloader.utils.Utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -90,6 +95,9 @@ public class ResultsController implements Initializable {
 
     @FXML
     private Tab fastqTab, submittedTab, sraTab;
+
+    @FXML
+    private ImageView labelImage;
 
     @FXML
     private ObservableList<RemoteFile> fastqFiles, submittedFiles, sraFiles;
@@ -315,7 +323,7 @@ public class ResultsController implements Initializable {
                 size += file.getSize();
             }
         }
-        selectionLabel.setText(count + " " + type + " files selected. " + (size > 0 ? ("Total size: " + Utils.getHumanReadableSize(size)) : ""));
+        showMessage(count + " " + type + " files selected. " + (size > 0 ? ("Total size: " + Utils.getHumanReadableSize(size)) : ""), null);
         totalSize = size;
     }
 
@@ -443,7 +451,7 @@ public class ResultsController implements Initializable {
             public void handle(ActionEvent actionEvent) {
                 selectAllBtn.setOnAction(new SelectAllHandler());
                 selectAllBtn.setText("Select All");
-                selectionLabel.setText("");
+                hideMessage();
                 searchController.clearFields();
                 Stage primaryStage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
                 primaryStage.setScene(searchScene);
@@ -451,11 +459,13 @@ public class ResultsController implements Initializable {
         });
     }
 
+
+
     public class StartDownloadHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
             if (StringUtils.isBlank(localDownloadDir.getText())) {
-                selectionLabel.setText("Please select a download location.");
+                showMessage("Please select a download location.", Images.WARNING);
                 return;
             }
             File downloadDir = new File(localDownloadDir.getText());
@@ -464,19 +474,30 @@ public class ResultsController implements Initializable {
                     downloadDir.mkdirs();
                 }
             } catch (Exception e) {
-                selectionLabel.setText("The selected folder does not exist, and could not be created.");
+                showMessage("The location \""+  downloadDir.getAbsolutePath()+ "\" does not exist, and could not be created.", Images.EXCLAMATION);
                 return;
             }
             log.debug("downloadDir.isDirectory():" + downloadDir.isDirectory());
             log.debug("downloadDir.canWrite():" + downloadDir.canWrite());
             if (!downloadDir.isDirectory() || !downloadDir.canWrite()) {
-                selectionLabel.setText("Unable to save to selected download location.");
+                showMessage("Unable to save to selected download location \"" + downloadDir.getAbsolutePath()
+                        + "\".", Images.EXCLAMATION);
+                return;
+            }
+            File testFile = new File(downloadDir.getAbsolutePath() + File.separator + "delete_me");
+            try {
+                testFile.createNewFile();
+                testFile.delete();
+            } catch (IOException e) {
+                log.error("Can't create files", e);
+                showMessage("Not allowed to save to selected download location \"" + downloadDir.getAbsolutePath()
+                        + "\". Please select a different location.", Images.EXCLAMATION);
                 return;
             }
             long usableSpace = downloadDir.getUsableSpace();
             if (usableSpace < totalSize) {
-                selectionLabel.setText("Not enough space in selected location to save all files. An additional "
-                        + Utils.getHumanReadableSize(totalSize - usableSpace) + " is required.");
+                showMessage("Not enough space in selected location to save all files. An additional "
+                        + Utils.getHumanReadableSize(totalSize - usableSpace) + " is required.", Images.WARNING);
                 return;
             }
 
@@ -501,7 +522,7 @@ public class ResultsController implements Initializable {
                 }
             }
             if (checkedFiles.size() == 0) {
-                selectionLabel.setText("No files selected for download.");
+                showMessage("No files selected for download.", Images.WARNING);
                 return;
             } else {
                 updateSelectionMessage();
@@ -513,7 +534,7 @@ public class ResultsController implements Initializable {
                     }
                 }
                 if (notDoneFiles.isEmpty()) {
-                    selectionLabel.setText("All selected files have already been downloaded.");
+                    showMessage("All selected files have already been downloaded.", Images.TICK);
                     return;
                 }
             }
@@ -566,7 +587,7 @@ public class ResultsController implements Initializable {
                     if (count == notDoneFiles.size()) {
                         int finalCount = count;
                         Platform.runLater(() -> {
-                            selectionLabel.setText(finalCount + (finalCount == 1 ? " file has " : " files have ") + "been successfully downloaded.");
+                            showMessage(finalCount + (finalCount == 1 ? " file has " : " files have ") + "been successfully downloaded.", Images.TICK);
                         });
                     }
 
@@ -583,7 +604,7 @@ public class ResultsController implements Initializable {
             startDownloadBtn.setDisable(false);
             stopDownloadBtn.setDisable(true);
             log.debug("Stopping downloads");
-            selectionLabel.setText("Downloading stopped by user! Click Start Download to resume.");
+            showMessage("Downloading stopped by user! Click Start Download to resume.", Images.EXCLAMATION);
             if (executor != null) {
                 List<Runnable> runnables = executor.shutdownNow();
             }
@@ -634,7 +655,7 @@ public class ResultsController implements Initializable {
             startDownloadBtn.setDisable(false);
             stopDownloadBtn.setDisable(true);
             log.debug("Stopping downloads");
-            selectionLabel.setText("Downloading stopped due to an error.");
+            showMessage("Downloading stopped due to an error.", Images.EXCLAMATION);
             if (executor != null) {
                 List<Runnable> runnables = executor.shutdownNow();
             }
@@ -660,8 +681,30 @@ public class ResultsController implements Initializable {
 
         @Override
         public void handle(WorkerStateEvent event) {
-            selectionLabel.setText(file.getName() + " downloaded.");
+            showMessage(file.getName() + " downloaded.", Images.TICK);
         }
+    }
+
+    public void showMessage(String message, Images image) {
+        log.info(message);
+        Platform.runLater(() -> {
+            this.selectionLabel.setText(message);
+            if (image != null) {
+                this.selectionLabel.setTextFill(image.getTextColor());
+                labelImage.setImage(new Image(image.getImage()));
+                labelImage.setVisible(true);
+            } else {
+                this.selectionLabel.setTextFill(Color.BLACK);
+                labelImage.setVisible(false);
+            }
+        });
+    }
+
+    private void hideMessage() {
+        Platform.runLater(() -> {
+            this.selectionLabel.setText(null);
+            labelImage.setVisible(false);
+        });
     }
 }
 
