@@ -13,6 +13,8 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 Download the latest release (.zip file) from the Releases section of [the GitHub project](https://github.com/enasequence/ena-ftp-downloader) and extract it to a location of your choice. The archive contains an executable jar which contains all dependencies.
 
+Quick link: [Latest release](https://github.com/enasequence/ena-ftp-downloader/files/1527471/ena-file-downloader-v1.2.1.zip)
+
 # Dependencies
 
 Requires [Java 8 runtime environment](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html).
