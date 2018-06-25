@@ -19,7 +19,7 @@ Quick link: [Latest release](https://github.com/enasequence/ena-ftp-downloader/f
 
 Requires [Java 8 runtime environment](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html).
 
-## Note for OpenJDK users
+## Note for OpenJDK users (If you have Oracle Java, please ignore this)
 Please note that this application is written using JavaFX and requires the JavaFX libraries to be available in your Java runtime. If your installation of OpenJDK does not include the JavaFX libraries by default, you would either need to install the OpenJFX libraries using
 ```
 sudo apt-get install openjfx
