@@ -124,4 +124,6 @@ you ensure the file download destination is cleaned of any partial files before 
 
 Should you have any problems please contact us at datasubs@ebi.ac.uk with "File Downloader problem" in the subject line.
 
+# Packaging
 
+Uses https://github.com/FibreFoX/javafx-gradle-plugin for packaging Oracle JDK runtime

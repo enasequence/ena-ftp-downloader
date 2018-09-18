@@ -97,9 +97,9 @@ jfx {
     // requirement for jfxJar-task
     mainClass = mainClassName
     jfxAppOutputDir = "build/packages/app"
-    jfxMainAppJarName = jar.baseName + "-jfx-" + version + ".jar"
+    jfxMainAppJarName = jar.baseName + version + ".jar"
 
     // requirement for jfxNative-task
-    vendor = 'EBI ENA Team'
+    vendor = 'EMBL-EBI'
     nativeOutputDir = "build/packages/native"
 }
