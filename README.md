@@ -13,11 +13,13 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 Download the latest release (.zip file) from the Releases section of [the GitHub project](https://github.com/enasequence/ena-ftp-downloader) and extract it to a location of your choice. The archive contains an executable jar which contains all dependencies.
 
+Quick link: [Latest release](https://github.com/enasequence/ena-ftp-downloader/files/1527471/ena-file-downloader-v1.2.1.zip)
+
 # Dependencies
 
 Requires [Java 8 runtime environment](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html).
 
-## Note for OpenJDK users
+## Note for OpenJDK users (If you have Oracle Java, please ignore this)
 Please note that this application is written using JavaFX and requires the JavaFX libraries to be available in your Java runtime. If your installation of OpenJDK does not include the JavaFX libraries by default, you would either need to install the OpenJFX libraries using
 ```
 sudo apt-get install openjfx
