@@ -4,6 +4,7 @@ version 'v1.2.1'
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'application'
+apply plugin: 'javafx-gradle-plugin'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -21,6 +22,10 @@ run {
 }
 
 buildscript {
+    dependencies {
+        classpath group: 'de.dynamicfiles.projects.gradle.plugins', name: 'javafx-gradle-plugin', version: '8.8.2'
+    }
+
     repositories {
         mavenLocal()
         mavenCentral()
@@ -70,3 +75,31 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
+import org.gradle.internal.os.OperatingSystem
+
+switch ( OperatingSystem.current() ) {
+    case OperatingSystem.WINDOWS:
+        project.ext.pkgCmd = ["cmd", "/c", "package"]
+        break
+    case OperatingSystem.LINUX:
+        project.ext.pkgCmd = ["./package.sh"]
+        break
+    case OperatingSystem.MAC_OS:
+        project.ext.pkgCmd = ["./package.sh"]
+        break
+}
+
+task packageDist(type: Exec, dependsOn: 'jar') {
+    commandLine project.ext.pkgCmd
+}
+
+jfx {
+    // requirement for jfxJar-task
+    mainClass = mainClassName
+    jfxAppOutputDir = "build/packages/app"
+    jfxMainAppJarName = jar.baseName + "-jfx-" + version + ".jar"
+
+    // requirement for jfxNative-task
+    vendor = 'EBI ENA Team'
+    nativeOutputDir = "build/packages/native"
+}
