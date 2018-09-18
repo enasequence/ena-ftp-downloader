@@ -49,10 +49,8 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.net.URLDecoder;
+import java.util.*;
 
 public class SearchController implements Initializable {
 
@@ -60,13 +58,13 @@ public class SearchController implements Initializable {
     private final static Logger log = LoggerFactory.getLogger(SearchController.class);
     public static final String PLEASE_WAIT = "Please wait...";
     @FXML
-    private TextField accession, report, asperaExe, asperaSsh, asperaParams;
+    private TextField accession, report, asperaExe, asperaSsh, asperaParams, otherParams;
 
     @FXML
     private TextArea query;
 
     @FXML
-    private Button accessionBtn, reportBtn, searchBtn, asperaExeBtn, asperaSshBtn, reportHelpBtn, reportLoadBtn, asperaSaveBtn;
+    private Button accessionBtn, reportBtn, searchBtn, asperaExeBtn, asperaSshBtn, reportHelpBtn, reportLoadBtn, asperaSaveBtn, otherParamsHelpBtn;
 
     @FXML
     private RadioButton runFilesRadio, analysisFilesRadio, ftpRadio, asperaRadio;
@@ -98,25 +96,90 @@ public class SearchController implements Initializable {
     @Override // This method is called by the FXMLLoader when initialization is complete
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
         log.debug("initialize");
+        boolean isWebstart = Main.parameters.getUnnamed().size() > 0;
 //        searchLoadingImg.setVisible(false);
-        setupSettingsPane();
+        setupSettingsPane(isWebstart);
 
         setupAccBtn();
         setupReportBtn();
         setupSearchBtn();
 
         // for webstart
-        String accessionParam = Main.parameters.getUnnamed().size() > 0 ? Main.parameters.getUnnamed().get(0) : Main.parameters.getNamed().get("accession");
+        if (!isWebstart) {
+            //nothing more to do here
+            return;
+        }
+
+        Map<String, String> webstartParams = parseWebstartParams(Main.parameters.getUnnamed().get(0));
+        String accessionParam = webstartParams.get("accession");
         if (StringUtils.isNotBlank(accessionParam)) {
-            asperaLabel.setVisible(false);
-            asperaRadio.setVisible(false);
             accession.setText(accessionParam);
             accessionBtn.fire();
+            return;
         }
+        doAutoSearch(webstartParams);
 
     }
 
-    private void setupSettingsPane() {
+    private void doAutoSearch(Map<String, String> webstartParams) {
+        String queryParam = webstartParams.get("query");
+        String result = webstartParams.get("result");
+        List<String> params = new ArrayList<>();
+        String dataPortal = webstartParams.get("dataPortal");
+        if (StringUtils.isNotBlank(dataPortal)) {
+            params.add("dataPortal=" + dataPortal);
+        }
+        String limit = webstartParams.get("limit");
+        if (StringUtils.isNotBlank(limit)) {
+            params.add("limit=" + limit);
+        }
+        String includeMetagenomes = webstartParams.get("includeMetagenomes");
+        if (StringUtils.isNotBlank(includeMetagenomes)) {
+            params.add("includeMetagenomes=" + includeMetagenomes);
+        }
+        String dccDataOnly = webstartParams.get("dccDataOnly");
+        if (StringUtils.isNotBlank(dccDataOnly)) {
+            params.add("dccDataOnly=" + dccDataOnly);
+        }
+        if (StringUtils.isNotBlank(queryParam)) {
+            try {
+                query.setText(URLDecoder.decode(queryParam, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                showMessage("Error parsing query string. Please correct any invalid characters and retry", Images.EXCLAMATION);
+            }
+        }
+        if ("read_run".equals(result)) {
+            runFilesRadio.setSelected(true);
+        } else if ("analysis".equals(result)) {
+            analysisFilesRadio.setSelected(true);
+        }
+        if (params.size() > 0) {
+            otherParams.setText(StringUtils.join(params, "&"));
+        }
+        searchBtn.fire();
+        return;
+    }
+
+    private Map<String, String> parseWebstartParams(String text) {
+        log.info(text);
+        Map<String, String> map = new HashMap<>();
+        String[] split = text.split("&");
+        for (String s : split) {
+            String[] split1 = s.split("=");
+            map.put(split1[0], split1[1]);
+        }
+        return map;
+    }
+
+    private void setupSettingsPane(boolean isWebstart) {
+        settingsTPane.heightProperty().addListener((obs, oldHeight, newHeight) -> stage.sizeToScene());
+
+        if (isWebstart) {
+            // no aspera
+            asperaLabel.setVisible(false);
+            asperaRadio.setVisible(false);
+            return;
+        }
         asperaRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
             asperaConfig.setVisible(newValue);
             asperaConfig.setExpanded(newValue);
@@ -147,8 +210,6 @@ public class SearchController implements Initializable {
         });
         asperaSaveBtn.setOnAction(event -> saveAsperaSettings());
         loadAsperaSettings();
-
-        settingsTPane.heightProperty().addListener((obs, oldHeight, newHeight) -> stage.sizeToScene());
     }
 
     private void saveAsperaSettings() {
@@ -167,7 +228,7 @@ public class SearchController implements Initializable {
             showMessage("Configuration saved to " + file.getAbsolutePath(), Images.TICK);
         } catch (Exception e) {
             log.error("Error saving settings", e);
-            showMessage(e.getMessage(), Images.EXCLAMATION);
+            showMessage("Error while saving Aspera settings:" + e.getMessage(), Images.EXCLAMATION);
             return;
         }
     }
@@ -235,8 +296,8 @@ public class SearchController implements Initializable {
                 }
             }
         } catch (Exception e) {
-            log.error("Error saving settings", e);
-            showMessage(e.getMessage(), Images.EXCLAMATION);
+            log.error("Error loading settings", e);
+            showMessage("Error while loading Aspera settings:" + e.getMessage(), Images.EXCLAMATION);
         }
     }
 
@@ -262,22 +323,13 @@ public class SearchController implements Initializable {
             try {
                 downloadSettings = getDownloadSettings();
             } catch (Exception e) {
-                showMessage(e.getMessage(), Images.EXCLAMATION);
+                showMessage("Error loading download configuration:" + e.getMessage(), Images.EXCLAMATION);
                 return;
             }
 
             showMessage(PLEASE_WAIT, Images.LOADING);
 
             new Thread(() -> {
-//                Map<String, List<RemoteFile>> stringListMap = null;
-                /*try {
-                    Future<Map<String, List<RemoteFile>>> stringListMapFuture = new WarehouseQuery().doWarehouseSearch(acc, downloadSettings.getMethod());
-                    stringListMap = stringListMapFuture.get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }*/
                 Map<String, List<RemoteFile>> stringListMap = new WarehouseQuery().doWarehouseSearch(acc, downloadSettings.getMethod());
                 if (stringListMap == null || stringListMap.size() == 0) {
                     showMessage("No downloadable files were found for the accession " + acc, Images.WARNING);
@@ -313,17 +365,17 @@ public class SearchController implements Initializable {
             try {
                 downloadSettings = getDownloadSettings();
             } catch (Exception e) {
-                showMessage(e.getMessage(), Images.EXCLAMATION);
+                showMessage("Error loading download configuration:" + e.getMessage(), Images.EXCLAMATION);
                 return;
             }
             File reportFile = new File(report.getText());
             new Thread(() -> {
                 Map<String, List<RemoteFile>> fileListMap = null;
                 try {
-                     fileListMap = new ReportParser().parseExternalReportFile(reportFile, downloadSettings.getMethod());
+                    fileListMap = new ReportParser().parseExternalReportFile(reportFile, downloadSettings.getMethod());
                 } catch (Exception e) {
                     log.error("Parsing error:", e);
-                    showMessage(e.getMessage(), Images.WARNING);
+                    showMessage("Error parsing report file:" + e.getMessage(), Images.WARNING);
                     return;
                 }
 
@@ -372,20 +424,31 @@ public class SearchController implements Initializable {
                     showMessage("Please enter search query string.", Images.WARNING);
                     return;
                 }
+                Map<String, String> otherParamsMap = new HashMap<>();
+                if (!StringUtils.isBlank(otherParams.getText())) {
+                    try {
+                        otherParamsMap = parseOtherParams(otherParams.getText());
+                    } catch (Exception e) {
+                        log.error("Error in other params", e);
+                        showMessage("Invalid parameters found in 'Other Parameters'", Images.EXCLAMATION);
+                        return;
+                    }
+
+                }
                 try {
                     try {
                         downloadSettings = getDownloadSettings();
                     } catch (Exception e) {
-                        showMessage(e.getMessage(), Images.EXCLAMATION);
+                        showMessage("Error loading download configuration:" + e.getMessage(), Images.EXCLAMATION);
                         return;
                     }
-//                    Platform.runLater(() -> {
+                    Map<String, String> finalOtherParamsMap = otherParamsMap;
                     new Thread(() -> {
                         Map<String, List<RemoteFile>> fileListMap = new HashMap<>();
                         if (runFilesRadio.isSelected()) {
-                            fileListMap = new WarehouseQuery().doPortalSearch("read_run", query.getText(), downloadSettings.getMethod());
+                            fileListMap = new WarehouseQuery().doPortalSearch("read_run", query.getText(), finalOtherParamsMap, downloadSettings.getMethod());
                         } else if (analysisFilesRadio.isSelected()) {
-                            fileListMap = new WarehouseQuery().doPortalSearch("analysis", query.getText(), downloadSettings.getMethod());
+                            fileListMap = new WarehouseQuery().doPortalSearch("analysis", query.getText(), finalOtherParamsMap, downloadSettings.getMethod());
                         } else {
                             showMessage("Please select result type to search in.", Images.WARNING);
                             return;
@@ -403,7 +466,6 @@ public class SearchController implements Initializable {
                                 }
                         );
                     }).start();
-//                    }                    );
 
 
                 } finally {
@@ -417,6 +479,24 @@ public class SearchController implements Initializable {
         });
 
         searchTPane.heightProperty().addListener((obs, oldHeight, newHeight) -> stage.sizeToScene());
+
+        otherParamsHelpBtn.setOnAction(event -> {
+            this.hostServices.showDocument("http://www.ebi.ac.uk/ena/portal/api/doc");
+        });
+    }
+
+    private Map<String, String> parseOtherParams(String text) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        String[] split = text.split("&");
+        for (String s : split) {
+            String[] split1 = s.split("=");
+            if (!WarehouseQuery.PORTAL_SEARCH_PARAMETERS.contains(split1[0])) {
+                throw new Exception("Unknown param:" + split1[0]);
+            }
+            map.put(split1[0], split1[1]);
+        }
+        return map;
+
     }
 
 
@@ -454,11 +534,11 @@ public class SearchController implements Initializable {
     }
 
     public void clearFields() {
-        accession.clear();
+//        accession.clear();
 //        accessionBtn.setGraphic(null);
 //        accessionBtn.setDisable(false);
 //        reportBtn.setGraphic(null);
-        report.clear();
+//        report.clear();
         clearMessage();
     }
 

@@ -63,6 +63,7 @@ public class DownloadService {
                 remoteFile.setSuccessIcon(MD5TableCell.SUCCESS_ICON);
                 if (remoteFile.getSize() == 0) {
                     remoteFile.setSize(downloadFile.length());
+                    remoteFile.setTransferred(downloadFile.length());
                 }
                 return true;
             }

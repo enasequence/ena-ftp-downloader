@@ -115,7 +115,6 @@ public class ResultsController implements Initializable {
 
     @Override // This method is called by the FXMLLoader when initialization is complete
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
-        log.debug("initialize");
         assert startDownloadBtn != null : "fx:id=\"startDownloadBtn\" was not injected: check your FXML file 'results.fxml'.";
 
     }
@@ -579,7 +578,6 @@ public class ResultsController implements Initializable {
                     int count = 0;
                     for (int r = 0; r < notDoneFiles.size(); r++) {
                         RemoteFile file = notDoneFiles.get(r);
-                        log.info(file.getName() + " " + count);
                         if (file.isDownloaded()) {
                             count++;
                         }
@@ -603,7 +601,7 @@ public class ResultsController implements Initializable {
         public void handle(ActionEvent actionEvent) {
             startDownloadBtn.setDisable(false);
             stopDownloadBtn.setDisable(true);
-            log.debug("Stopping downloads");
+            log.info("Stopping downloads");
             showMessage("Downloading stopped by user! Click Start Download to resume.", Images.EXCLAMATION);
             if (executor != null) {
                 List<Runnable> runnables = executor.shutdownNow();
@@ -654,7 +652,7 @@ public class ResultsController implements Initializable {
         public void handle(WorkerStateEvent event) {
             startDownloadBtn.setDisable(false);
             stopDownloadBtn.setDisable(true);
-            log.debug("Stopping downloads");
+            log.info("Stopping downloads");
             showMessage("Downloading stopped due to an error.", Images.EXCLAMATION);
             if (executor != null) {
                 List<Runnable> runnables = executor.shutdownNow();
@@ -686,7 +684,6 @@ public class ResultsController implements Initializable {
     }
 
     public void showMessage(String message, Images image) {
-        log.info(message);
         Platform.runLater(() -> {
             this.selectionLabel.setText(message);
             if (image != null) {

@@ -3,6 +3,8 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 /**
  * Created by suranj on 03/08/2016.
@@ -43,5 +45,11 @@ public class Tester {
             System.out.println(s);
         }
 
+    }
+
+    @Test
+    public void testDecode() throws UnsupportedEncodingException {
+        String q = "analysis_accession!%3D%22ERA000001%22";
+        System.out.println(URLDecoder.decode(q, "UTF-8"));
     }
 }

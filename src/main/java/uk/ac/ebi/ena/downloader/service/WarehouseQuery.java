@@ -30,16 +30,14 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by suranj on 27/05/2016.
  */
 public class WarehouseQuery {
     public static final String ERA_ANALYSIS_ID_PATTERN = "[ESDR]RZ[0-9]+";
+    public static final List<String> PORTAL_SEARCH_PARAMETERS = Arrays.asList(new String[] {"dataPortal", "includeMetagenomes", "dccDataOnly", "limit", "offset"});
     private final static Logger log = LoggerFactory.getLogger(WarehouseQuery.class);
 
     public Map<String, List<RemoteFile>> doWarehouseSearch(String acc, DownloadSettings.Method method) {
@@ -68,9 +66,9 @@ public class WarehouseQuery {
         return false;
     }
 
-    public Map<String, List<RemoteFile>> doPortalSearch(String result, String query, DownloadSettings.Method method) {
+    public Map<String, List<RemoteFile>> doPortalSearch(String result, String query, Map<String, String> otherParams, DownloadSettings.Method method) {
         WarehouseQuery warehouseQuery = new WarehouseQuery();
-        Map<String, List<RemoteFile>> map = warehouseQuery.portalQuery(result, query.trim(), method);
+        Map<String, List<RemoteFile>> map = warehouseQuery.portalQuery(result, query.trim(), otherParams, method);
         return map;
     }
 
@@ -110,7 +108,7 @@ public class WarehouseQuery {
         return new HashMap<>();
     }
 
-    public Map<String, List<RemoteFile>> portalQuery(String resultDomain, String query, DownloadSettings.Method method) {
+    public Map<String, List<RemoteFile>> portalQuery(String resultDomain, String query, Map<String, String> otherParams, DownloadSettings.Method method) {
         // URL stump for programmatic query of files
         String[] types = {};
         if (resultDomain.equals("analysis")) {
@@ -127,8 +125,18 @@ public class WarehouseQuery {
 
             }
         }
-        String url = "https://www.ebi.ac.uk/ena/portal/api/search?query=\"" + query + "\"&result=" + resultDomain + "&fields=" + fields + "&limit=0&download=true";
-        System.out.println(url);
+        String url = "https://www.ebi.ac.uk/ena/portal/api/search?query=\"" + query + "\"&result=" + resultDomain + "&fields=" + fields + "&download=true";
+        if (otherParams != null && otherParams.size() > 0) {
+            for (String key : otherParams.keySet()) {
+                url += ("&"+ key + "=" + otherParams.get(key));
+            }
+            if (!otherParams.containsKey("limit")) {
+                url += ("&limit=0");
+            }
+        } else {
+            url += ("&limit=0");
+        }
+        log.info(url);
         try {
             // Build URL, Connect and get results reader
             URL enaQuery = new URL(url);

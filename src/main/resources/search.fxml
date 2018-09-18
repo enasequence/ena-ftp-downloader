@@ -183,6 +183,30 @@
                                     </Hyperlink>
                                 </children>
                             </HBox>
+                            <HBox fx:id="otherParamsHBox" alignment="CENTER_LEFT" layoutX="26.0" spacing="5">
+                                <padding>
+                                    <Insets top="10.0"/>
+                                </padding>
+                                <children>
+                                    <Label fx:id="otherParamsLabel" layoutX="21.0" prefWidth="100.0" text="Search options:"/>
+                                    <TextField fx:id="otherParams" editable="true" prefHeight="25" prefWidth="539.0">
+                                        <tooltip>
+                                            <Tooltip text="Enter optional parameters in query string format e.g. offset=5&amp;limit=10&amp;dataPortal=pathogen"/>
+                                        </tooltip>
+                                    </TextField>
+                                    <Button fx:id="otherParamsHelpBtn" mnemonicParsing="false"
+                                                        style="-fx-background-color: transparent;">
+                                    <graphic>
+                                        <ImageView fitWidth="25" preserveRatio="true" smooth="true">
+                                            <image>
+                                                <Image url="@help.png">
+                                                </Image>
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                                </children>
+                            </HBox>
                             <HBox fx:id="searchHBox2" alignment="CENTER_LEFT" spacing="5">
                                 <padding>
                                     <Insets bottom="0.0" left="5.0" right="5.0" top="5.0"/>

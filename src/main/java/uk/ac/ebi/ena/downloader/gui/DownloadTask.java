@@ -54,10 +54,12 @@ public class DownloadTask extends Task<Void> {
                         }
                     }
                 }
-                file.updateProgress(1);
-                log.debug("calling success:" + file.getName());
-                file.setDownloaded(true);
-                succeeded();
+                if (file.getSize() == file.getTransferred()) {
+                    file.updateProgress(1);
+                    log.debug("calling success:" + file.getName());
+                    file.setDownloaded(true);
+                    succeeded();
+                }
 
             } catch (Exception e) {
                 log.error("Failed download", e);
