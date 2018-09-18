@@ -50,6 +50,19 @@ Please download the ena-file-downloader-v1.2.2-with-runtime.zip file and extract
 to run.
 
 Or download and install the .deb or .rpm package that suits your environment.
+
+RPM:
+
+    yum install ena-file-downloader-v.xxx.rpm
+    to show where the app is installed: rpm -ql -ena-file-downloader-vxxx
+    the app usually installs into /opt dir and a shortcut is added to the app menu.
+
+DEB:
+
+    dpkg -i ena-file-downloader-v.xxx.deb
+    to show where the app is installed: dpkg -L ena-file-downloader-vxxx
+    the app usually installs into /opt dir and a shortcut is added to the app menu.
+
  
 
 # Search Window
