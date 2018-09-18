@@ -11,15 +11,15 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Download
 
-Download the latest release (.zip file) from the Releases section of [the GitHub project](https://github.com/enasequence/ena-ftp-downloader) and extract it to a location of your choice. The archive contains an executable jar which contains all dependencies.
+## Excluding runtime 
 
-Quick link: [Latest release](https://github.com/enasequence/ena-ftp-downloader/files/1527471/ena-file-downloader-v1.2.1.zip)
+Download the latest release (ena-file-downloader-v1.2.2.jar file) from the Releases section of [the GitHub project](https://github.com/enasequence/ena-ftp-downloader) and save it to a location of your choice. The file is an executable jar which contains all dependencies.
 
-# Dependencies
+### Dependencies
 
 Requires [Java 8 runtime environment](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html).
 
-## Note for OpenJDK users (If you have Oracle Java, please ignore this)
+### Note for OpenJDK users (If you have Oracle Java, please ignore this)
 Please note that this application is written using JavaFX and requires the JavaFX libraries to be available in your Java runtime. If your installation of OpenJDK does not include the JavaFX libraries by default, you would either need to install the OpenJFX libraries using
 ```
 sudo apt-get install openjfx
@@ -28,14 +28,29 @@ sudo apt-get install openjfx
 
 or 
 
-install and use the Oracle Java runtime.
+install and use the Oracle Java runtime
 
-# Execution
+or
+
+Download an artifact which includes the Oracle java runtime.
+
+### Execution
 
 The jar is an executable file. In Windows you should be able to run it via a double-click. Alternatively, on all platforms you can use the command line:
 ```
 java -jar [path-to-file]/ena-file-downloader-[version].jar
 ```
+
+## Including runtime
+
+Some users using Linux with OpenJDK have reported that installing openjfx is not an option or is not working for them. Therefor
+we have made available packages which include the Oracle java runtime.
+
+Please download the ena-file-downloader-v1.2.2-with-runtime.zip file and extract it. Then double-click on the ena-file-downloader-v1.2.2 file
+to run.
+
+Or download and install the .deb or .rpm package that suits your environment.
+ 
 
 # Search Window
 
@@ -126,4 +141,5 @@ Should you have any problems please contact us at datasubs@ebi.ac.uk with "File 
 
 # Packaging
 
-Uses https://github.com/FibreFoX/javafx-gradle-plugin for packaging Oracle JDK runtime
+Uses https://github.com/FibreFoX/javafx-gradle-plugin for packaging Oracle JDK runtime for OpenJDK users on Linux.
+Run the jfxNative task to generate .deb & .rpm pacakges in build/pacakges/native folder.
