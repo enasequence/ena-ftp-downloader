@@ -11,9 +11,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Download
 
-## Excluding runtime 
+## Not including the runtime 
 
-Download the latest release (ena-file-downloader-v1.2.2.jar file) from the Releases section of [the GitHub project](https://github.com/enasequence/ena-ftp-downloader) and save it to a location of your choice. The file is an executable jar which contains all dependencies.
+Download the latest release (ena-file-downloader-v1.2.2.jar file) from the Releases section of [the GitHub project](https://github.com/enasequence/ena-ftp-downloader) and save it to a location of your choice. The file is an executable jar which contains all dependencies, except fot the Java runtime.
 
 ### Dependencies
 
@@ -32,7 +32,7 @@ install and use the Oracle Java runtime
 
 or
 
-Download an artifact which includes the Oracle java runtime.
+Download an artifact which includes the Oracle java runtime as described below.
 
 ### Execution
 
@@ -41,7 +41,7 @@ The jar is an executable file. In Windows you should be able to run it via a dou
 java -jar [path-to-file]/ena-file-downloader-[version].jar
 ```
 
-## Including runtime
+## Including the runtime
 
 Some users using Linux with OpenJDK have reported that installing openjfx is not an option or is not working for them. Therefor
 we have made available packages which include the Oracle java runtime.
