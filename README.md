@@ -13,7 +13,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 ## Not including the runtime 
 
-Download the latest release (ena-file-downloader-v1.2.2.jar file) from the Releases section of [the GitHub project](https://github.com/enasequence/ena-ftp-downloader) and save it to a location of your choice. The file is an executable jar which contains all dependencies, except fot the Java runtime.
+Download the latest release (ena-file-downloader-v1.2.2.jar file) from the Releases section of [the GitHub project](https://github.com/enasequence/ena-ftp-downloader) and save it to a location of your choice. The file is an executable jar which contains all dependencies, except for the Java runtime.
 
 ### Dependencies
 
