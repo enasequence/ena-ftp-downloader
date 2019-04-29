@@ -1,4 +1,8 @@
-# ENA File Downloader version 1.2
+# Note: 
+
+The GUI elements of this project was written using JavaFX. Given that JavaFX is not included by default with OpenJDK and Oracle JDK 11 and newer, this project is to be considered deprecated for any further development activity. The latest release 1.2.2 has artifacts which include the runtime libraries, which can allow you to run the app even wit OpenJDK or Oracle JDK 11+.
+
+# ENA File Downloader version 1.2.2
 
 Graphical user interface (GUI) for bulk downloading of run/analysis files from ENA via FTP or Aspera.
 
@@ -63,7 +67,10 @@ DEB:
     to show where the app is installed: dpkg -L ena-file-downloader-vxxx
     the app usually installs into /opt dir and a shortcut is added to the app menu.
 
- 
+## Windows users useing Oracle JDK11 or newer
+
+As of JDK 11, the JavaFX libraries have been seperated out from the JDK.
+If you're facing issue with running the app with JDK 11 or 12, we've added an artifact containing the Windows Java runtime libraries at https://github.com/enasequence/ena-ftp-downloader/releases/download/v1.2.2/ena-file-downloader-v1.2.2-with-runtime-windows.rar
 
 # Search Window
 
