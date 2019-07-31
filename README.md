@@ -1,6 +1,11 @@
 # Note: 
 
-The GUI elements of this project was written using JavaFX. Given that JavaFX is not included by default with OpenJDK and Oracle JDK 11 and newer, this project is to be considered deprecated for any further development activity. The latest release 1.2.2 has artifacts which include the runtime libraries, which can allow you to run the app even with OpenJDK or Oracle JDK 11+.
+The GUI elements of this project was written using JavaFX. JavaFX is not included by default with OpenJDK and Oracle JDK 11 and newer. 
+You can either
+1. Install the JavaFX libraries
+or
+2. Download a release artifact which includees the Java runtime librarires from the latest release 1.2.2. 
+Either option can allow you to run the app even with OpenJDK or Oracle JDK 11+.
 
 # ENA File Downloader version 1.2.2
 
