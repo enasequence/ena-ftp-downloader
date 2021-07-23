@@ -8,6 +8,7 @@ import uk.ac.ebi.ena.cv19fd.app.exceptions.GlobalExceptionHandler;
 public class Cv19FileDownloaderApplication {
 
     public static void main(String[] args) {
+
         Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler());
         SpringApplication.run(Cv19FileDownloaderApplication.class, args);
     }
