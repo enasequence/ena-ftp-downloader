@@ -3,26 +3,24 @@ package uk.ac.ebi.ena.cv19fd.app.menu.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.ac.ebi.ena.cv19fd.app.constants.Constants;
 
+import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by raheela on 20/04/2021.
- */
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public enum DownloadFormatEnum {
-    EMBL(1, "EMBL flatfile", "dat"),
-    FASTA(2, "FASTA", "fasta"),
-    XML(1, "XML metadata", "xml"),
-    FASTQ(2, "FASTQ", null),
-    SUBMITTED(3, "SUBMITTED", null);
-
+    READS_FASTQ(1, "Read files Fastq", Arrays.asList(Constants.RUN,Constants.PROJECT,Constants.SAMPLE,Constants.EXPERIMENT)),
+    READS_SUBMITTED(2, "Read files Submitted", Arrays.asList(Constants.RUN,Constants.PROJECT,Constants.SAMPLE,Constants.EXPERIMENT)),
+    ANALYSIS_SUBMITTED(3, "Analysis files Submitted",Arrays.asList(Constants.PROJECT,Constants.ANALYSIS)),
+    ANALYSIS_GENERATED(4, "Analysis files Generated",Arrays.asList(Constants.PROJECT,Constants.ANALYSIS));
 
     private int value;
     private String message;
-    private String extension;
+    private List<String> accessionTypes;
 
     public static DownloadFormatEnum getFormat(List<DownloadFormatEnum> formats, int input) {
         return formats.stream().filter(f -> f.getValue() == input).findFirst().get();

@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class FileDetail {
-    private String experimentId;
+    private String parentId;
     private String runId;
     private String ftpUrl;
     private Long bytes;

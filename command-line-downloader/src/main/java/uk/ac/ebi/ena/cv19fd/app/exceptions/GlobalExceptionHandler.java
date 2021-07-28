@@ -1,6 +1,5 @@
 package uk.ac.ebi.ena.cv19fd.app.exceptions;
 
-
 import uk.ac.ebi.ena.cv19fd.app.utils.FileUtils;
 
 import java.util.Arrays;

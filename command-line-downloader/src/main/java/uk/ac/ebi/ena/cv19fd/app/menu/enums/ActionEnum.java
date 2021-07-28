@@ -17,9 +17,9 @@ public enum ActionEnum {
             "directly"),
     CREATE_SCRIPT(2, "create a script that can be invoked directly (e.g. by a pipeline or a script)");
 
-    private int value;
-    private String message;
-    private static Map<Integer, ActionEnum> map = new HashMap<>();
+    private final int value;
+    private final String message;
+    private final static Map<Integer, ActionEnum> map = new HashMap<>();
 
     static {
         Arrays.stream(ActionEnum.values()).forEach(k -> map.put(k.value, k));

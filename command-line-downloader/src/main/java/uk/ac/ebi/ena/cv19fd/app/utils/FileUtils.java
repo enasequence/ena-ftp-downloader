@@ -6,10 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.boot.system.ApplicationHome;
-import org.springframework.util.CollectionUtils;
 import uk.ac.ebi.ena.cv19fd.Cv19FileDownloaderApplication;
-import uk.ac.ebi.ena.cv19fd.app.menu.enums.DataTypeEnum;
-import uk.ac.ebi.ena.cv19fd.app.menu.enums.DomainEnum;
 import uk.ac.ebi.ena.cv19fd.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.cv19fd.app.menu.enums.ProtocolEnum;
 
@@ -19,10 +16,12 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
-/**
- * Created by raheela on 27/04/2021.
- */
+import static uk.ac.ebi.ena.cv19fd.app.constants.Constants.ACCESSION_LIST;
+import static uk.ac.ebi.ena.cv19fd.app.constants.Constants.ACCESSION_TYPE;
+import static uk.ac.ebi.ena.cv19fd.app.menu.enums.AccessionsEntryMethodEnum.DOWNLOAD_FROM_FILE;
+
 @Slf4j
 public class FileUtils {
 
@@ -48,53 +47,10 @@ public class FileUtils {
         }
     }
 
-    public static String getScriptPath(DomainEnum domain, DataTypeEnum dataType,
-                                       DownloadFormatEnum format, List<String> accessionList) {
-        String path = getJarDir() + File.separator + "download_" + domain + "-" + dataType + "-" + format;
-        if (CollectionUtils.isEmpty(accessionList)) {
-            path += "-all";
-        } else {
-            path += "-list";
-        }
-        return path += getScriptExtension();
-    }
 
-    public static void createDownloadScript(String location, DomainEnum domain, DataTypeEnum dataType,
-                                            DownloadFormatEnum format, String emailId, List<String> accessionList
-            , ProtocolEnum protocol, String asperaLocation) {
-        File file = new File(location);
-        if (file.exists()) {
-            File file1 = new File(getScriptPath(domain, dataType, format, accessionList));
-            try (FileOutputStream fileOut = new FileOutputStream(file1)) {
-                if (asperaLocation != null && asperaLocation.contains(" ")) {
-                    asperaLocation = addDoubleQuotes(Paths.get(asperaLocation));
-                }
-                if (accessionList != null && accessionList.size() > 0) {
-                    String content =
-                            "java -jar " + getJarPath() + " --domain=" + domain + " " +
-                                    "--datatype=" + dataType + " " +
-                                    "--format=" + format + " --location=" + location + " --email=" + emailId + " --accessions=" + StringUtils.join(accessionList, ',')
-                                    + " --protocol=" + protocol + " --asperaLocation=" + asperaLocation;
-                    log.info("content:{}", content);
-                    fileOut.write(content.getBytes());
-                } else {
-                    String content =
-                            "java -jar " + getJarPath() + " --domain=" + domain + " " +
-                                    "--datatype=" + dataType + " " +
-                                    "--format=" + format + " --location=" + location + " --email=" + emailId +
-                                    " --protocol=" + protocol + " --asperaLocation=" + asperaLocation;
-                    ;
-                    log.info("content:{}", content);
-                    fileOut.write(content.getBytes());
-                }
-
-                file1.setExecutable(true);
-            } catch (Exception e) {
-                log.error("Exception occurred while creating download script", e);
-                System.out.println("Exception occurred while creating download script : " + e.getMessage());
-            }
-        }
-
+    public static String getScriptPath(Map<String, List<String>> accessionDetailsMap, DownloadFormatEnum format) {
+        String accessionType = accessionDetailsMap.get(ACCESSION_TYPE).get(0);
+        return getJarDir() + File.separator + "download_" + accessionType + "-" + format + getScriptExtension();
     }
 
     public static String getScriptExtension() {
@@ -124,6 +80,38 @@ public class FileUtils {
 
     public static String addDoubleQuotes(Path str) {
         return "\"" + str + "\"";
+    }
+
+    public static void createDownloadScript(Map<String, List<String>> accessionDetailsMap, DownloadFormatEnum format,
+                                            String location, ProtocolEnum protocol, String asperaLocation,
+                                            String emailId) {
+        File file = new File(location);
+        if (file.exists()) {
+            File file1 = new File(getScriptPath(accessionDetailsMap, format));
+            try (FileOutputStream fileOut = new FileOutputStream(file1)) {
+                if (asperaLocation != null && asperaLocation.contains(" ")) {
+                    asperaLocation = addDoubleQuotes(Paths.get(asperaLocation));
+                }
+                List<String> accessionList;
+                if (accessionDetailsMap.containsKey(DOWNLOAD_FROM_FILE)) {
+                    accessionList = accessionDetailsMap.get(DOWNLOAD_FROM_FILE);
+                } else {
+                    accessionList = accessionDetailsMap.get(ACCESSION_LIST);
+                }
+                String content =
+                        "java -jar " + getJarPath() + " --accessions=" + StringUtils.join(accessionList, ',') +
+                                " --format=" + format + " --location=" + location + " --protocol=" + protocol +
+                                " --asperaLocation=" + asperaLocation + " --email=" + emailId;
+                log.info("content:{}", content);
+                fileOut.write(content.getBytes());
+
+                file1.setExecutable(true);
+            } catch (Exception e) {
+                log.error("Exception occurred while creating download script", e);
+                System.out.println("Exception occurred while creating download script : " + e.getMessage());
+            }
+        }
+
     }
 }
 

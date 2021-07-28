@@ -5,10 +5,12 @@ import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 import org.apache.commons.lang3.SystemUtils;
 import uk.ac.ebi.ena.cv19fd.app.constants.Constants;
-import uk.ac.ebi.ena.cv19fd.app.menu.enums.DataTypeEnum;
-import uk.ac.ebi.ena.cv19fd.app.menu.enums.DomainEnum;
 
+import java.util.*;
 import java.util.regex.Pattern;
+
+import static uk.ac.ebi.ena.cv19fd.app.constants.Constants.ACCESSION_LIST;
+import static uk.ac.ebi.ena.cv19fd.app.constants.Constants.ACCESSION_TYPE;
 
 /**
  * Created by raheela on 20/04/2021.
@@ -29,36 +31,49 @@ public class CommonUtils {
     }
 
     public static ProgressBarBuilder getProgressBarBuilder(String s, int size) {
-        ProgressBarBuilder pbb = new ProgressBarBuilder()
+        return new ProgressBarBuilder()
                 .setTaskName(s)
                 .setStyle(ProgressBarStyle.ASCII)
                 .setInitialMax(size);
-        return pbb;
     }
 
-    public static boolean isAccessionValid(String accession, DomainEnum domainName, DataTypeEnum dataTypeEnum) {
-        switch (domainName) {
-            case VIRAL_SEQUENCES:
-                switch (dataTypeEnum) {
-                    case SEQUENCES:
-                    case REFERENCE_SEQUENCES:
-                        return Pattern.matches(Constants.emblPattern, accession);
-                    case RAW_READS:
-                        return Pattern.matches(Constants.sraExperimentPattern, accession);
-                    case SEQUENCED_SAMPLES:
-                        return Pattern.matches(Constants.sraSamplePattern, accession);
-                    case STUDIES:
-                        return Pattern.matches(Constants.projectPattern, accession);
-                }
-            case HOST_SEQUENCES:
-                switch (dataTypeEnum) {
-                    case HUMAN_READS:
-                    case OTHER_SPECIES_READS:
-                        return Pattern.matches(Constants.sraExperimentPattern, accession);
-                }
+    public static Map<String, List<String>> getAccessionDetails(List<String> accessions) {
+        String baseAccession = accessions.get(0);
+        String regex = "";
+        String accessionType = "";
+        Map<String, List<String>> accessionDetailsMap = null;
+        if (Pattern.matches(Constants.sraExperimentPattern, baseAccession)) {
+            regex = Constants.sraExperimentPattern;
+            accessionType = Constants.EXPERIMENT;
+        } else if (Pattern.matches(Constants.sraSamplePattern, baseAccession)) {
+            regex = Constants.sraSamplePattern;
+            accessionType = Constants.SAMPLE;
+        } else if (Pattern.matches(Constants.projectPattern, baseAccession)) {
+            regex = Constants.projectPattern;
+            accessionType = Constants.PROJECT;
+        } else if (Pattern.matches(Constants.sraRunPattern, baseAccession)) {
+            regex = Constants.sraRunPattern;
+            accessionType = Constants.RUN;
+        } else if (Pattern.matches(Constants.analysisPattern, baseAccession)) {
+            regex = Constants.analysisPattern;
+            accessionType = Constants.ANALYSIS;
+        }
+        String finalRegex = regex;
+
+        boolean isValid = accessions.stream().allMatch(acc -> Pattern.matches(finalRegex, acc));
+        if (isValid) {
+            accessionDetailsMap = getAccessionDetailsMap(accessionType, accessions);
         }
 
-        return false;
+        return accessionDetailsMap;
+    }
+
+    public static Map<String, List<String>> getAccessionDetailsMap(String type, List<String> accessions) {
+        Map<String, List<String>> accessionDetailsMap = new HashMap<>();
+        accessionDetailsMap.put(ACCESSION_TYPE, Collections.singletonList(type));
+        accessionDetailsMap.put(ACCESSION_LIST, accessions);
+
+        return accessionDetailsMap;
     }
 
     public static String getAscpExtension() {

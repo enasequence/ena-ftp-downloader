@@ -16,9 +16,9 @@ public enum AccessionsEntryMethodEnum {
     DOWNLOAD_FROM_FILE(1, "provide a file path"),
     DOWNLOAD_FROM_LIST(2, "provide list of accessions separated by commas");
 
-    private int value;
-    private String message;
-    private static Map<Integer, AccessionsEntryMethodEnum> map = new HashMap<>();
+    private final int value;
+    private final String message;
+    private final static Map<Integer, AccessionsEntryMethodEnum> map = new HashMap<>();
 
     static {
         Arrays.stream(AccessionsEntryMethodEnum.values()).forEach(k -> map.put(k.value, k));

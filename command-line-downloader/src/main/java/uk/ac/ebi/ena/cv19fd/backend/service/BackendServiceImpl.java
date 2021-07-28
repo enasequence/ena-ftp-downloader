@@ -2,51 +2,29 @@ package uk.ac.ebi.ena.cv19fd.backend.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.ena.cv19fd.app.menu.enums.DataTypeEnum;
-import uk.ac.ebi.ena.cv19fd.app.menu.enums.DomainEnum;
 import uk.ac.ebi.ena.cv19fd.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.cv19fd.app.menu.enums.ProtocolEnum;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
 public class BackendServiceImpl implements BackendService {
 
     private final AccessionDetailsService accessionDetailsService;
-    private final DownloadLocationValidatorService downloadLocationValidatorService;
-    private final FileDownloaderService fileDownloaderService;
 
-    public BackendServiceImpl(AccessionDetailsService accessionDetailsService,
-                              DownloadLocationValidatorService downloadLocationValidatorService,
-                              FileDownloaderService fileDownloaderService) {
+    public BackendServiceImpl(AccessionDetailsService accessionDetailsService) {
         this.accessionDetailsService = accessionDetailsService;
-        this.downloadLocationValidatorService = downloadLocationValidatorService;
-        this.fileDownloaderService = fileDownloaderService;
     }
 
     @Override
-    public boolean isDownloadLocationValid(String downloadLocation) {
-        return downloadLocationValidatorService.validateDownloadLocation(downloadLocation);
+    public void startDownload(DownloadFormatEnum format, String location, Map<String, List<String>> accessionDetailsMap,
+                              ProtocolEnum protocol, String asperaConnectLocation, String emailId) {
+
+        log.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}",
+                format, location, protocol, asperaConnectLocation, emailId);
+        accessionDetailsService.fetchAccessionAndDownload(format, location, accessionDetailsMap, protocol
+                , asperaConnectLocation, emailId);
     }
-
-    @Override
-    public void startDownload(String downloadLoc, DomainEnum domain, DataTypeEnum dataType, DownloadFormatEnum format
-            , String emailId, List<String> accessionList, ProtocolEnum protocol, String asperaLoc) throws Exception {
-        log.info("Starting download for domain:{}, dataType:{}, format:{} at download location:{}. Email ID given:{}" +
-                ",protocol:{}, asperaLoc:{}", domain, dataType, format, downloadLoc, emailId, protocol, asperaLoc);
-        switch (format) {
-            case EMBL:
-            case XML:
-            case FASTA:
-                fileDownloaderService.startDownload(downloadLoc, domain, dataType, format, emailId, accessionList);
-                break;
-            case FASTQ:
-            case SUBMITTED:
-                accessionDetailsService.fetchAccessionAndDownload(domain, dataType, format, downloadLoc, emailId,
-                        accessionList, protocol, asperaLoc);
-        }
-    }
-
-
 }

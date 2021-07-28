@@ -14,14 +14,14 @@ public enum ProtocolEnum {
     ASPERA(2, "download files using Aspera"),
     EXIT(0, "Exit");
 
-    private static Map<Integer, ProtocolEnum> map = new HashMap<>();
+    private final static Map<Integer, ProtocolEnum> map = new HashMap<>();
 
     static {
         Arrays.stream(ProtocolEnum.values()).forEach(k -> map.put(k.value, k));
     }
 
-    private int value;
-    private String message;
+    private final int value;
+    private final String message;
 
     public static ProtocolEnum valueOf(Integer i) {
         return map.get(i);

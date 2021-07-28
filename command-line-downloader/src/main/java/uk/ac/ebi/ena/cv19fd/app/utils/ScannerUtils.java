@@ -5,9 +5,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
 
-/**
- * Created by raheela on 20/04/2021.
- */
 @Component
 @NoArgsConstructor
 public class ScannerUtils {

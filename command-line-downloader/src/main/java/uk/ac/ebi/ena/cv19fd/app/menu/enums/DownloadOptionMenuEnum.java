@@ -16,16 +16,12 @@ public enum DownloadOptionMenuEnum {
     DOWNLOAD_ALL(1, "download ALL records in this type"),
     DOWNLOAD_LIST(2, "provide a list of accessions (as a comma separated list or in a text file)");
 
-    private int value;
-    private String message;
-    private static Map<Integer, DownloadOptionMenuEnum> map = new HashMap<>();
+    private final int value;
+    private final String message;
+    private final static Map<Integer, DownloadOptionMenuEnum> map = new HashMap<>();
 
     static {
         Arrays.stream(DownloadOptionMenuEnum.values()).forEach(k -> map.put(k.value, k));
-    }
-
-    public static DownloadOptionMenuEnum valueOf(Integer i) {
-        return map.get(i);
     }
 
 }
