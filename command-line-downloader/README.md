@@ -17,35 +17,31 @@ The project jar file will be available at `build/libs/`.
 
 There are two ways to run the tool : 
 1. Command to run jar file from Console by providing
-   inputs `java -jar cdp-file-downloader-0.0.1.jar --domain=VIRAL_SEQUENCES --datatype=STUDIES --format=FASTQ --location=C:\Users\Documents\ena --email=datasubs@ebi.ac.uk`
+   inputs `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format= READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=datasubs@ebi.ac.uk`
 
-* `--domain` The domain for the download (`eg : VIRAL_SEQUENCES,HOST_SEQUENCE`)
-* `--datatype` The datatype for the
-  download (`eg : SEQUENCES,REFERENCE_SEQUENCES,RAW_READS,SEQUENCED_SAMPLES,STUDIES,HUMAN_READS,OTHER_SPECIES_READ`)
-* `--format` The format for the download (`eg : EMBL,FASTA,XML,FASTQ,SUBMITTED`)
+* `--accessions` Comma separated list of accessions or file path to the accession list
+* `--format` The format for the download (`eg : READS_FASTQ,READS_SUBMITTED,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)
 * `--location` The location for the download
-* `--email` The email at which one wishes to receive the alert.(`eg : datasubs@ebi.ac.uk`)
 * `--protocol` The protocol to be used for download.(`eg : FTP, ASPERA`)
 * `--asperaLocation` The location of local Aspera Connect/CLI folder
+* `--email` The email at which one wishes to receive the alert.(`eg : datasubs@ebi.ac.uk`)
 
-2.Command to run jar file from Console without providing inputs `java -jar cdp-file-downloader-0.0.1.jar`
+2.Command to run jar file from Console without providing inputs `java -jar ena-file-downloader.jar`
 
-The user will be prompted to provide inputs  (`eg : domain, datatype, format, location, email`) and in the end will be
-prompted with the below options :
+The user will be prompted to provide inputs  (`eg : accessions, format, location, protocol, asperaLocation ,email`) and
+in the end will be prompted with the below options :
 
-* `To create a script that can be invoked directly (e.g. by a pipeline or a script), please enter 1`
+* `To start downloading right now, and also create a script that can be invoked directly, please enter 1`
+* `To create a script that can be invoked directly (e.g. by a pipeline or a script), enter 2`
 
-* `To start downloading right now, please enter 2`
-
-* `To start downloading right now, and also create a script that can be invoked directly, please enter 3`
-
-If the user selects 1, then a script file will be created inside build\libs with the inputs received that can we invoked directly.
-If the user selects 2, then download will start right away.
+If the user selects 1, then a script file will be created inside build\libs with the inputs received that can we invoked
+directly and download will also be started. If the user selects 2, then a script file will be created inside build\libs
+with the inputs received
 
 ### Design document
 Please refer to the below document for design considerations:
 
-https://drive.google.com/file/d/1oj_wG7NAVjO24Mc_JZb3WPTVeiGPcma6/view?usp=sharing
 #### Project information
-* [cv19-file-downloader GitLab](https://gitlab.ebi.ac.uk/c19portal/cv19-file-downloader)
-* [JIRA ticket DCP-2884](https://www.ebi.ac.uk/panda/jira/browse/DCP-2884)
+
+* [cmd-line-downloader GitHub](https://github.com/enasequence/ena-ftp-downloader/tree/cmd-line-downloader)
+* [JIRA ticket DCP-3013](https://www.ebi.ac.uk/panda/jira/browse/DCP-3013)
