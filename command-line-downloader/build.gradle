@@ -53,11 +53,11 @@ test {
 }
 
 tasks.register('packageDistribution', Zip) {
-    archiveFileName = "cdp-file-downloader.zip"
+    archiveFileName = "ena-file-downloader.zip"
     destinationDirectory = layout.buildDirectory.dir('dist')
 
     from(layout.buildDirectory.dir("libs")) {
-        include "cdp-file-downloader.jar"
+        include "ena-file-downloader.jar"
     }
 
     from(layout.projectDirectory.dir("distribution")) {
