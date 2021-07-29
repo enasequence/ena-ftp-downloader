@@ -27,6 +27,7 @@ public class MenuUtils {
     public static final String welcomeMessage = "Welcome to the Ena file downloader utility!";
     public static final String lineMessage = "----------------------------------------------";
     public static final String accessionsErrorMessage = "Please provide valid accessions! ";
+    public static final String accessionsFileErrorMessage = "Please provide a valid path to accessions file! ";
     public static final String invalidAsperaConnectMessage = "The Aspera Connect/CLI location entered is incorrect. " +
             "Please enter a valid location";
 

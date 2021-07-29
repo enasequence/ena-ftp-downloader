@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import static uk.ac.ebi.ena.app.constants.Constants.*;
+import static uk.ac.ebi.ena.app.constants.Constants.FTP_SRA_SERVER;
 import static uk.ac.ebi.ena.app.utils.CommonUtils.getProgressBarBuilder;
 import static uk.ac.ebi.ena.backend.config.BeanConfig.APP_RETRY;
 
@@ -98,15 +98,15 @@ public class FileDownloaderService {
 
     private String getFileDownloadPath(String downloadLoc, String accessionType, DownloadFormatEnum format, FileDetail fileDetail) {
         switch (accessionType) {
-            case RUN:
+            case "RUN":
                 return downloadLoc + File.separator
                         + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getRunId();
-            case PROJECT:
-            case EXPERIMENT:
-            case SAMPLE:
+            case "PROJECT":
+            case "EXPERIMENT":
+            case "SAMPLE":
                 return downloadLoc + File.separator
-                        + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getParentId() +File.separator+ fileDetail.getRunId();
-            case ANALYSIS:
+                        + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getParentId() + File.separator + fileDetail.getRunId();
+            case "ANALYSIS":
                 return downloadLoc + File.separator
                         + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getParentId();
         }

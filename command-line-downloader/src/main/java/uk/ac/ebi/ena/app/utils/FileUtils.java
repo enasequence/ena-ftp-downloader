@@ -19,8 +19,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
+import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_FIELD;
 import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_LIST;
-import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_TYPE;
 
 @Slf4j
 public class FileUtils {
@@ -49,7 +49,7 @@ public class FileUtils {
 
 
     public static String getScriptPath(Map<String, List<String>> accessionDetailsMap, DownloadFormatEnum format) {
-        String accessionType = accessionDetailsMap.get(ACCESSION_TYPE).get(0);
+        String accessionType = accessionDetailsMap.get(ACCESSION_FIELD).get(0);
         return getJarDir() + File.separator + "download_" + accessionType + "-" + format + getScriptExtension();
     }
 

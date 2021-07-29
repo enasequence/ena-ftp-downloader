@@ -12,18 +12,6 @@ public class Constants {
     public static final String FTP = "ftp://";
     public static final int TOTAL_RETRIES = 10;
 
-    public static final String sraExperimentPattern = "^[ESDR]RX[0-9]{6,}$";
-    public static final String sraSamplePattern = "((SAME[A]?[0-9]{6,}|SAM[ND][0-9]{8}))$";
-    public static final String projectPattern = "(^(PRJ[A-Z]{2}[0-9]+))$";
-    public static final String sraRunPattern = "^[ESDR]RR[0-9]{6,}$";
-    public static final String analysisPattern = "([ESDR]RZ[0-9]{6,})";
-
-    public static final String EXPERIMENT = "EXPERIMENT";
-    public static final String SAMPLE = "SAMPLE";
-    public static final String PROJECT = "PROJECT";
-    public static final String RUN = "RUN";
-    public static final String ANALYSIS = "ANALYSIS";
-
     public static final String binFolder = "bin";
     public static final String etcFolder = "etc";
     public static final String ascpFileName = "ascp";
@@ -32,6 +20,6 @@ public class Constants {
 
     public static final String FTP_SRA_SERVER = "ftp.sra.ebi.ac.uk";
 
-    public static final String ACCESSION_TYPE = "accession_type";
+    public static final String ACCESSION_FIELD = "accession_field";
     public static final String ACCESSION_LIST = "accession_list";
 }
