@@ -40,8 +40,6 @@ dependencies {
     testAnnotationProcessor('org.projectlombok:lombok')
 }
 
-// to run in IDE add params like this to arguments field in bootRun run config
-// -Pargs="--domain=VIRAL_SEQUENCES --datatype=SEQUENCES --format=EMBL --location=c:\data-files"
 bootRun {
     if (project.hasProperty('args')) {
         args project.args.split('\\s+')

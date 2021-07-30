@@ -20,6 +20,8 @@ import uk.ac.ebi.ena.app.utils.ScannerUtils;
 import uk.ac.ebi.ena.backend.service.BackendService;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,23 +73,29 @@ public class MenuService {
             aBuildAccessionEntryMenu();
         } else {
             try {
-                List<String> accessions = MenuUtils.accsFromFile(inputValues);
+                if (Files.exists(Paths.get(inputValues))) {
+                    List<String> accessions = MenuUtils.accsFromFile(inputValues);
 
-                if (!(CollectionUtils.isEmpty(accessions))) {
-                    Map<String, List<String>> accessionDetailsMap = CommonUtils.getAccessionDetails(accessions);
-                    if (accessionDetailsMap != null) {
-                        accessionDetailsMap.put(accessionsEntry.toString(), Collections.singletonList(inputValues));
-                        return accessionDetailsMap;
+                    if (!(CollectionUtils.isEmpty(accessions))) {
+                        Map<String, List<String>> accessionDetailsMap = CommonUtils.getAccessionDetails(accessions);
+                        if (accessionDetailsMap != null) {
+                            accessionDetailsMap.put(accessionsEntry.toString(), Collections.singletonList(inputValues));
+                            return accessionDetailsMap;
+                        } else {
+                            System.out.println(MenuUtils.accessionsSameTypeErrorMessage);
+                            MenuUtils.printEmptyline();
+                            return a1GetAccessionListFromFilePath(accessionsEntry);
+                        }
                     } else {
-                        System.out.println(MenuUtils.accessionsSameTypeErrorMessage);
+                        System.out.println(" Empty accession list");
+                        System.out.println(MenuUtils.accessionsErrorMessage);
                         MenuUtils.printEmptyline();
                         return a1GetAccessionListFromFilePath(accessionsEntry);
                     }
                 } else {
-                    System.out.println(" Empty accession list");
-                    System.out.println(MenuUtils.accessionsErrorMessage);
+                    System.out.println(MenuUtils.accessionsFileErrorMessage);
                     MenuUtils.printEmptyline();
-                    return a1GetAccessionListFromFilePath(accessionsEntry);
+                    a1GetAccessionListFromFilePath(accessionsEntry);
                 }
             } catch (Exception e) {
                 log.error("Exception occurred while reading accessions from file.", e);
@@ -166,9 +174,9 @@ public class MenuService {
                 (!CollectionUtils.isEmpty(accessionDetailsMap) ? " for provided accessions" : "") + ", select the format.");
         CommonUtils.printSeparatorLine();
 
-        String accessionType = accessionDetailsMap.get(Constants.ACCESSION_TYPE).get(0);
+        String accessionField = accessionDetailsMap.get(Constants.ACCESSION_FIELD).get(0);
         List<DownloadFormatEnum> downloadFormatEnumList = Arrays.stream(DownloadFormatEnum.values())
-                .filter(format -> format.getAccessionTypes().contains(accessionType))
+                .filter(format -> format.getAccessionTypes().contains(accessionField))
                 .collect(Collectors.toList());
 
         for (DownloadFormatEnum formatEnum : downloadFormatEnumList) {
@@ -263,7 +271,7 @@ public class MenuService {
                 fShowConfirmationAndPerformAction(format, location, accessionDetailsMap, protocolEnum, asperaConnectLocation, input);
             }
         } else {
-            return NONE;
+            fShowConfirmationAndPerformAction(format, location, accessionDetailsMap, protocolEnum, asperaConnectLocation, NONE);
         }
         return null;
     }

@@ -5,6 +5,7 @@ import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 import org.apache.commons.lang3.SystemUtils;
 import uk.ac.ebi.ena.app.constants.Constants;
+import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_FIELD;
 import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_LIST;
-import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_TYPE;
 
 
 public class CommonUtils {
@@ -41,37 +42,37 @@ public class CommonUtils {
     public static Map<String, List<String>> getAccessionDetails(List<String> accessions) {
         String baseAccession = accessions.get(0);
         String regex = "";
-        String accessionType = "";
+        String accessionField = "";
         Map<String, List<String>> accessionDetailsMap = null;
-        if (Pattern.matches(Constants.sraExperimentPattern, baseAccession)) {
-            regex = Constants.sraExperimentPattern;
-            accessionType = Constants.EXPERIMENT;
-        } else if (Pattern.matches(Constants.sraSamplePattern, baseAccession)) {
-            regex = Constants.sraSamplePattern;
-            accessionType = Constants.SAMPLE;
-        } else if (Pattern.matches(Constants.projectPattern, baseAccession)) {
-            regex = Constants.projectPattern;
-            accessionType = Constants.PROJECT;
-        } else if (Pattern.matches(Constants.sraRunPattern, baseAccession)) {
-            regex = Constants.sraRunPattern;
-            accessionType = Constants.RUN;
-        } else if (Pattern.matches(Constants.analysisPattern, baseAccession)) {
-            regex = Constants.analysisPattern;
-            accessionType = Constants.ANALYSIS;
+        if (Pattern.matches(AccessionTypeEnum.EXPERIMENT.getPattern(), baseAccession)) {
+            regex = AccessionTypeEnum.EXPERIMENT.getPattern();
+            accessionField = AccessionTypeEnum.EXPERIMENT.getAccessionField();
+        } else if (Pattern.matches(AccessionTypeEnum.SAMPLE.getPattern(), baseAccession)) {
+            regex = AccessionTypeEnum.SAMPLE.getPattern();
+            accessionField = AccessionTypeEnum.SAMPLE.getAccessionField();
+        } else if (Pattern.matches(AccessionTypeEnum.STUDY.getPattern(), baseAccession)) {
+            regex = AccessionTypeEnum.STUDY.getPattern();
+            accessionField = AccessionTypeEnum.STUDY.getAccessionField();
+        } else if (Pattern.matches(AccessionTypeEnum.RUN.getPattern(), baseAccession)) {
+            regex = AccessionTypeEnum.RUN.getPattern();
+            accessionField = AccessionTypeEnum.RUN.getAccessionField();
+        } else if (Pattern.matches(AccessionTypeEnum.ANALYSIS.getPattern(), baseAccession)) {
+            regex = AccessionTypeEnum.ANALYSIS.getPattern();
+            accessionField = AccessionTypeEnum.ANALYSIS.getAccessionField();
         }
         String finalRegex = regex;
 
         boolean isValid = accessions.stream().allMatch(acc -> Pattern.matches(finalRegex, acc));
         if (isValid) {
-            accessionDetailsMap = getAccessionDetailsMap(accessionType, accessions);
+            accessionDetailsMap = getAccessionDetailsMap(accessionField, accessions);
         }
 
         return accessionDetailsMap;
     }
 
-    public static Map<String, List<String>> getAccessionDetailsMap(String type, List<String> accessions) {
+    public static Map<String, List<String>> getAccessionDetailsMap(String accessionField, List<String> accessions) {
         Map<String, List<String>> accessionDetailsMap = new HashMap<>();
-        accessionDetailsMap.put(ACCESSION_TYPE, Collections.singletonList(type));
+        accessionDetailsMap.put(ACCESSION_FIELD, Collections.singletonList(accessionField));
         accessionDetailsMap.put(ACCESSION_LIST, accessions);
 
         return accessionDetailsMap;

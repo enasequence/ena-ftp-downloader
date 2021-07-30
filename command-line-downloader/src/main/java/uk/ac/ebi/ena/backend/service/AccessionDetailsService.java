@@ -9,6 +9,7 @@ import me.tongfei.progressbar.ProgressBarBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.ena.app.constants.Constants;
+import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.utils.FileUtils;
@@ -88,7 +89,8 @@ public class AccessionDetailsService {
                                           String asperaLocation, String recipientEmailId) {
         final ExecutorService executorService = Executors.newFixedThreadPool(Constants.EXECUTOR_THREAD_COUNT);
 
-        String accessionType = accessionDetailsMap.get(ACCESSION_TYPE).get(0);
+        String accessionField = accessionDetailsMap.get(ACCESSION_FIELD).get(0);
+        String accessionType = AccessionTypeEnum.getAccessionType(accessionField).name();
         List<String> accessions = accessionDetailsMap.get(ACCESSION_LIST);
         List<List<String>> accLists = Collections.synchronizedList(Lists.partition(accessions, 10000));
         long total = 0;
@@ -97,7 +99,7 @@ public class AccessionDetailsService {
         for (List<String> accs : accLists) {
             total += accs.size();
         }
-        log.info("Total {} {} {} records found", total, accessionType, format);
+        log.info("Total {} {} {} records found", total, accessionField, format);
 
 
         final ProgressBarBuilder portalPB = getProgressBarBuilder("Getting file details from ENA Portal API", -1);
@@ -151,10 +153,10 @@ public class AccessionDetailsService {
 
         log.info("Shutdown complete");
 
-        log.info("Number of files:{} successfully downloaded for accessionType:{}, format:{}",
-                successfulDownloadsCount, accessionType, format);
-        log.info("Number of files:{} failed downloaded for accessionType:{}, format:{}",
-                failedDownloadsCount, accessionType, format);
+        log.info("Number of files:{} successfully downloaded for accessionField:{}, format:{}",
+                successfulDownloadsCount, accessionField, format);
+        log.info("Number of files:{} failed downloaded for accessionField:{}, format:{}",
+                failedDownloadsCount, accessionField, format);
         String scriptFileName = FileUtils.getScriptPath(accessionDetailsMap, format);
         System.out.println("Downloads completed!");
         if (failedDownloadsCount > 0) {
@@ -162,7 +164,7 @@ public class AccessionDetailsService {
                     "same script=" + scriptFileName + " to re-attempt to download those files");
         }
         emailService.sendEmailForFastqSubmitted(recipientEmailId, successfulDownloadsCount, failedDownloadsCount,
-                scriptFileName, accessionType, format, downloadLocation);
+                scriptFileName, accessionField, format, downloadLocation);
     }
 
 }
