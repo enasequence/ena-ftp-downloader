@@ -312,7 +312,6 @@ public class MenuService {
                             CommonUtils.printSeparatorLine();
                             System.out.println("Script created=" + FileUtils.getScriptPath(accessionDetailsMap, format));
                             CommonUtils.printSeparatorLine();
-                            System.out.println("At the end");
                             break;
                         case CREATE_AND_DOWNLOAD:
                             CommonUtils.printSeparatorLine();
@@ -322,7 +321,6 @@ public class MenuService {
                             System.out.println("Script created at " + FileUtils.getScriptPath(accessionDetailsMap, format)
                                     + ". Download started.");
                             CommonUtils.printSeparatorLine();
-                            System.out.println("At the end");
                             startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId);
                             break;
                     }
