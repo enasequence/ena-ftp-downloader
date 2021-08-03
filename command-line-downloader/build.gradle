@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'uk.ac.ebi.ena'
-// version = '1.0.0'
+version = System.getenv("APP_VERSION")
 sourceCompatibility = '1.8'
 
 configurations {
@@ -51,7 +51,7 @@ test {
 }
 
 tasks.register('packageDistribution', Zip) {
-    archiveFileName = "ena-file-downloader.zip"
+    archiveFileName = "ena-file-downloader-" + project.version + ".zip"
     destinationDirectory = layout.buildDirectory.dir('dist')
 
     from(layout.buildDirectory.dir("libs")) {
