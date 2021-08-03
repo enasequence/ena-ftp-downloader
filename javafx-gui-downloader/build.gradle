@@ -103,3 +103,35 @@ jfx {
     vendor = 'EMBL-EBI'
     nativeOutputDir = "build/packages/native"
 }
+
+task copyUnsignedFile(type: Copy, dependsOn: [clean, jar]) {
+    from configurations.compile
+    from("build/libs")
+    into("build/unsigned")
+    include('ena-file-downloader-*.jar')
+}
+
+task signAll(dependsOn: [copyUnsignedFile]) << {
+    new File('build/signed').mkdirs()
+    def libFiles = files { file('build/unsigned').listFiles() }
+    libFiles.each {
+        ant.signjar(
+                storetype: 'pkcs12',
+                destDir: 'build/signed',
+                alias: '1', //'european molecular biology laboratory\'s godaddy.com, inc. id',
+                jar: it,
+                keystore: 'certificates/ENA-2016.P12',
+                storepass: 'pass1234',
+                verbose: 'true',
+                tsaurl: 'http://tsa.starfieldtech.com/', //timestamp url for godaddy
+                preservelastmodified: 'true')
+    }
+}
+
+task copyReadme(type: Copy) {
+    from("/")
+    into("build/signed")
+    include('README.md')
+}
+
+signAll.finalizedBy(copyReadme);
