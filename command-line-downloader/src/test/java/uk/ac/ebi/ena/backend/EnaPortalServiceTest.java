@@ -1,6 +1,6 @@
 package uk.ac.ebi.ena.backend;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
@@ -51,7 +51,7 @@ public class EnaPortalServiceTest {
         //ACT
         List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(accessionIdList, format, protocol, accessionDetailsMap);
         //ASSERT
-        Assert.assertEquals(getPortalResponses().length, portalResponses.size());
+        Assertions.assertEquals(getPortalResponses().length, portalResponses.size());
 
     }
 
@@ -74,7 +74,7 @@ public class EnaPortalServiceTest {
         enaPortalResponse1.setParentId("SRX2000905");
         enaPortalResponse1.setRunId("SRR4000583");
         enaPortalResponse1.setBytes("1174738707");
-        enaPortalResponse1.setUrl("https://www.ebi.ac.uk/vol1/fastq/SRR400/003/SRR4000583/SRR4000583.fastq.gz");
+        enaPortalResponse1.setUrl("ftp.sra.ebi.ac.uk/vol1/fastq/SRR400/003/SRR4000583/SRR4000583.fastq.gz");
         enaPortalResponse1.setMd5("a991ce890047ffca760c6de2617b5fec");
         portalResponses.add(enaPortalResponse1);
         EnaPortalResponse enaPortalResponse2 = new EnaPortalResponse();
@@ -88,7 +88,7 @@ public class EnaPortalServiceTest {
         enaPortalResponse3.setParentId("SRX6415695");
         enaPortalResponse3.setRunId("SRR9654361");
         enaPortalResponse3.setBytes("15541843");
-        enaPortalResponse3.setUrl("https://www.ebi.ac.uk/vol1/fastq/SRR965/001/SRR9654361/SRR9654361.fastq.gz");
+        enaPortalResponse3.setUrl("ftp.sra.ebi.ac.uk/vol1/fastq/SRR965/001/SRR9654361/SRR9654361.fastq.gz");
         enaPortalResponse3.setMd5("1236b79cd93a63289841765aabacb880");
         portalResponses.add(enaPortalResponse3);
         EnaPortalResponse[] portalResponse = new EnaPortalResponse[portalResponses.size()];
