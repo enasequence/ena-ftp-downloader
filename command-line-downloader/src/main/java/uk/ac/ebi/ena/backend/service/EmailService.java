@@ -31,8 +31,8 @@ public class EmailService {
         return null;
     }
 
-    public static String constructEmailMessageForFastqSubmitted(long successfulDownloads, long failedDownloads,
-                                                                String scriptName, String downloadLocation) {
+    private static String constructEmailMessageForFastqSubmitted(long successfulDownloads, long failedDownloads,
+                                                                 String scriptName, String downloadLocation) {
         String message =
                 "Location:" + downloadLocation +
                         "\nNumber of successful downloads:" + successfulDownloads
@@ -45,11 +45,11 @@ public class EmailService {
 
     }
 
-    public static String constructSubject(String accesionType, DownloadFormatEnum format) {
+    private static String constructSubject(String accesionType, DownloadFormatEnum format) {
         return encode(String.format(subject, accesionType, format));
     }
 
-    public static String constructEmailName() {
+    private static String constructEmailName() {
         return encode("For any issues/support please contact us using " + supportAPILink + "\n" +
                 "European Nucleotide Archive: Data Coordination & Presentation\n" +
                 "EMBL-EBI");

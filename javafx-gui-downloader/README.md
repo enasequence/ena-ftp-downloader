@@ -1,6 +1,5 @@
 # Note: 
-
-The GUI elements of this project was written using JavaFX. JavaFX is not included by default with OpenJDK and Oracle JDK 11 and newer. 
+The GUI elements of this project was written using JavaFX. JavaFX is not included by default with OpenJDK and Oracle JDK 11 and newer.
 You can either
 1. Install the JavaFX libraries
 or
