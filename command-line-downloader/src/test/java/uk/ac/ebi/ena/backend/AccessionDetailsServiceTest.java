@@ -84,7 +84,7 @@ public class AccessionDetailsServiceTest {
         enaPortalResponse1.setParentId("SRX2000905");
         enaPortalResponse1.setRunId("SRR4000583");
         enaPortalResponse1.setBytes("1174738707");
-        enaPortalResponse1.setUrl("https://www.ebi.ac.uk/vol1/fastq/SRR400/003/SRR4000583/SRR4000583.fastq.gz");
+        enaPortalResponse1.setUrl("ftp.sra.ebi.ac.uk/vol1/fastq/SRR400/003/SRR4000583/SRR4000583.fastq.gz");
         enaPortalResponse1.setMd5("a991ce890047ffca760c6de2617b5fec");
         portalResponses.add(enaPortalResponse1);
         EnaPortalResponse enaPortalResponse2 = new EnaPortalResponse();
@@ -98,7 +98,7 @@ public class AccessionDetailsServiceTest {
         enaPortalResponse3.setParentId("SRX6415695");
         enaPortalResponse3.setRunId("SRR9654361");
         enaPortalResponse3.setBytes("15541843");
-        enaPortalResponse3.setUrl("https://www.ebi.ac.uk/vol1/fastq/SRR965/001/SRR9654361/SRR9654361.fastq.gz");
+        enaPortalResponse3.setUrl("ftp.sra.ebi.ac.uk/vol1/fastq/SRR965/001/SRR9654361/SRR9654361.fastq.gz");
         enaPortalResponse3.setMd5("1236b79cd93a63289841765aabacb880");
         portalResponses.add(enaPortalResponse3);
         return portalResponses;
