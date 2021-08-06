@@ -45,7 +45,7 @@ public class EnaPortalServiceTest {
         List<String> accessionIdList = Arrays.asList(accessionList.split(","));
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         ProtocolEnum protocol = ProtocolEnum.FTP;
-        Map<String, List<String>> accessionDetailsMap = CommonUtils.getAccessionDetails(Arrays.asList(accessionList.split(",")));
+        Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
         Mockito.when(restTemplate.postForObject(Mockito.any(URI.class), Mockito.any(HttpEntity.class),
                 Mockito.eq(EnaPortalResponse[].class))).thenReturn(getPortalResponses());
         //ACT

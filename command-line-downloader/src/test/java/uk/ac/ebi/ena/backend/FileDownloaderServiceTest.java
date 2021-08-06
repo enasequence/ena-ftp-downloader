@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
+import uk.ac.ebi.ena.backend.service.FileDownloaderClient;
 import uk.ac.ebi.ena.backend.service.FileDownloaderService;
 
 import java.util.ArrayList;
@@ -27,6 +28,9 @@ public class FileDownloaderServiceTest {
 
     @InjectMocks
     FileDownloaderService fileDownloaderService;
+
+    @InjectMocks
+    FileDownloaderClient fileDownloaderClient;
 
     @Disabled
     @Test
@@ -59,7 +63,7 @@ public class FileDownloaderServiceTest {
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         int set = 1;
         //ACT
-        FileDownloadStatus fileDownloadStatus = fileDownloaderService.startDownloadAspera
+        FileDownloadStatus fileDownloadStatus = fileDownloaderClient.startDownloadAspera
                 (executorService, fileDetailList, asperaLocation, downloadFolderPath, accessionType, format, set).get();
         Assert.assertEquals(1, fileDownloadStatus.getSuccesssful());
 

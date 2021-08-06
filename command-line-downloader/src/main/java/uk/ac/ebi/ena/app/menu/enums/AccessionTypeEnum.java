@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Getter
 @AllArgsConstructor
@@ -28,6 +29,15 @@ public enum AccessionTypeEnum {
 
     public static AccessionTypeEnum getAccessionType(String accessionField) {
         return map.get(accessionField);
+    }
+
+    public static AccessionTypeEnum getAccessionTypeByPattern(String baseAccession) {
+        for (AccessionTypeEnum t : values()) {
+            if (Pattern.matches(t.getPattern(), baseAccession)) {
+                return t;
+            }
+        }
+        return null;
     }
 
 }

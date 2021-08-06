@@ -50,7 +50,8 @@ public class FileUtils {
 
     public static String getScriptPath(Map<String, List<String>> accessionDetailsMap, DownloadFormatEnum format) {
         String accessionType = accessionDetailsMap.get(ACCESSION_FIELD).get(0);
-        return getJarDir() + File.separator + "download_" + accessionType + "-" + format + getScriptExtension();
+        return getJarDir() + File.separator + "download_" + StringUtils.substringBefore(accessionType, "_")
+                + "-" + format + getScriptExtension();
     }
 
     public static String getScriptExtension() {

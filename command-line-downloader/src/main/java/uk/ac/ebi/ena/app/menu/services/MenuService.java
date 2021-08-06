@@ -77,7 +77,7 @@ public class MenuService {
                     List<String> accessions = MenuUtils.accsFromFile(inputValues);
 
                     if (!(CollectionUtils.isEmpty(accessions))) {
-                        Map<String, List<String>> accessionDetailsMap = CommonUtils.getAccessionDetails(accessions);
+                        Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(accessions);
                         if (accessionDetailsMap != null) {
                             accessionDetailsMap.put(accessionsEntry.toString(), Collections.singletonList(inputValues));
                             return accessionDetailsMap;
@@ -118,7 +118,7 @@ public class MenuService {
         } else {
             String[] accessions = inputValues.split(",");
             if (accessions.length > 0) {
-                Map<String, List<String>> accessionDetailsMap = CommonUtils.getAccessionDetails(Arrays.asList(accessions));
+                Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessions));
 
                 if (accessionDetailsMap != null) {
                     accessionDetailsMap.put(accessionsEntryMethodEnum.getMessage(), null);
