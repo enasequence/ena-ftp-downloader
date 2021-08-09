@@ -37,7 +37,7 @@ public class BackendServiceImplTest {
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         String location = System.getProperty("user.home");
         ;
-        Map<String, List<String>> accessionDetailsMap = CommonUtils.getAccessionDetails(Arrays.asList(accessionList.split(",")));
+        Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
         ProtocolEnum protocol = ProtocolEnum.FTP;
         String asperaConnectLocation = null;
         String emailId = "datasubs@ebi.ac.uk";

@@ -98,11 +98,11 @@ public class MenuUtils {
         } else if (new File(accessions).exists()) {
             List<String> accessionList =  accsFromFile(accessions);
 
-            return CommonUtils.getAccessionDetails(accessionList);
+            return CommonUtils.processAccessions(accessionList);
         } else {
             List<String> accessionList = Arrays.asList(accessions.split(","));
 
-            return CommonUtils.getAccessionDetails(accessionList);
+            return CommonUtils.processAccessions(accessionList);
         }
     }
 

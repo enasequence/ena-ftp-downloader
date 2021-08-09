@@ -36,6 +36,7 @@ import static uk.ac.ebi.ena.app.utils.CommonUtils.getProgressBarBuilder;
 public class AccessionDetailsService {
     private final EnaPortalService enaPortalService;
     private final FileDownloaderService fileDownloaderService;
+    private final FileDownloaderClient fileDownloaderClient;
     private final EmailService emailService;
 
     /**
@@ -124,7 +125,7 @@ public class AccessionDetailsService {
                     futures.add(listFuture);
                 } else if (protocol == ProtocolEnum.ASPERA) {
                     final Future<FileDownloadStatus> listFuture =
-                            fileDownloaderService.startDownloadAspera(executorService, fileDetails,
+                            fileDownloaderClient.startDownloadAspera(executorService, fileDetails,
                                     asperaLocation, downloadLocation, accessionType, format, thisSet);
                     futures.add(listFuture);
                 }

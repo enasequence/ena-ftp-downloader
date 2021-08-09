@@ -54,7 +54,7 @@ public class AccessionDetailsServiceTest {
         //ARRANGE
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         String downloadLocation = path;
-        Map<String, List<String>> accessionDetailsMap = CommonUtils.getAccessionDetails(Arrays.asList(accessionList.split(",")));
+        Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
         ProtocolEnum protocol = ProtocolEnum.FTP;
         String asperaLocation = null;
         String recipientEmailId = "datasubs@ebi.ac.uk";
