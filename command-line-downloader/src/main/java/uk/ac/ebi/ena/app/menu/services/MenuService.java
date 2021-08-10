@@ -94,7 +94,7 @@ public class MenuService {
                 if (Files.exists(Paths.get(inputValues))) {
                     List<String> accessions = MenuUtils.accsFromFile(inputValues);
 
-                    if (!(CollectionUtils.isEmpty(accessions))) {
+                    if (!CollectionUtils.isEmpty(accessions)) {
                         Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(accessions);
                         if (accessionDetailsMap != null) {
                             accessionDetailsMap.put(accessionsEntry.toString(), Collections.singletonList(inputValues));
@@ -105,8 +105,13 @@ public class MenuService {
                             return a1GetAccessionListFromFilePath(accessionsEntry);
                         }
                     } else {
-                        System.out.println(" Empty accession list");
-                        System.out.println(MenuUtils.accessionsErrorMessage);
+                        if (accessions == null) {
+                            System.out.println(" Invalid accession list.Please enter accessions in valid format ");
+                            System.out.println(MenuUtils.validAccessionsErrorMessage);
+                        } else {
+                            System.out.println(" Empty accession list");
+                            System.out.println(MenuUtils.accessionsErrorMessage);
+                        }
                         MenuUtils.printEmptyline();
                         return a1GetAccessionListFromFilePath(accessionsEntry);
                     }
