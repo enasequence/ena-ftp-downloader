@@ -106,7 +106,7 @@ public class MenuService {
                         }
                     } else {
                         if (accessions == null) {
-                            System.out.println(" Invalid accession list.Please enter accessions in valid format ");
+                            System.out.println(" Unable to parse accessions. Are they in the correct format? ");
                             System.out.println(MenuUtils.validAccessionsErrorMessage);
                         } else {
                             System.out.println(" Empty accession list");
