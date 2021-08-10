@@ -94,7 +94,7 @@ public class MenuService {
                 if (Files.exists(Paths.get(inputValues))) {
                     List<String> accessions = MenuUtils.accsFromFile(inputValues);
 
-                    if (!CollectionUtils.isEmpty(accessions)) {
+                    if (!(CollectionUtils.isEmpty(accessions))) {
                         Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(accessions);
                         if (accessionDetailsMap != null) {
                             accessionDetailsMap.put(accessionsEntry.toString(), Collections.singletonList(inputValues));
