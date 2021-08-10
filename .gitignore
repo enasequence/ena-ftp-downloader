@@ -2,4 +2,10 @@
 .idea/
 build.gradle.signer
 build/
-certificates/
+javafx-gui-downloader/certificates/
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
