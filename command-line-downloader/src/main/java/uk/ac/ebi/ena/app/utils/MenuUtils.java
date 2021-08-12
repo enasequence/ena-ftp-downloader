@@ -23,6 +23,7 @@ import com.univocity.parsers.tsv.TsvParserSettings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.ena.app.constants.Constants;
+import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -32,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static uk.ac.ebi.ena.app.utils.CommonUtils.printSeparatorLine;
@@ -142,7 +144,7 @@ public class MenuUtils {
             if (firstColumn == null) {
                 return new ArrayList<>();
             } else {
-                if (firstColumn.contains(ACCESSION)) {
+                if (headers.length > 1) {
                     TsvParserSettings settings = new TsvParserSettings();
                     settings.getFormat().setLineSeparator("\n");
                     settings.selectFields(firstColumn);
@@ -150,11 +152,18 @@ public class MenuUtils {
                     TsvParser parser = new TsvParser(settings);
                     List<String[]> accessionIdColumn = parser.parseAll(new File(inputValues));
                     //removing the column header
-                    accessionIdColumn = accessionIdColumn.subList(1, accessionIdColumn.size());
+                    if (firstColumn.contains(ACCESSION)) {
+                        accessionIdColumn = accessionIdColumn.subList(1, accessionIdColumn.size());
+                    }
 
                     return accessionIdColumn.stream().map(aRow -> aRow[0].replace("\"", "").trim())
                             .collect(Collectors.toList());
                 } else {
+                    //if multiple headers are not present then we expect the file to contain only the accessionIds
+                    boolean isValidBaseAccession = validateAccession(firstColumn);
+                    if (!isValidBaseAccession) {
+                        return null;
+                    }
                     List<String> accessionIds = Files.lines(Paths.get(inputValues), StandardCharsets.US_ASCII).collect(Collectors.toList());
 
                     return accessionIds.stream().map(aRow -> aRow.replace("\"", "").trim()).collect(Collectors.toList());
@@ -165,6 +174,15 @@ public class MenuUtils {
             return null;
         }
 
+    }
+
+    private static boolean validateAccession(String firstColumn) {
+        firstColumn = firstColumn.replace("\"", "").trim();
+        AccessionTypeEnum type = AccessionTypeEnum.getAccessionTypeByPattern(firstColumn);
+        if (type != null) {
+            return Pattern.matches(type.getPattern(), firstColumn);
+        }
+        return false;
     }
 
 }

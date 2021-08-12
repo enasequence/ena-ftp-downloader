@@ -33,7 +33,18 @@ import java.util.List;
 public class MenuUtilsTest {
 
     @Test
-    public void testAccFromFile() {
+    public void testAccFromFile_WithoutHeader() {
+        String accFilePath = "src/test/resources/accessionFile";
+        List<String> accessionIds = MenuUtils.accsFromFile(accFilePath);
+        List<String> expectedAccIds = new ArrayList<>();
+        expectedAccIds.add("DRR274673");
+        expectedAccIds.add("DRR274674");
+        expectedAccIds.add("DRR274675");
+        Assertions.assertTrue(checkIfListIsSame(expectedAccIds, accessionIds));
+    }
+
+    @Test
+    public void testAccFromFile_WithHeader() {
         String accFilePath = "src/test/resources/accFileHeader";
         List<String> accessionIds = MenuUtils.accsFromFile(accFilePath);
         List<String> expectedAccIds = new ArrayList<>();
@@ -58,7 +69,7 @@ public class MenuUtilsTest {
     public void testAccFromFileOnlyHeader() {
         String accFilePath = "src/test/resources/accFileOnlyHeader";
         List<String> accessionIds = MenuUtils.accsFromFile(accFilePath);
-        Assertions.assertEquals(0, accessionIds.size());
+        Assertions.assertEquals(null, accessionIds);
     }
 
     @Test
