@@ -39,4 +39,36 @@ public class MenuServiceTest {
         //ACT
         menuService.aBuildAccessionEntryMenu();
     }
+
+    @Test
+    public void testBuildAccessionEntryMenu_WhenValidAccessionFile() {
+        String accessionFile = "src/test/resources/accessionFile";
+
+        String path = System.getProperty("user.home");
+        String emailId = "datasubs@ebi.ac.uk";
+        //ARRANGE
+        String inputData = AccessionsEntryMethodEnum.DOWNLOAD_FROM_FILE.getValue() + "\n" + accessionFile + "\n" + DownloadFormatEnum.READS_FASTQ.getValue() + "\n" + path + "\n" +
+                ProtocolEnum.FTP.getValue() + "\n" + emailId + "\n"
+                + ActionEnum.CREATE_AND_DOWNLOAD.getValue();
+        System.setIn(new java.io.ByteArrayInputStream(inputData.getBytes()));
+        //ACT
+        menuService.aBuildAccessionEntryMenu();
+    }
+
+    @Test
+    public void testBuildAccessionEntryMenu_WhenEmptyAccessionFile() {
+        String emptyAccessionFile = "src/test/resources/accFile_empty";
+        String accessionFile = "src/test/resources/accessionFile";
+
+
+        String path = System.getProperty("user.home");
+        String emailId = "datasubs@ebi.ac.uk";
+        //ARRANGE
+        String inputData = AccessionsEntryMethodEnum.DOWNLOAD_FROM_FILE.getValue() + "\n" + emptyAccessionFile + "\n" + accessionFile + "\n" + DownloadFormatEnum.READS_FASTQ.getValue() + "\n" + path + "\n" +
+                ProtocolEnum.FTP.getValue() + "\n" + emailId + "\n"
+                + ActionEnum.CREATE_AND_DOWNLOAD.getValue();
+        System.setIn(new java.io.ByteArrayInputStream(inputData.getBytes()));
+        //ACT
+        menuService.aBuildAccessionEntryMenu();
+    }
 }
