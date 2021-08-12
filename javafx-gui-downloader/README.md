@@ -1,13 +1,3 @@
-# Note: 
-The project contains two submodules :
-1. command-line-downloader : User runnable tool for getting data files idempotently and resiliently from ENA. The tool can run on any machine where Java 8 or higher is installed.
-2. javafx-gui-downloader :  The GUI elements of this project was written using JavaFX. JavaFX is not included by default with OpenJDK and Oracle JDK 11 and newer. 
-You can either
-1. Install the JavaFX libraries
-or
-2. Download a release artifact which includees the Java runtime librarires from the latest release 1.2.2. 
-Either option can allow you to run the app even with OpenJDK or Oracle JDK 11+.
-
 # ENA File Downloader version 1.2.2
 
 Graphical user interface (GUI) for bulk downloading of run/analysis files from ENA via FTP or Aspera.
