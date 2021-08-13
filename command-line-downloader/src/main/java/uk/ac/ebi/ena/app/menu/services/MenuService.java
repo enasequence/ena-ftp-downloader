@@ -105,8 +105,13 @@ public class MenuService {
                             return a1GetAccessionListFromFilePath(accessionsEntry);
                         }
                     } else {
-                        System.out.println(" Empty accession list");
-                        System.out.println(MenuUtils.accessionsErrorMessage);
+                        if (accessions == null) {
+                            System.out.println(" Unable to parse accessions. Are they in the correct format? ");
+                            System.out.println(MenuUtils.validAccessionsErrorMessage);
+                        } else {
+                            System.out.println(" Empty accession list");
+                            System.out.println(MenuUtils.accessionsErrorMessage);
+                        }
                         MenuUtils.printEmptyline();
                         return a1GetAccessionListFromFilePath(accessionsEntry);
                     }
