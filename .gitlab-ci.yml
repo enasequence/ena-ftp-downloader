@@ -34,7 +34,7 @@ build_prod:
     - ./gradlew clean build -x test
   artifacts:
     paths:
-      - build/dist/${APP_NAME}-${APP_VERSION}.zip
+      - command-line-downloader/build/dist/${APP_NAME}-${APP_VERSION}.zip
   tags:
     - dcap-gitlab-runner
   only:
@@ -49,8 +49,8 @@ deploy_prod:
     - ssh-add <(echo "$SSH_PRIVATE_KEY")
     - mkdir -p ~/.ssh
   script:
-    - chmod u+x build/dist/${APP_NAME}-${APP_VERSION}.zip
-    - scp -o StrictHostKeyChecking=no build/dist/${APP_NAME}-${APP_VERSION}.zip datalib@noah-login-01.ebi.ac.uk:${FTP_DIR}
+    - chmod u+x command-line-downloader/build/dist/${APP_NAME}-${APP_VERSION}.zip
+    - scp -o StrictHostKeyChecking=no command-line-downloader/build/dist/${APP_NAME}-${APP_VERSION}.zip datalib@noah-login-01.ebi.ac.uk:${FTP_DIR}
     - ssh datalib@noah-login-01.ebi.ac.uk "ln -sf ${FTP_DIR}/${APP_NAME}-${APP_VERSION}.zip ${FTP_DIR}/${APP_NAME}.zip"
   dependencies:
     - build_prod
