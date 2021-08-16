@@ -65,6 +65,14 @@ tasks.register('packageDistribution', Zip) {
     }
 }
 
+task replaceVersionInReadme  {
+    ant.replaceregexp(match:'version:[^->]*', replace:'version:' + version  , byline:true) {
+        fileset(dir: 'distribution', includes: 'README.txt')
+    }
+}
+
+tasks.build.dependsOn(replaceVersionInReadme)
+
 
 //compileJava.dependsOn clean
 bootJar.finalizedBy packageDistribution
