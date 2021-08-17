@@ -53,7 +53,7 @@ deploy_prod:
   script:
     - chmod u+x command-line-downloader/build/dist/${APP_NAME}-${APP_VERSION}.zip
     - scp -o StrictHostKeyChecking=no command-line-downloader/build/dist/${APP_NAME}-${APP_VERSION}.zip datalib@noah-login-01.ebi.ac.uk:${FTP_DIR}
-    - ssh datalib@noah-login-01.ebi.ac.uk "ln -sf ${FTP_DIR}/${APP_NAME}-${APP_VERSION}.zip ${FTP_DIR}/${APP_NAME}.zip"
+    - ssh datalib@noah-login-01.ebi.ac.uk "cd ${FTP_DIR} && ln -sf ${APP_NAME}-${APP_VERSION}.zip ${APP_NAME}.zip"
   dependencies:
     - build_prod
   when: manual
