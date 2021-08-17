@@ -16,15 +16,24 @@ cache:
     - .gradle/wrapper
     - .gradle/caches
 
+#test:
+#  stage: test
+#  before_script:
+#    - export GRADLE_USER_HOME=`pwd`/.gradle
+#  tags:
+#    - dcap-gitlab-runner
+#  script:
+#    - chmod u+x gradlew
+#    - ./gradlew clean test
+
 test:
   stage: test
   before_script:
-    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - export GRADLE_USER_HOME=command-line-downloader/.gradle
   tags:
     - dcap-gitlab-runner
   script:
-    - chmod u+x gradlew
-    - ./gradlew clean test
+    - command-line-downloader/./gradlew clean build -x test
 
 build_prod:
   stage: build
