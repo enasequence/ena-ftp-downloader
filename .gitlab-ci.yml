@@ -19,10 +19,11 @@ cache:
 test:
   stage: test
   before_script:
-    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - export GRADLE_USER_HOME=command-line-downloader/.gradle
   tags:
     - dcap-gitlab-runner
   script:
+    - cd command-line-downloader
     - chmod u+x gradlew
     - ./gradlew clean test
 
