@@ -7,8 +7,8 @@ variables:
 
 
 stages:
-  - build
   - test
+  - build
   - deploy
 
 cache:
@@ -31,7 +31,7 @@ build_prod:
   before_script:
     - export GRADLE_USER_HOME=command-line-downloader/.gradle
   script:
-    - command-line-downloader/./gradlew clean build -x test
+    - ./command-line-downloader/gradlew clean build -x test
   artifacts:
     paths:
       - command-line-downloader/build/dist/${APP_NAME}-${APP_VERSION}.zip
