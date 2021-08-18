@@ -55,7 +55,7 @@ tasks.register('packageDistribution', Zip) {
     archiveFileName = "ena-file-downloader-" + project.version + ".zip"
     destinationDirectory = layout.buildDirectory.dir('dist')
 
-    from(layout.buildDirectory.dir("command-line-downloader/libs")) {
+    from(layout.buildDirectory.dir("libs")) {
         include "ena-file-downloader.jar"
     }
 
