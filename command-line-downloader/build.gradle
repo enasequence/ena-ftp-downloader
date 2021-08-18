@@ -75,4 +75,4 @@ tasks.build.dependsOn(replaceVersionInReadme)
 
 
 //compileJava.dependsOn clean
-//bootJar.finalizedBy packageDistribution
+bootJar.finalizedBy packageDistribution
