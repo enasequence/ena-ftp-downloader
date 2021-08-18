@@ -47,6 +47,10 @@ bootRun {
     }
 }
 
+bootJar {
+    archiveName = "${archiveBaseName.get()}.${archiveExtension.get()}"
+}
+
 test {
     useJUnitPlatform()
 }
