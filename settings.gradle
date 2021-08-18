@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'ena-ftp-downloader'
-include('plugin')
+include 'command-line-downloader'
