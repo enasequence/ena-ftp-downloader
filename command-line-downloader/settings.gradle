@@ -1,1 +1,3 @@
 rootProject.name = 'ena-file-downloader'
+include 'command-line-downloader'
+
