@@ -101,7 +101,7 @@ public class FileDownloaderService {
             case "RUN":
                 return downloadLoc + File.separator
                         + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getRunId();
-            case "PROJECT":
+            case "STUDY":
             case "EXPERIMENT":
             case "SAMPLE":
                 return downloadLoc + File.separator
