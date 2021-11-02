@@ -135,7 +135,7 @@ public class FileDownloaderClient {
                 return IOUtils.copyLarge(in, fos);
             }
         } catch (Exception e) {
-            log.error(remoteFilePath + " retry " + (retryCount + 1), e.getMessage());
+            log.error(remoteFilePath + " retry " + (retryCount + 1), e);
             Thread.sleep(5000); // wait 5 sec before retrying
             return downloadFTPClient(url, remoteFilePath, size, retryCount + 1);
         } finally {
@@ -145,7 +145,7 @@ public class FileDownloaderClient {
                     ftp.disconnect();
                 }
             } catch (Exception e) {
-                log.error("Exception encountered while calling logout and disconnect on ftpService");
+                log.error("Exception encountered while calling logout and disconnect on ftpService",e);
             }
         }
     }
