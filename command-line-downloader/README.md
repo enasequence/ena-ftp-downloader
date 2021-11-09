@@ -1,3 +1,6 @@
+# Download latest version from 
+http://ftp.ebi.ac.uk/pub/databases/ena/tools/ena-file-downloader.zip
+
 # Getting Started
 
 ### Summary
