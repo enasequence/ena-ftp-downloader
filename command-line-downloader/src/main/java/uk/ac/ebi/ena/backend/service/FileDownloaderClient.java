@@ -145,7 +145,7 @@ public class FileDownloaderClient {
                     ftp.disconnect();
                 }
             } catch (Exception e) {
-                log.error("Exception encountered while calling logout and disconnect on ftpService",e);
+                log.error("Exception encountered while calling logout and disconnect on ftpService", e);
             }
         }
     }
