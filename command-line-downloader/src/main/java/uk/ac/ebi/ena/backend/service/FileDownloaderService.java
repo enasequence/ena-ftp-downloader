@@ -196,7 +196,7 @@ public class FileDownloaderService {
                         bytesCopied = fileDownloaderClient.downloadHttpClient(url, remoteFilePath,
                                 fileDetail.getBytes(), 0);
                     } else {
-                        bytesCopied = fileDownloaderClient.downloadFTPClient(url, remoteFilePath,
+                        bytesCopied = fileDownloaderClient.downloadFTPUrlConnection(url, remoteFilePath,
                                 fileDetail.getBytes(), 0);
                     }
                     log.debug("Completed download for remoteFile:{}, experimentId:{}, bytesCopied:{}",

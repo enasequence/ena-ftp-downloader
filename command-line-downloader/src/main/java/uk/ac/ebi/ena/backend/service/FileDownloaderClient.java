@@ -43,6 +43,7 @@ import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
 
 import java.io.*;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -128,12 +129,14 @@ public class FileDownloaderClient {
             ftp.changeWorkingDirectory(StringUtils.substringBeforeLast(StringUtils.substringAfter(url.toString(),
                     FTP_SRA_SERVER + "/"), "/"));
             String fileName = StringUtils.substringAfterLast(url.toString(), "/");
+            long copied = 0;
             try (InputStream in =
                          ProgressBar.wrap(ftp.retrieveFileStream(fileName), getBProgressBar(url +
                                  ":attempt " + (retryCount + 1), size));
                  FileOutputStream fos = new FileOutputStream(outFile)) {
-                return IOUtils.copyLarge(in, fos);
+                copied = IOUtils.copyLarge(in, fos);
             }
+            return copied;
         } catch (Exception e) {
             log.error(remoteFilePath + " retry " + (retryCount + 1), e);
             Thread.sleep(5000); // wait 5 sec before retrying
@@ -147,6 +150,36 @@ public class FileDownloaderClient {
             } catch (Exception e) {
                 log.error("Exception encountered while calling logout and disconnect on ftpService", e);
             }
+        }
+    }
+
+    @SneakyThrows
+    public long downloadFTPUrlConnection(URL url, Path remoteFilePath, long size, int retryCount) {
+        if (retryCount == APP_RETRY) {
+            return 0;
+        }
+
+        FTPClient ftp = null;
+        try {
+            File outFile = new File(remoteFilePath.toString());
+            if (outFile.exists()) {
+                outFile.delete();
+            }
+            String fileName = StringUtils.replace(url.toString(), "ftp.sra.ebi.ac.uk/vol1", "..");
+            URLConnection conn = url.openConnection();
+            long copied = 0;
+            try (InputStream in =
+                         ProgressBar.wrap(conn.getInputStream(), getBProgressBar(fileName +
+                                 ":attempt " + (retryCount + 1), size));
+                 FileOutputStream fos = new FileOutputStream(outFile)) {
+                copied = IOUtils.copyLarge(in, fos);
+            }
+            return copied;
+        } catch (Exception e) {
+            log.error(remoteFilePath + " retry " + (retryCount + 1), e);
+            Thread.sleep(5000); // wait 5 sec before retrying
+            return downloadFTPUrlConnection(url, remoteFilePath, size, retryCount + 1);
+        } finally {
         }
     }
 
