@@ -42,7 +42,14 @@ public class BackendServiceImpl implements BackendService {
 
         log.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}",
                 format, location, protocol, asperaConnectLocation, emailId);
-        accessionDetailsService.fetchAccessionAndDownload(format, location, accessionDetailsMap, protocol
-                , asperaConnectLocation, emailId);
+        long failedCount = 0;
+        do {
+            failedCount = accessionDetailsService.fetchAccessionAndDownload(format, location, accessionDetailsMap, protocol
+                    , asperaConnectLocation, emailId);
+            if (failedCount > 0) {
+                System.out.println("Automatically retrying failed downloads...");
+            }
+        } while (failedCount > 0);
+
     }
 }
