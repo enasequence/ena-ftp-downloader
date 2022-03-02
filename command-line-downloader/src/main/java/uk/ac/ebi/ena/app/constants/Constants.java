@@ -26,7 +26,7 @@ public class Constants {
 
     public static final String SEMICOLON = ";";
     public static final int CHUNK_SIZE = 1000;
-    public static final int EXECUTOR_THREAD_COUNT = 5;
+    public static final int EXECUTOR_THREAD_COUNT = 3;
     public static final String FTP = "ftp://";
     public static final int TOTAL_RETRIES = 10;
 

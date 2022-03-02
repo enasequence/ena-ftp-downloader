@@ -103,7 +103,7 @@ public class AccessionDetailsService {
     }
 
     @SneakyThrows
-    public void fetchAccessionAndDownload(DownloadFormatEnum format, String downloadLocation,
+    public long fetchAccessionAndDownload(DownloadFormatEnum format, String downloadLocation,
                                           Map<String, List<String>> accessionDetailsMap, ProtocolEnum protocol,
                                           String asperaLocation, String recipientEmailId) {
         final ExecutorService executorService = Executors.newFixedThreadPool(Constants.EXECUTOR_THREAD_COUNT);
@@ -181,9 +181,11 @@ public class AccessionDetailsService {
         if (failedDownloadsCount > 0) {
             System.out.println("Some files failed to download due to possible network issues. Please re-run the " +
                     "same script=" + scriptFileName + " to re-attempt to download those files");
+        } else {
+            emailService.sendEmailForFastqSubmitted(recipientEmailId, successfulDownloadsCount, failedDownloadsCount,
+                    scriptFileName, accessionField, format, downloadLocation);
         }
-        emailService.sendEmailForFastqSubmitted(recipientEmailId, successfulDownloadsCount, failedDownloadsCount,
-                scriptFileName, accessionField, format, downloadLocation);
+        return failedDownloadsCount;
     }
 
 }
