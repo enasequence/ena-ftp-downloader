@@ -26,7 +26,8 @@ import lombok.Data;
 public class EnaPortalResponse {
 
     @JsonProperty("run_accession")
-    private String runId;
+    @JsonAlias("analysis_accession")
+    private String recordId;
     @JsonProperty("experiment_accession")
     @JsonAlias({"sample_accession", "study_accession", "analysis_accession", "run_accession"})
     private String parentId;

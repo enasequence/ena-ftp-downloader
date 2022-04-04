@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.DigestUtils;
 import uk.ac.ebi.ena.app.constants.Constants;
+import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
@@ -95,18 +96,19 @@ public class FileDownloaderService {
                 .setUnit("B", 1); // setting the progress bar to use MB as the unit
     }
 
-    public static String getFileDownloadPath(String downloadLoc, String accessionType, DownloadFormatEnum format,
+    public static String getFileDownloadPath(String downloadLoc, AccessionTypeEnum accessionType,
+                                             DownloadFormatEnum format,
                                              FileDetail fileDetail) {
         switch (accessionType) {
-            case "RUN":
+            case RUN:
                 return downloadLoc + File.separator
-                        + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getRunId();
-            case "PROJECT":
-            case "EXPERIMENT":
-            case "SAMPLE":
+                        + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getRecordId();
+            case STUDY:
+            case EXPERIMENT:
+            case SAMPLE:
                 return downloadLoc + File.separator
-                        + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getParentId() + File.separator + fileDetail.getRunId();
-            case "ANALYSIS":
+                        + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getParentId() + File.separator + fileDetail.getRecordId();
+            case ANALYSIS:
                 return downloadLoc + File.separator
                         + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getParentId();
         }
@@ -144,7 +146,7 @@ public class FileDownloaderService {
 
 
     public Future<FileDownloadStatus> startDownload(ExecutorService executorService, List<FileDetail> fileDetails,
-                                                    String downloadLoc, String accessionType,
+                                                    String downloadLoc, AccessionTypeEnum accessionType,
                                                     DownloadFormatEnum format, int set) {
         FileDownloadStatus fileDownloadStatus = new FileDownloadStatus(fileDetails.size(), 0, new ArrayList<>());
 
@@ -205,6 +207,7 @@ public class FileDownloaderService {
                             fileDownloaderPath + File.separator + remoteFileName, bytesCopied);
                     if (isDownloaded) {
                         fileProgressBar.stepBy(1);
+                        log.info("{} completed.", fileDownloaderPath + File.separator + remoteFileName);
                         fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
                     } else {
                         log.error("Failed to download file:{}, experimentId:{}", remoteFileName,

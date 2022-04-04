@@ -36,6 +36,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.ena.app.constants.Constants;
+import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
@@ -197,7 +198,7 @@ public class FileDownloaderClient {
 
     public Future<FileDownloadStatus> startDownloadAspera(ExecutorService executorService, List<FileDetail> fileDetails,
                                                           String asperaLocation, String downloadLocation,
-                                                          String accessionType, DownloadFormatEnum format, int set) {
+                                                          AccessionTypeEnum accessionType, DownloadFormatEnum format, int set) {
         FileDownloadStatus fileDownloadStatus = new FileDownloadStatus(fileDetails.size(), 0,
                 new ArrayList<>());
         return executorService.submit(() -> {

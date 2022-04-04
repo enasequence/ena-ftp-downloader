@@ -166,7 +166,7 @@ public class MenuUtils {
                     }
                     List<String> accessionIds = Files.lines(Paths.get(inputValues), StandardCharsets.US_ASCII).collect(Collectors.toList());
 
-                    return new ArrayList<>(accessionIds.stream().map(aRow -> aRow.replace("\"", "").trim()).collect(Collectors.toSet()));
+                    return new ArrayList<>(accessionIds.stream().map(aRow -> aRow.replace("\"", "").trim()).collect(Collectors.toCollection(LinkedHashSet::new)));
                 }
             }
         } catch (IOException exception) {
