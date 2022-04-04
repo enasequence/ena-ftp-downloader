@@ -25,7 +25,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class FileDetail {
     private String parentId;
-    private String runId;
+    private String recordId;
     private String ftpUrl;
     private Long bytes;
     private String md5;

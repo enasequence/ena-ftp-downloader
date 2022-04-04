@@ -69,7 +69,7 @@ public class AccessionDetailsService {
             List<Long> bytesList = getBytes(enaPortalResponse.getBytes());
 
             for (int i = 0; i < ftpUrlsList.size(); i++) {
-                fileDetails.add(new FileDetail(enaPortalResponse.getParentId(), enaPortalResponse.getRunId(),
+                fileDetails.add(new FileDetail(enaPortalResponse.getParentId(), enaPortalResponse.getRecordId(),
                         ftpUrlsList.get(i), bytesList.get(i), md5List.get(i)));
             }
         }
@@ -109,7 +109,7 @@ public class AccessionDetailsService {
         final ExecutorService executorService = Executors.newFixedThreadPool(Constants.EXECUTOR_THREAD_COUNT);
 
         String accessionField = accessionDetailsMap.get(ACCESSION_FIELD).get(0);
-        String accessionType = AccessionTypeEnum.getAccessionType(accessionField).name();
+        AccessionTypeEnum accessionType = AccessionTypeEnum.getAccessionType(accessionField);
         List<String> accessions = accessionDetailsMap.get(ACCESSION_LIST);
         List<List<String>> accLists = Collections.synchronizedList(Lists.partition(accessions, 10000));
         long total = 0;

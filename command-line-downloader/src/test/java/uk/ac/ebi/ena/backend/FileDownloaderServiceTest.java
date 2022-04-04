@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
@@ -40,12 +41,12 @@ public class FileDownloaderServiceTest {
         List<FileDetail> fileDetailList = new ArrayList<>();
         FileDetail fileDetail = createFileDetailFtp();
         fileDetailList.add(fileDetail);
-        String accessionType = "EXPERIMENT";
+
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         int set = 1;
         //ACT
         FileDownloadStatus fileDownloadStatus = fileDownloaderService.
-                startDownload(executorService, fileDetailList, downloadFolderPath, accessionType, format, set).get();
+                startDownload(executorService, fileDetailList, downloadFolderPath, AccessionTypeEnum.EXPERIMENT, format, set).get();
         System.out.println(fileDownloadStatus);
 
     }
@@ -59,12 +60,11 @@ public class FileDownloaderServiceTest {
         FileDetail fileDetail = createFileDetailAspera();
         fileDetailList.add(fileDetail);
         String asperaLocation = "C:\\Users\\suman\\AppData\\Local\\Programs\\Aspera\\Aspera Connect\\";//local aspera connect folder
-        String accessionType = "EXPERIMENT";
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         int set = 1;
         //ACT
         FileDownloadStatus fileDownloadStatus = fileDownloaderClient.startDownloadAspera
-                (executorService, fileDetailList, asperaLocation, downloadFolderPath, accessionType, format, set).get();
+                (executorService, fileDetailList, asperaLocation, downloadFolderPath, AccessionTypeEnum.EXPERIMENT, format, set).get();
         Assert.assertEquals(1, fileDownloadStatus.getSuccesssful());
 
     }

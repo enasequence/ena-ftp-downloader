@@ -38,7 +38,8 @@ import java.util.*;
 import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_FIELD;
 
 /**
- * This class will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED} for the
+ * This class will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED} for
+ * the
  * accessionIdList and dataType
  */
 @Component
@@ -58,10 +59,12 @@ public class EnaPortalService {
     public static final String FASTQ_ASPERA_FIELD = ",fastq_aspera";
     public static final String SUBMITTED_ASPERA_FIELD = ",submitted_aspera";
 
-    private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result=read_run" +
-            "&includeAccessionType=%s&fields=%s&format=json";
-    private static final String PORTAL_API_ANALYSIS_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result=analysis" +
-            "&includeAccessionType=%s&fields=%s&format=json";
+    private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
+            "=read_run" +
+            "&includeAccessionType=%s&fields=%s&format=json&limit=0";
+    private static final String PORTAL_API_ANALYSIS_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
+            "=analysis" +
+            "&includeAccessionType=%s&fields=%s&format=json&limit=0";
     private static final String PORTAL_API_SUPPORT_URL = "https://www.ebi.ac.uk/ena/portal/api/support?email=datasubs" +
             "@ebi.ac.uk&message=%s&to=%s&subject=%s&name=%s";
 
@@ -79,7 +82,8 @@ public class EnaPortalService {
     private final RestTemplate restTemplate;
 
     /**
-     * This API will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED} for the
+     * This API will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED}
+     * for the
      * accessionIdList and dataType
      *
      * @param accessionIdList     The experimentIds
@@ -89,7 +93,8 @@ public class EnaPortalService {
      * @return The details  for the accession Ids
      */
     public List<EnaPortalResponse> getPortalResponses(List<String> accessionIdList, DownloadFormatEnum format,
-                                                      ProtocolEnum protocol, Map<String, List<String>> accessionDetailsMap) {
+                                                      ProtocolEnum protocol,
+                                                      Map<String, List<String>> accessionDetailsMap) {
 
         String accessionField = accessionDetailsMap.get(ACCESSION_FIELD).get(0);
         String accessionType = AccessionTypeEnum.getAccessionType(accessionField).name().toLowerCase();
@@ -102,58 +107,86 @@ public class EnaPortalService {
                     case SAMPLE:
                         switch (format) {
                             case READS_FASTQ:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.SAMPLE.name().toLowerCase(), AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.SAMPLE.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_FTP_FIELD);
                                 break outer;
                             case READS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.SAMPLE.name().toLowerCase(), AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.SAMPLE.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
                                 break outer;
                             case ANALYSIS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.ANALYSIS.name().toLowerCase(), AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.ANALYSIS.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
                                 break outer;
                             case ANALYSIS_GENERATED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.ANALYSIS.name().toLowerCase(), AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.ANALYSIS.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_FTP_FIELD);
                                 break outer;
                         }
                     case STUDY:
                         switch (format) {
                             case READS_FASTQ:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.STUDY.name().toLowerCase(), AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_FTP_FIELD);
                                 break outer;
                             case READS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.STUDY.name().toLowerCase(), AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
                                 break outer;
                             case ANALYSIS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.STUDY.name().toLowerCase(), AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
                                 break outer;
                             case ANALYSIS_GENERATED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.STUDY.name().toLowerCase(), AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_FTP_FIELD);
                                 break outer;
                         }
                     case EXPERIMENT:
                         switch (format) {
                             case READS_FASTQ:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.EXPERIMENT.name().toLowerCase(), AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.EXPERIMENT.name().toLowerCase(),
+                                        AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_FTP_FIELD);
                                 break outer;
                             case READS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.EXPERIMENT.name().toLowerCase(), AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.EXPERIMENT.name().toLowerCase(),
+                                        AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
                                 break outer;
                         }
                     case RUN:
                         switch (format) {
                             case READS_FASTQ:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.RUN.name().toLowerCase(), AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.RUN.name().toLowerCase(),
+                                        AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_FTP_FIELD);
                                 break outer;
                             case READS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.RUN.name().toLowerCase(), AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.RUN.name().toLowerCase(),
+                                        AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
                                 break outer;
                         }
                     case ANALYSIS:
                         switch (format) {
                             case ANALYSIS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.ANALYSIS.name().toLowerCase(), AccessionTypeEnum.ANALYSIS.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.ANALYSIS.name().toLowerCase(),
+                                        AccessionTypeEnum.ANALYSIS.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
                                 break outer;
                             case ANALYSIS_GENERATED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.ANALYSIS.name().toLowerCase(), AccessionTypeEnum.ANALYSIS.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_FTP_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.ANALYSIS.name().toLowerCase(),
+                                        AccessionTypeEnum.ANALYSIS.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_FTP_FIELD);
                                 break outer;
                         }
                 }
@@ -162,58 +195,86 @@ public class EnaPortalService {
                     case SAMPLE:
                         switch (format) {
                             case READS_FASTQ:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.SAMPLE.name().toLowerCase(), AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.SAMPLE.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_ASPERA_FIELD);
                                 break outer;
                             case READS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.SAMPLE.name().toLowerCase(), AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.SAMPLE.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
                                 break outer;
                             case ANALYSIS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.SAMPLE.name().toLowerCase(), AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.SAMPLE.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
                                 break outer;
                             case ANALYSIS_GENERATED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.SAMPLE.name().toLowerCase(), AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.SAMPLE.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_ASPERA_FIELD);
                                 break outer;
                         }
                     case STUDY:
                         switch (format) {
                             case READS_FASTQ:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.STUDY.name().toLowerCase(), AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_ASPERA_FIELD);
                                 break outer;
                             case READS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.STUDY.name().toLowerCase(), AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
                                 break outer;
                             case ANALYSIS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.STUDY.name().toLowerCase(), AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
                                 break outer;
                             case ANALYSIS_GENERATED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.STUDY.name().toLowerCase(), AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_ASPERA_FIELD);
                                 break outer;
                         }
                     case EXPERIMENT:
                         switch (format) {
                             case READS_FASTQ:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.EXPERIMENT.name().toLowerCase(), AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.EXPERIMENT.name().toLowerCase(),
+                                        AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_ASPERA_FIELD);
                                 break outer;
                             case READS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.EXPERIMENT.name().toLowerCase(), AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.EXPERIMENT.name().toLowerCase(),
+                                        AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
                                 break outer;
                         }
                     case RUN:
                         switch (format) {
                             case READS_FASTQ:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.RUN.name().toLowerCase(), AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.RUN.name().toLowerCase(),
+                                        AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_READ_FASTQ + FASTQ_ASPERA_FIELD);
                                 break outer;
                             case READS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL, AccessionTypeEnum.RUN.name().toLowerCase(), AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.RUN.name().toLowerCase(),
+                                        AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
                                 break outer;
                         }
                     case ANALYSIS:
                         switch (format) {
                             case ANALYSIS_SUBMITTED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.ANALYSIS.name().toLowerCase(), AccessionTypeEnum.ANALYSIS.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.ANALYSIS.name().toLowerCase(),
+                                        AccessionTypeEnum.ANALYSIS.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
                                 break outer;
                             case ANALYSIS_GENERATED:
-                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL, AccessionTypeEnum.ANALYSIS.name().toLowerCase(), AccessionTypeEnum.ANALYSIS.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_ASPERA_FIELD);
+                                portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
+                                        AccessionTypeEnum.ANALYSIS.name().toLowerCase(),
+                                        AccessionTypeEnum.ANALYSIS.getAccessionField() + SEARCH_FIELDS_GENERATED + GENERATED_ASPERA_FIELD);
                                 break outer;
                         }
                 }
