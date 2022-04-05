@@ -55,6 +55,7 @@ test {
     useJUnitPlatform()
 }
 
+// zip including runner scripts is created in build/dist. Create a new release in github and upload zip.
 tasks.register('packageDistribution', Zip) {
     archiveFileName = "ena-file-downloader-" + project.version + ".zip"
     destinationDirectory = layout.buildDirectory.dir('dist')
@@ -78,5 +79,5 @@ task replaceVersionInReadme  {
 tasks.build.dependsOn(replaceVersionInReadme)
 
 
-//compileJava.dependsOn clean
+compileJava.dependsOn clean
 bootJar.finalizedBy packageDistribution
