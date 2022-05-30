@@ -84,15 +84,15 @@ public class EnaPortalService {
     /**
      * This API will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED}
      * for the
-     * accessionIdList and dataType
+     * accessionList and dataType
      *
-     * @param accessionIdList     The experimentIds
+     * @param accessionList     The experimentIds
      * @param format              The format provided by the user
      * @param protocol            The protocol for the download
      * @param accessionDetailsMap The map for accessionDetails
      * @return The details  for the accession Ids
      */
-    public List<EnaPortalResponse> getPortalResponses(List<String> accessionIdList, DownloadFormatEnum format,
+    public List<EnaPortalResponse> getPortalResponses(List<String> accessionList, DownloadFormatEnum format,
                                                       ProtocolEnum protocol,
                                                       Map<String, List<String>> accessionDetailsMap) {
 
@@ -280,14 +280,16 @@ public class EnaPortalService {
                 }
         }
 
-        Assert.notNull(accessionIdList, "Accession IDs cannot be null");
-        String experimentIds = String.join(COMMA, accessionIdList);
+        Assert.notNull(accessionList, "Accessions cannot be null");
+        String includeAccs = String.join(COMMA, accessionList);
         URI uri = URI.create(Objects.requireNonNull(portalAPIEndpoint));
-        String body = "includeAccessions=" + experimentIds;
+        String body = "includeAccessions=" + includeAccs;
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Content-Type", URLENCODED);
         httpHeaders.add("Accept", APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(body, httpHeaders);
+        log.info("url:{}", portalAPIEndpoint);
+        log.info("request body:{}", body);
         while (retryCount <= BeanConfig.APP_RETRY) {
             try {
                 EnaPortalResponse[] response = restTemplate.postForObject(uri, request, EnaPortalResponse[].class);

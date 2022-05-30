@@ -41,6 +41,8 @@ import java.io.File;
 @NoArgsConstructor
 public class MainRunner implements CommandLineRunner {
 
+    public static final String ASPERA_PATH_MSG = "Please enter the path to your local Aspera Connect/CLI installation" +
+            ". This tool will look for 'bin' and 'etc' folders in the provided folder.";
     @Value("${accessions:#{null}}")
     public String accessions;
 
@@ -82,11 +84,11 @@ public class MainRunner implements CommandLineRunner {
             if (args.length >= 5) {
                 try {
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
-                    ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr);
+                    ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
 
                     if (accessions != null && new File(downloadLocation).exists() && new File(downloadLocation).canWrite()) {
                         if (protocol == ProtocolEnum.ASPERA) {
-                            Assert.notNull(asperaLocation, "Please enter the path to your local Aspera Connect/CLI installation");
+                            Assert.notNull(asperaLocation, ASPERA_PATH_MSG);
                         }
                         backendService.startDownload(format, downloadLocation, MenuUtils.parseAccessions(accessions), protocol,
                                 asperaLocation, emailId);

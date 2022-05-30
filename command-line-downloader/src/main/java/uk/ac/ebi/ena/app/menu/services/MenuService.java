@@ -43,6 +43,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static uk.ac.ebi.ena.app.MainRunner.ASPERA_PATH_MSG;
+
 
 @Component
 @NoArgsConstructor
@@ -370,7 +372,7 @@ public class MenuService {
     }
 
     private String d1RequestAsperaConnectOption(DownloadFormatEnum format, String location, Map<String, List<String>> accessionDetailsMap) {
-        System.out.println("***** Please enter the path to your local Aspera Connect/CLI installation");
+        System.out.println("***** " + ASPERA_PATH_MSG);
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();

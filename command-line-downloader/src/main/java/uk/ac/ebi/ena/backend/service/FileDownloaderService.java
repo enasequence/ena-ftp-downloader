@@ -99,20 +99,12 @@ public class FileDownloaderService {
     public static String getFileDownloadPath(String downloadLoc, AccessionTypeEnum accessionType,
                                              DownloadFormatEnum format,
                                              FileDetail fileDetail) {
-        switch (accessionType) {
-            case RUN:
-                return downloadLoc + File.separator
-                        + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getRecordId();
-            case STUDY:
-            case EXPERIMENT:
-            case SAMPLE:
-                return downloadLoc + File.separator
-                        + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getParentId() + File.separator + fileDetail.getRecordId();
-            case ANALYSIS:
-                return downloadLoc + File.separator
-                        + StringUtils.lowerCase(format.toString()) + File.separator + fileDetail.getParentId();
+        String path = downloadLoc + File.separator
+                + StringUtils.lowerCase(format.toString()) + File.separator;
+        if (StringUtils.isNotBlank(fileDetail.getParentId())) {
+            path += fileDetail.getParentId() + File.separator;
         }
-        return "";
+        return path + fileDetail.getRecordId();
     }
 
 
