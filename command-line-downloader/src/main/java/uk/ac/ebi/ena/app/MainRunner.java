@@ -20,6 +20,7 @@ package uk.ac.ebi.ena.app;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -80,20 +81,28 @@ public class MainRunner implements CommandLineRunner {
         try {
             System.out.println(MenuUtils.welcomeMessage);
             CommonUtils.printSeparatorLine();
+            if (args.length > 0) {
+                System.out.println("Provided parameters:\n" + StringUtils.join(args, "\n"));
+            }
 
             if (args.length >= 5) {
                 try {
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
-
-                    if (accessions != null && new File(downloadLocation).exists() && new File(downloadLocation).canWrite()) {
-                        if (protocol == ProtocolEnum.ASPERA) {
-                            Assert.notNull(asperaLocation, ASPERA_PATH_MSG);
+                    File dLoc = new File(downloadLocation);
+                    if (!dLoc.exists() || !dLoc.canWrite()) {
+                        System.out.println(dLoc + " does not exists or is read only.");
+                    } else {
+                        if (accessions != null && new File(downloadLocation).exists() && new File(downloadLocation).canWrite()) {
+                            if (protocol == ProtocolEnum.ASPERA) {
+                                Assert.notNull(asperaLocation, ASPERA_PATH_MSG);
+                            }
+                            backendService.startDownload(format, downloadLocation,
+                                    MenuUtils.parseAccessions(accessions), protocol,
+                                    asperaLocation, emailId);
                         }
-                        backendService.startDownload(format, downloadLocation, MenuUtils.parseAccessions(accessions), protocol,
-                                asperaLocation, emailId);
+                        log.info("Downloads Completed");
                     }
-                    log.info("Downloads Completed");
                 } catch (IllegalArgumentException iae) {
                     System.out.println("Invalid/insufficient parameters provided. Please select your options.");
                     log.error("Invalid/insufficient parameters provided.", iae);
@@ -102,6 +111,10 @@ public class MainRunner implements CommandLineRunner {
                     log.error("Exception Occurred while downloading", e);
                 }
             } else {
+                if (args.length > 0) {
+                    log.info("Not enough parameters provided. Running menu interface..");
+                    System.out.println("Not enough parameters provided. Running menu interface.. \n\n");
+                }
                 menuBuilder.aBuildAccessionEntryMenu();
 
             }

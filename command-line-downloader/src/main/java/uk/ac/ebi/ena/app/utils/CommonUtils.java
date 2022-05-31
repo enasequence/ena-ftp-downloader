@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_FIELD;
 import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_LIST;
@@ -64,16 +65,20 @@ public class CommonUtils {
         String baseAccession = accessions.get(0);
         Map<String, List<String>> accessionDetailsMap = null;
         AccessionTypeEnum type = AccessionTypeEnum.getAccessionTypeByPattern(baseAccession);
-        if (type != null) {
-            boolean isValid = accessions.stream().allMatch(acc -> Pattern.matches(type.getPattern(), acc));
-            if (isValid) {
-                accessionDetailsMap = getAccessionDetailsMap(type.getAccessionField(), accessions);
-            }
+        if (type == null) {
+            System.out.println("Unsupported accession type provided:" + baseAccession + " Supported types are "
+                    + AccessionTypeEnum.getDisplayTypes());
+            throw new Exception("Unsupported accession type provided:" + baseAccession);
+        }
+        String invalid =
+                accessions.stream().filter(acc -> !Pattern.matches(type.getPattern(), acc)).collect(Collectors.joining(","));
+        if (StringUtils.isBlank(invalid)) {
+            accessionDetailsMap = getAccessionDetailsMap(type.getAccessionField(), accessions);
             return accessionDetailsMap;
         } else {
-            System.out.println("Unsupported accession type provided:" + baseAccession + " Supported types are "
-                    + StringUtils.join(AccessionTypeEnum.values(), ", "));
-            throw new Exception("Unsupported accession type provided:" + baseAccession);
+            System.out.println("Invalid accession patterns provided:" + invalid + ",\nSupported types are "
+                    + AccessionTypeEnum.getDisplayTypes() + ".  All accessions should be of the same type.");
+            throw new Exception("Invalid accessions provided:" + invalid);
         }
     }
 

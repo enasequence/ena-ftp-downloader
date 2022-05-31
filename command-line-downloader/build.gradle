@@ -42,6 +42,8 @@ dependencies {
 }
 
 bootRun {
+//    to run in Idea provide params like:
+//    bootRun -Pargs="--accessions=SAMD00016353,DRS000002 --format=READS_FASTQ --location=/mnt/c/data-files --protocol=FTP --asperaLocation=null --email=NONE"
     if (project.hasProperty('args')) {
         args project.args.split('\\s+')
     }
@@ -70,13 +72,16 @@ tasks.register('packageDistribution', Zip) {
     }
 }
 
-task replaceVersionInReadme  {
+task replaceVersion  {
     ant.replaceregexp(match:'version:[^->]*', replace:'version:' + version  , byline:true) {
         fileset(dir: 'distribution', includes: 'README.txt')
     }
+    ant.replaceregexp(match:'version:[^->]*', replace:'version:' + version  , byline:true) {
+        fileset(dir: 'src/main/resources', includes: 'banner.txt')
+    }
 }
 
-tasks.build.dependsOn(replaceVersionInReadme)
+tasks.build.dependsOn(replaceVersion)
 
 
 compileJava.dependsOn clean

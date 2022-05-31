@@ -25,16 +25,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
 public enum AccessionTypeEnum {
 
-    EXPERIMENT("experiment_accession", "^[ESDR]RX[0-9]{6,}$"),
-    SAMPLE("sample_accession", "((SAME[A]?[0-9]{6,}|SAM[ND][0-9]{8}))$"),
-    STUDY("study_accession", "(^(PRJ[A-Z]{2}[0-9]+))$"),
-    RUN("run_accession", "^[ESDR]RR[0-9]{6,}$"),
-    ANALYSIS("analysis_accession", "([ESDR]RZ[0-9]{6,})");
+    EXPERIMENT("experiment_accession", "^[ESDR]RX[0-9]{6,}$", "SRA Experiment (e.g. ERX6534960)"),
+    SAMPLE("sample_accession", "^SAM(E[A]?[0-9]{6,}|[ND][0-9]{8})$", "Biosample (e.g. SAMEA10254937)"),
+    STUDY("study_accession", "^PRJ(EB|DB|NA)[0-9]+$", "Project a.k.a. Bioproject/Study (e.g. PRJEB47823)"),
+    RUN("run_accession", "^[ESD]RR[0-9]{6,}$", "SRA Run (e.g. ERR6912696)"),
+    ANALYSIS("analysis_accession", "^[ESD]RZ[0-9]{6,}$", "SRA Analysis (e.g. ERZ3914048)");
 
     private final static Map<String, AccessionTypeEnum> map = new HashMap<>();
 
@@ -44,6 +45,7 @@ public enum AccessionTypeEnum {
 
     private final String accessionField;
     private final String pattern;
+    private final String display;
 
     public static AccessionTypeEnum getAccessionType(String accessionField) {
         return map.get(accessionField);
@@ -58,4 +60,7 @@ public enum AccessionTypeEnum {
         return null;
     }
 
+    public static String getDisplayTypes() {
+        return Arrays.stream(values()).map(AccessionTypeEnum::getDisplay).collect(Collectors.joining(", "));
+    }
 }

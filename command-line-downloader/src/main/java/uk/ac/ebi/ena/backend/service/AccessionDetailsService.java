@@ -153,8 +153,10 @@ public class AccessionDetailsService {
             System.out.println("No records found for the accessions submitted under type=" + accessionType + " format=" + format);
         }
 
-        log.info("Downloading {} files in total", totalFiles);
-        System.out.println("Downloading " + totalFiles + " files in total.");
+        if (totalFiles > 0) {
+            log.info("Downloading {} files in total", totalFiles);
+            System.out.println("Downloading " + totalFiles + " files in total.");
+        }
         long successfulDownloadsCount = 0, failedDownloadsCount = 0;
         for (Future<FileDownloadStatus> f : futures) {
             final FileDownloadStatus fileDownloadStatus = f.get();
@@ -177,7 +179,9 @@ public class AccessionDetailsService {
         log.info("Number of files:{} failed downloaded for accessionField:{}, format:{}",
                 failedDownloadsCount, accessionField, format);
         String scriptFileName = FileUtils.getScriptPath(accessionDetailsMap, format);
-        System.out.println("Downloads completed!");
+        if (totalFiles > 0) {
+            System.out.println("Downloads completed!");
+        }
         if (failedDownloadsCount > 0) {
             System.out.println("Some files failed to download due to possible network issues. Please re-run the " +
                     "same script=" + scriptFileName + " to re-attempt to download those files");

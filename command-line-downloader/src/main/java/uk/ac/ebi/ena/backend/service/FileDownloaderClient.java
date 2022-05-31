@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static uk.ac.ebi.ena.app.constants.Constants.FTP_SRA_SERVER;
 import static uk.ac.ebi.ena.app.utils.CommonUtils.getProgressBarBuilder;
@@ -61,8 +62,9 @@ import static uk.ac.ebi.ena.backend.service.FileDownloaderService.*;
 
 @Component
 @Slf4j
-@AllArgsConstructor
 public class FileDownloaderClient {
+    AtomicLong verified = new AtomicLong(0), redownloading = new AtomicLong(0);
+
     private static final String DOWNLOAD_PARAMS_ASPERA = "-QT -l 300m -P 33001 ";
     public static final int THIRTYSECONDS = 30000;
     public static final int FIVEMINUTES = 300000;
@@ -71,6 +73,12 @@ public class FileDownloaderClient {
     private final HttpRequestRetryHandler httpRequestRetryHandler;
     private final ServiceUnavailableRetryStrategy serviceUnavailableRetryStrategy;
 
+    public FileDownloaderClient(RequestConfig requestConfig, HttpRequestRetryHandler httpRequestRetryHandler,
+                                ServiceUnavailableRetryStrategy serviceUnavailableRetryStrategy) {
+        this.requestConfig = requestConfig;
+        this.httpRequestRetryHandler = httpRequestRetryHandler;
+        this.serviceUnavailableRetryStrategy = serviceUnavailableRetryStrategy;
+    }
 
     @SneakyThrows
     public long downloadHttpClient(URL url, Path remoteFilePath, long size, int retryCount) {
@@ -220,7 +228,15 @@ public class FileDownloaderClient {
                 boolean isFileDownloaded = isFileDownloaded(directoryPath, remoteFilePath, remoteFileName, fileDetail,
                         fileDownloadStatus, fileProgressBar);
                 if (isFileDownloaded) {
+                    long vl = verified.incrementAndGet();
+                    if (vl % 1000 == 0) {
+                        System.out.println(verified + " existing files verified. Last was " + remoteFilePath.toString());
+                    }
                     continue;
+                }
+                long rl = redownloading.incrementAndGet();
+                if (rl % 1000 == 0) {
+                    System.out.println(redownloading + " files marked for download. Last was " + remoteFilePath.toString());
                 }
                 List<String> commands = getAsperaCommandParts(asperaLocation, fileDetail, remoteFilePath);
 
@@ -254,7 +270,7 @@ public class FileDownloaderClient {
                                         fileDownloaderPath + File.separator + remoteFileName,
                                         bytesCopied);
                                 if (isDownloaded) {
-                                    log.debug("File Detail for SUCCESSFUL download remoteFile:{}, " +
+                                    log.info("SUCCESSFUL download remoteFile:{}, " +
                                                     "parentId:{}", remoteFileName,
                                             fileDetail.getParentId());
                                     fileProgressBar.stepBy(1);
@@ -287,7 +303,7 @@ public class FileDownloaderClient {
 
     private void deleteIfPartialFileExists(Path partialFilePath, String partialFileName) throws IOException {
         if (Files.exists(partialFilePath)) {
-            log.debug("Partial file {} exist, deleting it", partialFileName);
+            log.info("Partial file {} exist, deleting it", partialFileName);
             Files.delete(partialFilePath);
         }
     }
