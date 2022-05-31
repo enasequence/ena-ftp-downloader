@@ -84,11 +84,19 @@ public class MenuUtils {
     public static boolean isValidAsperaConnectLoc(String asperaConnectLocation) {
         boolean isValidLocation = false;
         String ascpFile = Constants.ascpFileName + CommonUtils.getAscpExtension();
+        log.info("assumed aspera client:{}", ascpFile);
         if (Files.exists(Paths.get(asperaConnectLocation))) {
-            if (Files.exists(Paths.get(asperaConnectLocation, Constants.binFolder))
-                    && Files.exists(Paths.get(asperaConnectLocation, Constants.binFolder, ascpFile))
-                    && Files.exists(Paths.get(asperaConnectLocation, Constants.etcFolder))
-                    && Files.exists(Paths.get(asperaConnectLocation, Constants.etcFolder, Constants.asperaWebFile))) {
+            if (!Files.exists(Paths.get(asperaConnectLocation, Constants.binFolder))) {
+                log.error("bin folder not found in path:{}", asperaConnectLocation);
+                System.out.println("bin folder not found in path:{}" + asperaConnectLocation);
+            } else if (!Files.exists(Paths.get(asperaConnectLocation, Constants.binFolder, ascpFile))) {
+                log.error("{} not found.", Paths.get(asperaConnectLocation, Constants.binFolder, ascpFile));
+                System.out.println(Paths.get(asperaConnectLocation, Constants.binFolder, ascpFile) + " not found.");
+            } else if (!Files.exists(Paths.get(asperaConnectLocation, Constants.etcFolder)) || !Files.exists(Paths.get(asperaConnectLocation, Constants.etcFolder, Constants.asperaWebFile))) {
+                log.error("etc folder not found in path:{}. We look for etc/asperaweb_id_dsa.openssh",
+                        asperaConnectLocation);
+                System.out.println("etc/asperaweb_id_dsa.openssh not found in " + asperaConnectLocation);
+            } else {
                 isValidLocation = true;
             }
         }
@@ -164,7 +172,8 @@ public class MenuUtils {
                     if (!isValidBaseAccession) {
                         return null;
                     }
-                    List<String> accessionIds = Files.lines(Paths.get(inputValues), StandardCharsets.US_ASCII).collect(Collectors.toList());
+                    List<String> accessionIds =
+                            Files.lines(Paths.get(inputValues), StandardCharsets.US_ASCII).collect(Collectors.toList());
 
                     return new ArrayList<>(accessionIds.stream().map(aRow -> aRow.replace("\"", "").trim()).collect(Collectors.toCollection(LinkedHashSet::new)));
                 }

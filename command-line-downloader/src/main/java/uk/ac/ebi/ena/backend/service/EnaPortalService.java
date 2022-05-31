@@ -20,6 +20,7 @@ package uk.ac.ebi.ena.backend.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -86,7 +87,7 @@ public class EnaPortalService {
      * for the
      * accessionList and dataType
      *
-     * @param accessionList     The experimentIds
+     * @param accessionList       The experimentIds
      * @param format              The format provided by the user
      * @param protocol            The protocol for the download
      * @param accessionDetailsMap The map for accessionDetails
@@ -293,6 +294,10 @@ public class EnaPortalService {
         while (retryCount <= BeanConfig.APP_RETRY) {
             try {
                 EnaPortalResponse[] response = restTemplate.postForObject(uri, request, EnaPortalResponse[].class);
+                if (ArrayUtils.isEmpty(response)) {
+                    System.out.println("No data files of requested type found.");
+                    return Collections.emptyList();
+                }
                 return Arrays.asList(Objects.requireNonNull(response));
             } catch (RestClientException rce) {
                 log.error("Exception encountered while getting portalResponse for accession type:{}, format:{}",

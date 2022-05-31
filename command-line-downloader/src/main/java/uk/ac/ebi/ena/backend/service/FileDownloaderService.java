@@ -45,16 +45,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static uk.ac.ebi.ena.app.utils.CommonUtils.getProgressBarBuilder;
 
 @Service
 @Slf4j
-@AllArgsConstructor
 public class FileDownloaderService {
-
+    AtomicLong verified = new AtomicLong(0), redownloading = new AtomicLong(0);
 
     private final FileDownloaderClient fileDownloaderClient;
+
+    public FileDownloaderService(FileDownloaderClient fileDownloaderClient) {
+        this.fileDownloaderClient = fileDownloaderClient;
+    }
 
     /**
      * API will check if the file is downloaded properly for FASTQ/SUBMITTED format by validating against md5 and size.
@@ -62,20 +66,19 @@ public class FileDownloaderService {
      * @return true if file is downloaded in its entirety
      */
     public static boolean isDownloadSuccessful(FileDetail fileDetail, String fileDownloaderPath, long bytesCopied) {
-        log.debug("Checking file validation for remoteFile:{}", fileDetail.getFtpUrl());
         if (fileDetail.getBytes() == bytesCopied) {
             try (final FileInputStream fileInputStream = new FileInputStream(fileDownloaderPath)) {
                 String md5Hex = DigestUtils.md5DigestAsHex(fileInputStream);
                 if (fileDetail.getMd5().equals(md5Hex)) {
-                    log.debug("Validation successful for remoteFile:{}", fileDetail.getFtpUrl());
+                    log.info("MD5 validation successful for file:{}", fileDetail.getFtpUrl());
                     return true;
                 } else {
-                    log.info("Unsuccessful Validation for remoteFile:{}. MD5 checksum does not match",
+                    log.info("MD5 failed for file:{}",
                             fileDetail.getFtpUrl());
                     return false;
                 }
-            } catch (IOException e) {
-                log.error("IOException encountered while calculating MD5");
+            } catch (Exception e) {
+                log.error("IOException encountered while calculating MD5", e);
                 throw new IllegalStateException("IOException encountered while calculating MD5", e);
             }
         }
@@ -116,14 +119,13 @@ public class FileDownloaderService {
             return false;
         } else {
             if (Files.exists(remoteFilePath)) {
-                log.debug("Remote file:{} already exists at the download location. Checking for size " +
-                        "match", remoteFileName);
                 if (fileDetail.getBytes() == Files.size(remoteFilePath)) {
-                    log.debug("Remote file:{} size matches", remoteFileName);
+                    log.info("file:{} size matches", remoteFilePath);
                     fileProgressBar.stepBy(1);
                     fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
                     return true;
                 }
+                log.info("file:{} already exists at the download location but size mismatched.", remoteFileName);
             }
             return false;
         }
@@ -131,7 +133,7 @@ public class FileDownloaderService {
 
     private void deleteIfPartialFileExists(Path partialFilePath, String partialFileName) throws IOException {
         if (Files.exists(partialFilePath)) {
-            log.debug("Partial file {} exist, deleting it", partialFileName);
+            log.info("Partial file {} exist, deleting it", partialFileName);
             Files.delete(partialFilePath);
         }
     }
@@ -156,8 +158,7 @@ public class FileDownloaderService {
                     String fileUrl = Constants.FTP + fileDetail.getFtpUrl();
                     String fileDownloaderPath = getFileDownloadPath(downloadLoc, accessionType, format, fileDetail);
                     remoteFileName = StringUtils.substringAfterLast(fileUrl, "/");
-                    log.debug("Starting file download for remoteFile:{}, parentId:{}", remoteFileName,
-                            fileDetail.getParentId());
+
                     URL url;
                     try {
                         url = new URL(fileUrl);
@@ -173,8 +174,6 @@ public class FileDownloaderService {
                         Files.createDirectories(directoryPath);
                     } else {
                         if (Files.exists(remoteFilePath)) {
-                            log.debug("Remote file:{} already exists at the download location. Checking for size " +
-                                    "match", remoteFileName);
                             if (fileDetail.getBytes() == Files.size(remoteFilePath)) {
                                 log.info("File {} already exists and size matches {}. Skipping.", remoteFileName,
                                         fileDetail.getBytes());
@@ -182,8 +181,12 @@ public class FileDownloaderService {
                                 fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
                                 continue;
                             }
+                            log.info("File {} exists but size mismatch {}. Redownloading", remoteFileName,
+                                    fileDetail.getBytes());
+
                         }
                     }
+                    log.debug("Downloading {}, parentId:{}", remoteFileName, fileDetail.getParentId());
                     Assert.notNull(url, "FTP Url cannot be null");
                     long bytesCopied;
                     if (url.toString().startsWith("http")) {
@@ -193,7 +196,7 @@ public class FileDownloaderService {
                         bytesCopied = fileDownloaderClient.downloadFTPUrlConnection(url, remoteFilePath,
                                 fileDetail.getBytes(), 0);
                     }
-                    log.debug("Completed download for remoteFile:{}, experimentId:{}, bytesCopied:{}",
+                    log.debug("Completed download {}, parentId:{}, bytesCopied:{}",
                             remoteFileName, fileDetail.getParentId(), bytesCopied);
                     boolean isDownloaded = isDownloadSuccessful(fileDetail,
                             fileDownloaderPath + File.separator + remoteFileName, bytesCopied);
