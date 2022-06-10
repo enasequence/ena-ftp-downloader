@@ -19,24 +19,22 @@ cache:
 test:
   stage: test
   before_script:
-    - export GRADLE_USER_HOME=command-line-downloader/.gradle
+    - export GRADLE_USER_HOME=.gradle
   tags:
     - dcap-gitlab-runner
   script:
-    - cd command-line-downloader
     - chmod u+x gradlew
     - ./gradlew clean test
 
 build_prod:
   stage: build
   before_script:
-    - export GRADLE_USER_HOME=command-line-downloader/.gradle
+    - export GRADLE_USER_HOME=.gradle
   script:
-    - cd command-line-downloader
     - ./gradlew clean build -x test
   artifacts:
     paths:
-      - command-line-downloader/build/dist/${APP_NAME}-${APP_VERSION}.zip
+      - build/dist/${APP_NAME}-${APP_VERSION}.zip
   tags:
     - dcap-gitlab-runner
   only:
@@ -51,8 +49,8 @@ deploy_prod:
     - ssh-add <(echo "$SSH_PRIVATE_KEY")
     - mkdir -p ~/.ssh
   script:
-    - chmod u+x command-line-downloader/build/dist/${APP_NAME}-${APP_VERSION}.zip
-    - scp -o StrictHostKeyChecking=no command-line-downloader/build/dist/${APP_NAME}-${APP_VERSION}.zip datalib@noah-login-01.ebi.ac.uk:${FTP_DIR}
+    - chmod u+x build/dist/${APP_NAME}-${APP_VERSION}.zip
+    - scp -o StrictHostKeyChecking=no build/dist/${APP_NAME}-${APP_VERSION}.zip datalib@noah-login-01.ebi.ac.uk:${FTP_DIR}
     - ssh datalib@noah-login-01.ebi.ac.uk "cd ${FTP_DIR} && ln -sf ${APP_NAME}-${APP_VERSION}.zip ${APP_NAME}.zip"
   dependencies:
     - build_prod
