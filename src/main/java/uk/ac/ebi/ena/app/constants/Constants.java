@@ -38,6 +38,4 @@ public class Constants {
 
     public static final String FTP_SRA_SERVER = "ftp.sra.ebi.ac.uk";
 
-    public static final String ACCESSION_FIELD = "accession_field";
-    public static final String ACCESSION_LIST = "accession_list";
 }

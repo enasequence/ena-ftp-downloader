@@ -31,12 +31,14 @@ import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.backend.config.BeanConfig;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
 
 import java.net.URI;
-import java.util.*;
-
-import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_FIELD;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This class will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED} for
@@ -90,14 +92,14 @@ public class EnaPortalService {
      * @param accessionList       The experimentIds
      * @param format              The format provided by the user
      * @param protocol            The protocol for the download
-     * @param accessionDetailsMap The map for accessionDetails
+     * @param downloadJob The map for accessionDetails
      * @return The details  for the accession Ids
      */
     public List<EnaPortalResponse> getPortalResponses(List<String> accessionList, DownloadFormatEnum format,
                                                       ProtocolEnum protocol,
-                                                      Map<String, List<String>> accessionDetailsMap) {
+                                                      DownloadJob downloadJob) {
 
-        String accessionField = accessionDetailsMap.get(ACCESSION_FIELD).get(0);
+        String accessionField = downloadJob.getAccessionField();
         String accessionType = AccessionTypeEnum.getAccessionType(accessionField).name().toLowerCase();
         int retryCount = 0;
         String portalAPIEndpoint = "";

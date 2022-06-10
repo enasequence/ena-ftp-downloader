@@ -20,6 +20,7 @@ package uk.ac.ebi.ena.backend.service;
 
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
 import java.util.List;
 import java.util.Map;
@@ -33,13 +34,13 @@ public interface BackendService {
     /**
      * @param format                The format provided by the user
      * @param location              The download location
-     * @param accessionDetailsMap   The accessionDetails map
+     * @param downloadJob   The accessionDetails map
      * @param emailId               The recipient email Id
      * @param protocol              The protocol for download provided by the user
      * @param asperaConnectLocation The location of aspera connect folder if {@link ProtocolEnum} is ASPERA
      * @param emailId               The emailId at which mail will be sent once downloads are completed
      */
 
-    void startDownload(DownloadFormatEnum format, String location, Map<String, List<String>> accessionDetailsMap,
+    void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
                        ProtocolEnum protocol, String asperaConnectLocation, String emailId);
 }

@@ -70,6 +70,7 @@ public class FileDownloaderService {
             try (final FileInputStream fileInputStream = new FileInputStream(fileDownloaderPath)) {
                 String md5Hex = DigestUtils.md5DigestAsHex(fileInputStream);
                 if (fileDetail.getMd5().equals(md5Hex)) {
+                    fileDetail.setSuccess(true);
                     log.info("MD5 validation successful for file:{}", fileDetail.getFtpUrl());
                     return true;
                 } else {
@@ -123,6 +124,7 @@ public class FileDownloaderService {
                     log.info("file:{} size matches", remoteFilePath);
                     fileProgressBar.stepBy(1);
                     fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
+                    fileDetail.setSuccess(true);
                     return true;
                 }
                 log.info("file:{} already exists at the download location but size mismatched.", remoteFileName);
@@ -179,6 +181,7 @@ public class FileDownloaderService {
                                         fileDetail.getBytes());
                                 fileProgressBar.stepBy(1);
                                 fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
+                                fileDetail.setSuccess(true);
                                 continue;
                             }
                             log.info("File {} exists but size mismatch {}. Redownloading", remoteFileName,

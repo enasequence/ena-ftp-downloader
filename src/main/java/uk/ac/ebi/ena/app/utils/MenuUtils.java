@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -124,11 +125,10 @@ public class MenuUtils {
         return result;
     }
 
-    public static Map<String, List<String>> parseAccessions(String accessions) {
-        Map<String, List<String>> accessionDetailsMap = new HashMap<>();
+    public static DownloadJob parseAccessions(String accessions) {
+        DownloadJob job = new DownloadJob();
         if (StringUtils.isEmpty(accessions)) {
-
-            return accessionDetailsMap;
+            return job;
         } else if (new File(accessions).exists()) {
             List<String> accessionList = accsFromFile(accessions);
 

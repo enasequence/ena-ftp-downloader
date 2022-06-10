@@ -31,6 +31,7 @@ import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.utils.FileUtils;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
@@ -55,7 +56,6 @@ public class AccessionDetailsService {
     private final EnaPortalService enaPortalService;
     private final FileDownloaderService fileDownloaderService;
     private final FileDownloaderClient fileDownloaderClient;
-    private final EmailService emailService;
 
     /**
      * @param enaPortalResponses The responses from Portal API
@@ -70,7 +70,7 @@ public class AccessionDetailsService {
 
             for (int i = 0; i < ftpUrlsList.size(); i++) {
                 fileDetails.add(new FileDetail(enaPortalResponse.getParentId(), enaPortalResponse.getRecordId(),
-                        ftpUrlsList.get(i), bytesList.get(i), md5List.get(i)));
+                        ftpUrlsList.get(i), bytesList.get(i), md5List.get(i), false));
             }
         }
         return fileDetails;
@@ -103,39 +103,56 @@ public class AccessionDetailsService {
     }
 
     @SneakyThrows
-    public long fetchAccessionAndDownload(DownloadFormatEnum format, String downloadLocation,
-                                          Map<String, List<String>> accessionDetailsMap, ProtocolEnum protocol,
-                                          String asperaLocation, String recipientEmailId) {
-        final ExecutorService executorService = Executors.newFixedThreadPool(Constants.EXECUTOR_THREAD_COUNT);
+    public List<List<FileDetail>> fetchFileDetails(DownloadFormatEnum format,
+                                                            DownloadJob downloadJob, ProtocolEnum protocol) {
 
-        String accessionField = accessionDetailsMap.get(ACCESSION_FIELD).get(0);
-        AccessionTypeEnum accessionType = AccessionTypeEnum.getAccessionType(accessionField);
-        List<String> accessions = accessionDetailsMap.get(ACCESSION_LIST);
-        List<List<String>> accLists = Collections.synchronizedList(Lists.partition(accessions, 10000));
+        AccessionTypeEnum accessionType = AccessionTypeEnum.getAccessionType(downloadJob.getAccessionField());
+        List<List<String>> accLists = Collections.synchronizedList(Lists.partition(downloadJob.getAccessionList(), 10000));
         long total = 0;
         long totalFiles = 0;
-        List<Future<FileDownloadStatus>> futures = new ArrayList<>();
         for (List<String> accs : accLists) {
             total += accs.size();
         }
-        log.info("Total {} {} {} records found", total, accessionField, format);
-
+        log.info("Total {} {} {} records found", total, downloadJob.getAccessionField(), format);
 
         final ProgressBarBuilder portalPB = getProgressBarBuilder("Getting file details from ENA Portal API", -1);
 
-        int set = 1;
+        List<List<FileDetail>> listList = new ArrayList<>();
         for (List<String> accList : ProgressBar.wrap(accLists, portalPB)) {
             final List<List<String>> partitions = Lists.partition(accList,
                     accList.size() > CHUNK_SIZE * 5 ? CHUNK_SIZE : (int) Math.ceil(new Double(accList.size()) / 5));
             for (List<String> partition : partitions) {
                 final List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(partition, format,
-                        protocol, accessionDetailsMap);
+                        protocol, downloadJob);
                 final List<FileDetail> fileDetails = createFileDetails(portalResponses);
+                totalFiles += fileDetails.size();
+            }
+        }
+        if (totalFiles == 0) {
+            System.out.println("No records found for the accessions submitted under type=" + accessionType + " format=" + format);
+        }
+
+        if (totalFiles > 0) {
+            log.info("Downloading {} files in total", totalFiles);
+            System.out.println("Downloading " + totalFiles + " files in total.");
+        }
+        return listList;
+    }
+
+    @SneakyThrows
+    public long doDownload(DownloadFormatEnum format, String downloadLocation, DownloadJob downloadJob,
+                           List<List<FileDetail>> partitions, ProtocolEnum protocol,
+                           String asperaLocation) {
+        final ExecutorService executorService = Executors.newFixedThreadPool(Constants.EXECUTOR_THREAD_COUNT);
+        AccessionTypeEnum accessionType = AccessionTypeEnum.getAccessionType(downloadJob.getAccessionField());
+
+        List<Future<FileDownloadStatus>> futures = new ArrayList<>();
+
+            for (int thisSet = 0; thisSet < partitions.size(); thisSet++) {
+                List<FileDetail> fileDetails = partitions.get(thisSet);
                 if (fileDetails.size() == 0) {
                     continue;
                 }
-                totalFiles += fileDetails.size();
-                int thisSet = set++;
                 if (protocol == ProtocolEnum.FTP) {
                     final Future<FileDownloadStatus> listFuture =
                             fileDownloaderService.startDownload(executorService, fileDetails,
@@ -148,15 +165,7 @@ public class AccessionDetailsService {
                     futures.add(listFuture);
                 }
             }
-        }
-        if (totalFiles == 0) {
-            System.out.println("No records found for the accessions submitted under type=" + accessionType + " format=" + format);
-        }
 
-        if (totalFiles > 0) {
-            log.info("Downloading {} files in total", totalFiles);
-            System.out.println("Downloading " + totalFiles + " files in total.");
-        }
         long successfulDownloadsCount = 0, failedDownloadsCount = 0;
         for (Future<FileDownloadStatus> f : futures) {
             final FileDownloadStatus fileDownloadStatus = f.get();
@@ -172,24 +181,9 @@ public class AccessionDetailsService {
             Thread.currentThread().interrupt();
         }
 
-        log.info("Shutdown complete");
 
-        log.info("Number of files:{} successfully downloaded for accessionField:{}, format:{}",
-                successfulDownloadsCount, accessionField, format);
-        log.info("Number of files:{} failed downloaded for accessionField:{}, format:{}",
-                failedDownloadsCount, accessionField, format);
-        String scriptFileName = FileUtils.getScriptPath(accessionDetailsMap, format);
-        if (totalFiles > 0) {
-            System.out.println("Downloads completed!");
-        }
-        if (failedDownloadsCount > 0) {
-            System.out.println("Some files failed to download due to possible network issues. Please re-run the " +
-                    "same script=" + scriptFileName + " to re-attempt to download those files");
-        } else {
-            emailService.sendEmailForFastqSubmitted(recipientEmailId, successfulDownloadsCount, failedDownloadsCount,
-                    scriptFileName, accessionField, format, downloadLocation);
-        }
         return failedDownloadsCount;
     }
+
 
 }

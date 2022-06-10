@@ -29,4 +29,5 @@ public class FileDetail {
     private String ftpUrl;
     private Long bytes;
     private String md5;
+    private boolean success;
 }

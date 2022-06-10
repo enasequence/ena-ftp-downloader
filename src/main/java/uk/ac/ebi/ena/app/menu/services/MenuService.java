@@ -35,6 +35,7 @@ import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.app.utils.FileUtils;
 import uk.ac.ebi.ena.app.utils.MenuUtils;
 import uk.ac.ebi.ena.app.utils.ScannerUtils;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.service.BackendService;
 
 import java.io.File;
@@ -80,7 +81,7 @@ public class MenuService {
         }
     }
 
-    private Map<String, List<String>> a1GetAccessionListFromFilePath(AccessionsEntryMethodEnum accessionsEntry) {
+    private DownloadJob a1GetAccessionListFromFilePath(AccessionsEntryMethodEnum accessionsEntry) {
         System.out.println("*** Please provide full path to the file containing accessions.");
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
@@ -97,10 +98,10 @@ public class MenuService {
                     List<String> accessions = MenuUtils.accsFromFile(inputValues);
 
                     if (!(CollectionUtils.isEmpty(accessions))) {
-                        Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(accessions);
-                        if (accessionDetailsMap != null) {
-                            accessionDetailsMap.put(accessionsEntry.toString(), Collections.singletonList(inputValues));
-                            return accessionDetailsMap;
+                        DownloadJob downloadJob = CommonUtils.processAccessions(accessions);
+                        if (downloadJob != null) {
+                            downloadJob.setAccessionEntryMethod(accessionsEntry);
+                            return downloadJob;
                         } else {
                             System.out.println(MenuUtils.accessionsSameTypeErrorMessage);
                             MenuUtils.printEmptyline();
@@ -129,7 +130,7 @@ public class MenuService {
         return null;
     }
 
-    private Map<String, List<String>> a2GetAccessionListFromCommaSeparated(AccessionsEntryMethodEnum accessionsEntryMethodEnum) {
+    private DownloadJob a2GetAccessionListFromCommaSeparated(AccessionsEntryMethodEnum accessionsEntryMethodEnum) {
         System.out.println("*** Please provide the list of accessions separated by commas.");
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
@@ -143,11 +144,11 @@ public class MenuService {
         } else {
             String[] accessions = inputValues.split(",");
             if (accessions.length > 0) {
-                Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessions));
+                DownloadJob downloadJob = CommonUtils.processAccessions(Arrays.asList(accessions));
 
-                if (accessionDetailsMap != null) {
-                    accessionDetailsMap.put(accessionsEntryMethodEnum.getMessage(), null);
-                    return accessionDetailsMap;
+                if (downloadJob != null) {
+                    downloadJob.setAccessionEntryMethod(accessionsEntryMethodEnum);
+                    return downloadJob;
                 } else {
                     System.out.println(MenuUtils.accessionsErrorMessage);
                     return a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum);
@@ -173,18 +174,18 @@ public class MenuService {
         }
         AccessionsEntryMethodEnum accessionsEntryMethodEnum = AccessionsEntryMethodEnum.valueOf(input);
         if (accessionsEntryMethodEnum != null) {
-            Map<String, List<String>> accessionDetailsMap = new HashMap<>();
+            DownloadJob downloadJob = new DownloadJob();
             switch (accessionsEntryMethodEnum) {
                 case DOWNLOAD_FROM_FILE:
-                    accessionDetailsMap = a1GetAccessionListFromFilePath(accessionsEntryMethodEnum);
+                    downloadJob = a1GetAccessionListFromFilePath(accessionsEntryMethodEnum);
                     break;
                 case DOWNLOAD_FROM_LIST:
-                    accessionDetailsMap = a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum);
+                    downloadJob = a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum);
                     break;
             }
-            if (!CollectionUtils.isEmpty(accessionDetailsMap)) {
+            if (!CollectionUtils.isEmpty(downloadJob.getAccessionList())) {
                 // proceed
-                bShowDownloadFormatMenu(accessionDetailsMap);
+                bShowDownloadFormatMenu(downloadJob);
             }
         } else {
             // replay
@@ -194,12 +195,12 @@ public class MenuService {
 
     }
 
-    private void bShowDownloadFormatMenu(Map<String, List<String>> accessionDetailsMap) {
+    private void bShowDownloadFormatMenu(DownloadJob downloadJob) {
         System.out.println("**** To download data " +
-                (!CollectionUtils.isEmpty(accessionDetailsMap) ? " for provided accessions" : "") + ", select the format.");
+                (!CollectionUtils.isEmpty(downloadJob.getAccessionList()) ? " for provided accessions" : "") + ", select the format.");
         CommonUtils.printSeparatorLine();
 
-        String accessionField = accessionDetailsMap.get(Constants.ACCESSION_FIELD).get(0);
+        String accessionField = downloadJob.getAccessionField();
         List<DownloadFormatEnum> downloadFormatEnumList = Arrays.stream(DownloadFormatEnum.values())
                 .filter(format -> format.getAccessionTypes().contains(accessionField))
                 .collect(Collectors.toList());
@@ -222,37 +223,37 @@ public class MenuService {
 
             if (format != null) {
                 // proceed
-                cRequestDownloadLocation(format, accessionDetailsMap);
+                cRequestDownloadLocation(format, downloadJob);
             } else {
                 // replay
                 MenuUtils.printInvalidMessage();
-                bShowDownloadFormatMenu(accessionDetailsMap);
+                bShowDownloadFormatMenu(downloadJob);
             }
         }
 
 
     }
 
-    private String cRequestDownloadLocation(DownloadFormatEnum format, Map<String, List<String>> accessionDetailsMap) {
+    private String cRequestDownloadLocation(DownloadFormatEnum format, DownloadJob downloadJob) {
         System.out.println("***** Provide the full path to where you want to save downloaded files.");
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
-            bShowDownloadFormatMenu(accessionDetailsMap);
+            bShowDownloadFormatMenu(downloadJob);
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
         } else if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
-            dRequestProtocolSelection(format, input, accessionDetailsMap);
+            dRequestProtocolSelection(format, input, downloadJob);
         } else {
             // replay
-            return cRequestDownloadLocation(format, accessionDetailsMap);
+            return cRequestDownloadLocation(format, downloadJob);
         }
         return input;
     }
 
-    private String dRequestProtocolSelection(DownloadFormatEnum format, String location, Map<String, List<String>> accessionDetailsMap) {
+    private String dRequestProtocolSelection(DownloadFormatEnum format, String location, DownloadJob downloadJob) {
         System.out.println("***** Choose the method of downloading:");
         CommonUtils.printSeparatorLine();
         for (ProtocolEnum protocolEnum : ProtocolEnum.values()) {
@@ -262,21 +263,21 @@ public class MenuService {
         int input = scannerUtils.getNextInt();
         MenuUtils.printEmptyline();
         if (input == -1) {
-            return cRequestDownloadLocation(format, accessionDetailsMap);
+            return cRequestDownloadLocation(format, downloadJob);
         }
         final ProtocolEnum protocolEnum = ProtocolEnum.valueOf(input);
         switch (protocolEnum) {
             case ASPERA:
-                String asperaConnectLocation = d1RequestAsperaConnectOption(format, location, accessionDetailsMap);
-                return eRequestEmailId(format, location, accessionDetailsMap, protocolEnum, asperaConnectLocation);
+                String asperaConnectLocation = d1RequestAsperaConnectOption(format, location, downloadJob);
+                return eRequestEmailId(format, location, downloadJob, protocolEnum, asperaConnectLocation);
             case FTP:
-                return eRequestEmailId(format, location, accessionDetailsMap, protocolEnum, null);
+                return eRequestEmailId(format, location, downloadJob, protocolEnum, null);
         }
         return null;
 
     }
 
-    private String eRequestEmailId(DownloadFormatEnum format, String location, Map<String, List<String>> accessionDetailsMap,
+    private String eRequestEmailId(DownloadFormatEnum format, String location, DownloadJob downloadJob,
                                    ProtocolEnum protocolEnum, String asperaConnectLocation) {
         CommonUtils.printSeparatorLine();
         MenuUtils.printEmptyline();
@@ -286,23 +287,23 @@ public class MenuService {
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
-            dRequestProtocolSelection(format, location, accessionDetailsMap);
+            dRequestProtocolSelection(format, location, downloadJob);
         } else if (StringUtils.isNotEmpty(input)) {
             boolean isValidId = MenuUtils.isValidEmailAddress(input);
             if (!isValidId) {
                 MenuUtils.printValidEmailMessage();
                 return showEmailOption();
             } else {
-                fShowConfirmationAndPerformAction(format, location, accessionDetailsMap, protocolEnum, asperaConnectLocation, input);
+                fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, input);
             }
         } else {
-            fShowConfirmationAndPerformAction(format, location, accessionDetailsMap, protocolEnum, asperaConnectLocation, NONE);
+            fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, NONE);
         }
         return null;
     }
 
     private void fShowConfirmationAndPerformAction(DownloadFormatEnum format, String location,
-                                                   Map<String, List<String>> accessionDetailsMap,
+                                                   DownloadJob downloadJob,
                                                    ProtocolEnum protocol, String asperaConnectLocation,
                                                    String emailId) {
         String msg = "You are ready to download " + format.getMessage()
@@ -323,7 +324,7 @@ public class MenuService {
         int input = scannerUtils.getNextInt();
         MenuUtils.printEmptyline();
         if (input == -1) { // back
-            eRequestEmailId(format, location, accessionDetailsMap, protocol, asperaConnectLocation);
+            eRequestEmailId(format, location, downloadJob, protocol, asperaConnectLocation);
         } else {
             if (input == 0) {
                 MainRunner.exit();
@@ -332,26 +333,26 @@ public class MenuService {
                 if (actionEnumInput != null) {
                     switch (actionEnumInput) {
                         case CREATE_SCRIPT:
-                            FileUtils.createDownloadScript(accessionDetailsMap, format, location, protocol,
+                            FileUtils.createDownloadScript(downloadJob, format, location, protocol,
                                     asperaConnectLocation, emailId);
                             CommonUtils.printSeparatorLine();
-                            System.out.println("Script created=" + FileUtils.getScriptPath(accessionDetailsMap, format));
+                            System.out.println("Script created=" + FileUtils.getScriptPath(downloadJob, format));
                             CommonUtils.printSeparatorLine();
                             break;
                         case CREATE_AND_DOWNLOAD:
                             CommonUtils.printSeparatorLine();
-                            FileUtils.createDownloadScript(accessionDetailsMap, format, location, protocol,
+                            FileUtils.createDownloadScript(downloadJob, format, location, protocol,
                                     asperaConnectLocation, emailId);
                             CommonUtils.printSeparatorLine();
-                            System.out.println("Script created at " + FileUtils.getScriptPath(accessionDetailsMap, format)
+                            System.out.println("Script created at " + FileUtils.getScriptPath(downloadJob, format)
                                     + ". Download started.");
                             CommonUtils.printSeparatorLine();
-                            startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId);
+                            startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId);
                             break;
                     }
                 } else {
                     // replay
-                    fShowConfirmationAndPerformAction(format, location, accessionDetailsMap, protocol,
+                    fShowConfirmationAndPerformAction(format, location, downloadJob, protocol,
                             asperaConnectLocation, emailId);
                 }
             }
@@ -359,11 +360,11 @@ public class MenuService {
 
     }
 
-    private void startDownload(DownloadFormatEnum format, String location, Map<String, List<String>> accessionDetailsMap
+    private void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob
             , ProtocolEnum protocol, String asperaConnectLocation, String emailId) {
         try {
             log.info("Starting download at location {}", location);
-            backendService.startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId);
+            backendService.startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId);
         } catch (Exception exception) {
             log.error("Exception encountered while starting download");
             exception.printStackTrace();
@@ -371,24 +372,24 @@ public class MenuService {
 
     }
 
-    private String d1RequestAsperaConnectOption(DownloadFormatEnum format, String location, Map<String, List<String>> accessionDetailsMap) {
+    private String d1RequestAsperaConnectOption(DownloadFormatEnum format, String location, DownloadJob downloadJob) {
         System.out.println("***** " + ASPERA_PATH_MSG);
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
-            return dRequestProtocolSelection(format, location, accessionDetailsMap);
+            return dRequestProtocolSelection(format, location, downloadJob);
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
         } else if (StringUtils.isNotEmpty(input)) {
             boolean isValidLocation = MenuUtils.isValidAsperaConnectLoc(input);
             if (!isValidLocation) {
                 MenuUtils.printInvalidAsperaConnectLocation();
-                d1RequestAsperaConnectOption(format, location, accessionDetailsMap);
+                d1RequestAsperaConnectOption(format, location, downloadJob);
             }
         } else {
-            return d1RequestAsperaConnectOption(format, location, accessionDetailsMap);
+            return d1RequestAsperaConnectOption(format, location, downloadJob);
         }
         return input;
     }

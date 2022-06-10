@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.utils.CommonUtils;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
 import uk.ac.ebi.ena.backend.service.EnaPortalService;
 
@@ -45,7 +46,7 @@ public class EnaPortalServiceTest {
         List<String> accessionIdList = Arrays.asList(accessionList.split(","));
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         ProtocolEnum protocol = ProtocolEnum.FTP;
-        Map<String, List<String>> accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
+        DownloadJob accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
         Mockito.when(restTemplate.postForObject(Mockito.any(URI.class), Mockito.any(HttpEntity.class),
                 Mockito.eq(EnaPortalResponse[].class))).thenReturn(getPortalResponses());
         //ACT
