@@ -22,6 +22,8 @@ package uk.ac.ebi.ena.app.menu.services;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -52,6 +54,7 @@ import static uk.ac.ebi.ena.app.MainRunner.ASPERA_PATH_MSG;
 @Slf4j
 public class MenuService {
 
+    final Logger console = LoggerFactory.getLogger("console");
 
     public static final String NONE = "NONE";
     private ScannerUtils scannerUtils;
@@ -363,7 +366,7 @@ public class MenuService {
     private void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob
             , ProtocolEnum protocol, String asperaConnectLocation, String emailId) {
         try {
-            log.info("Starting download at location {}", location);
+            console.info("Starting download at location {}", location);
             backendService.startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId);
         } catch (Exception exception) {
             log.error("Exception encountered while starting download");

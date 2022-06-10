@@ -34,6 +34,8 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
@@ -63,6 +65,9 @@ import static uk.ac.ebi.ena.backend.service.FileDownloaderService.*;
 @Component
 @Slf4j
 public class FileDownloaderClient {
+
+    final Logger console = LoggerFactory.getLogger("console");
+
     AtomicLong verified = new AtomicLong(0), redownloading = new AtomicLong(0);
 
     private static final String DOWNLOAD_PARAMS_ASPERA = "-QT -l 300m -P 33001 ";
@@ -217,7 +222,7 @@ public class FileDownloaderClient {
             String remoteFileName;
             for (FileDetail fileDetail : fileDetails) {
                 int retryCount = 0;
-                log.info("Downloading file {}", fileDetail.getFtpUrl());
+                log.debug("Downloading file {}", fileDetail.getFtpUrl());
                 String fileDownloaderPath = getFileDownloadPath(downloadLocation, accessionType, format,
                         fileDetail);
                 remoteFileName = StringUtils.substringAfterLast(fileDetail.getFtpUrl(), "/");
@@ -261,7 +266,7 @@ public class FileDownloaderClient {
                                 progressBar.stepTo(percentCompleted);
 
                                 if (percentCompleted == 100) {
-                                    log.info("File {} downloaded {}%", remoteFileName
+                                    log.debug("File {} downloaded {}%", remoteFileName
                                             , percentCompleted);
                                 }
                             } else if (result.startsWith("Completed")) {
@@ -270,7 +275,7 @@ public class FileDownloaderClient {
                                         fileDownloaderPath + File.separator + remoteFileName,
                                         bytesCopied);
                                 if (isDownloaded) {
-                                    log.info("SUCCESSFUL download remoteFile:{}, " +
+                                    log.debug("SUCCESSFUL download remoteFile:{}, " +
                                                     "parentId:{}", remoteFileName,
                                             fileDetail.getParentId());
                                     fileProgressBar.stepBy(1);
@@ -303,7 +308,7 @@ public class FileDownloaderClient {
 
     private void deleteIfPartialFileExists(Path partialFilePath, String partialFileName) throws IOException {
         if (Files.exists(partialFilePath)) {
-            log.info("Partial file {} exist, deleting it", partialFileName);
+            console.info("Partial file {} exist, deleting it", partialFileName);
             Files.delete(partialFilePath);
         }
     }

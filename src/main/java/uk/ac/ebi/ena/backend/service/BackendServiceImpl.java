@@ -20,6 +20,8 @@ package uk.ac.ebi.ena.backend.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
@@ -38,6 +40,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class BackendServiceImpl implements BackendService {
 
+    final Logger console = LoggerFactory.getLogger("console");
+    
     private final EmailService emailService;
     private final AccessionDetailsService accessionDetailsService;
 
@@ -45,7 +49,7 @@ public class BackendServiceImpl implements BackendService {
     public void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
                               ProtocolEnum protocol, String asperaConnectLocation, String emailId) {
 
-        log.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}",
+        console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}",
                 format, location, protocol, asperaConnectLocation, emailId);
         long failedCount = 0;
         List<List<FileDetail>> listList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol);
@@ -65,12 +69,13 @@ public class BackendServiceImpl implements BackendService {
             });
 
             AtomicLong newCount = new AtomicLong();
-            listList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> newCount.getAndIncrement()));
+            newListList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> newCount.getAndIncrement()));
+            failedCount = newCount.get();
 
             if (newListList.size() > 0) {
-                log.info("Number of files:{} successfully downloaded for accessionField:{}, format:{}",
+                log.warn("Number of files:{} successfully downloaded for accessionField:{}, format:{}",
                         count.get() - newCount.get(), downloadJob.getAccessionField(), format);
-                log.info("Number of files:{} failed downloaded for accessionField:{}, format:{}",
+                log.warn("Number of files:{} failed downloaded for accessionField:{}, format:{}",
                         newCount.get(), downloadJob.getAccessionField(), format);
                 if (newCount.get() > 0) {
                     System.out.println("Some files failed to download due to possible network issues. Please re-run the " +
@@ -80,6 +85,9 @@ public class BackendServiceImpl implements BackendService {
                 listList = newListList;
             }
         } while (failedCount > 0);
+
+        console.info("{} files successfully downloaded for accessionField:{}, format:{} to {}",
+                count.get(), downloadJob.getAccessionField(), format, location);
 
         emailService.sendEmailForFastqSubmitted(emailId, count.get(), 0,
                 FileUtils.getScriptPath(downloadJob, format), downloadJob.getAccessionField(), format, location);

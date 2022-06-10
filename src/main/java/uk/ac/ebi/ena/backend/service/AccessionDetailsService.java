@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
@@ -53,6 +55,9 @@ import static uk.ac.ebi.ena.app.utils.CommonUtils.getProgressBarBuilder;
 @Slf4j
 @AllArgsConstructor
 public class AccessionDetailsService {
+
+    final Logger console = LoggerFactory.getLogger("console");
+
     private final EnaPortalService enaPortalService;
     private final FileDownloaderService fileDownloaderService;
     private final FileDownloaderClient fileDownloaderClient;
@@ -113,7 +118,7 @@ public class AccessionDetailsService {
         for (List<String> accs : accLists) {
             total += accs.size();
         }
-        log.info("Total {} {} {} records found", total, downloadJob.getAccessionField(), format);
+        console.info("Total {} {} {} records found", total, downloadJob.getAccessionField(), format);
 
         final ProgressBarBuilder portalPB = getProgressBarBuilder("Getting file details from ENA Portal API", -1);
 
@@ -126,6 +131,7 @@ public class AccessionDetailsService {
                         protocol, downloadJob);
                 final List<FileDetail> fileDetails = createFileDetails(portalResponses);
                 totalFiles += fileDetails.size();
+                listList.add(fileDetails);
             }
         }
         if (totalFiles == 0) {
@@ -133,8 +139,7 @@ public class AccessionDetailsService {
         }
 
         if (totalFiles > 0) {
-            log.info("Downloading {} files in total", totalFiles);
-            System.out.println("Downloading " + totalFiles + " files in total.");
+            console.info("Downloading {} files in total", totalFiles);
         }
         return listList;
     }

@@ -23,6 +23,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.system.ApplicationHome;
 import uk.ac.ebi.ena.EnaFileDownloaderApplication;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
@@ -38,6 +40,8 @@ import java.util.List;
 
 @Slf4j
 public class FileUtils {
+
+    static final Logger console = LoggerFactory.getLogger("console");
 
     private static final String fileName = "error_report.txt";
     private static final String filePath = System.getProperty("user.home");
@@ -113,7 +117,7 @@ public class FileUtils {
                         "java -jar " + getJarPath() + " --accessions=" + StringUtils.join(accessionList, ',') +
                                 " --format=" + format + " --location=" + location + " --protocol=" + protocol +
                                 " --asperaLocation=" + asperaLocation + " --email=" + emailId;
-                log.info("content:{}", content);
+                console.info("script content:{}", content);
                 fileOut.write(content.getBytes());
 
                 file1.setExecutable(true);

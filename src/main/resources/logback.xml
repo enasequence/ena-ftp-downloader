@@ -7,16 +7,17 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%-5thread] %clr(%-5level) - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="DEBUG">
-        <appender-ref ref="FILE"/>
-        <!--        <appender-ref ref="STDOUT"/>-->
-    </root>
-    <logger level="ERROR" name="errorLogger">
+    <logger level="INFO" name="console" additivity="false">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </logger>
+
+    <root level="DEBUG">
+        <appender-ref ref="FILE"/>
+    </root>
+
 </configuration>

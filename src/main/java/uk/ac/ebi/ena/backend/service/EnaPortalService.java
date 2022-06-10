@@ -21,6 +21,8 @@ package uk.ac.ebi.ena.backend.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -49,6 +51,9 @@ import java.util.Objects;
 @Slf4j
 @AllArgsConstructor
 public class EnaPortalService {
+
+    final Logger console = LoggerFactory.getLogger("console");
+
 
     public static final String SEARCH_FIELDS_READ_FASTQ = ",fastq_bytes,fastq_md5";
     public static final String SEARCH_FIELDS_SUBMITTED = ",submitted_bytes,submitted_md5";
@@ -291,8 +296,7 @@ public class EnaPortalService {
         httpHeaders.add("Content-Type", URLENCODED);
         httpHeaders.add("Accept", APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(body, httpHeaders);
-        log.info("url:{}", portalAPIEndpoint);
-        log.info("request body:{}", body);
+        log.debug("url:{}, body:{}", portalAPIEndpoint, body);
         while (retryCount <= BeanConfig.APP_RETRY) {
             try {
                 EnaPortalResponse[] response = restTemplate.postForObject(uri, request, EnaPortalResponse[].class);
@@ -328,7 +332,7 @@ public class EnaPortalService {
         } catch (Exception exception) {
             log.error("Exception encountered while sending email to emailId:{}", recipientEmail, exception);
         }
-        log.info("Email successfully sent to:{}", recipientEmail);
+        console.info("Email successfully sent to:{}", recipientEmail);
 
     }
 }
