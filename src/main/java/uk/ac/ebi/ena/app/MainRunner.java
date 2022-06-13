@@ -21,6 +21,8 @@ package uk.ac.ebi.ena.app;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -41,6 +43,8 @@ import java.io.File;
 @Slf4j
 @NoArgsConstructor
 public class MainRunner implements CommandLineRunner {
+
+    final Logger console = LoggerFactory.getLogger("console");
 
     public static final String ASPERA_PATH_MSG = "Please enter the path to your local Aspera Connect/CLI installation" +
             ". This tool will look for 'bin' and 'etc' folders in the provided folder.";
@@ -101,7 +105,7 @@ public class MainRunner implements CommandLineRunner {
                                     MenuUtils.parseAccessions(accessions), protocol,
                                     asperaLocation, emailId);
                         }
-                        log.info("Downloads Completed");
+                        console.info("Downloads Completed");
                     }
                 } catch (IllegalArgumentException iae) {
                     System.out.println("Invalid/insufficient parameters provided. Please select your options.");
@@ -112,8 +116,7 @@ public class MainRunner implements CommandLineRunner {
                 }
             } else {
                 if (args.length > 0) {
-                    log.info("Not enough parameters provided. Running menu interface..");
-                    System.out.println("Not enough parameters provided. Running menu interface.. \n\n");
+                    log.error("Not enough parameters provided. Running menu interface..");
                 }
                 menuBuilder.aBuildAccessionEntryMenu();
 

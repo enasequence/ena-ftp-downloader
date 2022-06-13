@@ -23,11 +23,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.system.ApplicationHome;
 import uk.ac.ebi.ena.EnaFileDownloaderApplication;
-import uk.ac.ebi.ena.app.menu.enums.AccessionsEntryMethodEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,13 +37,11 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
-
-import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_FIELD;
-import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_LIST;
 
 @Slf4j
 public class FileUtils {
+
+    static final Logger console = LoggerFactory.getLogger("console");
 
     private static final String fileName = "error_report.txt";
     private static final String filePath = System.getProperty("user.home");
@@ -66,8 +66,8 @@ public class FileUtils {
     }
 
 
-    public static String getScriptPath(Map<String, List<String>> accessionDetailsMap, DownloadFormatEnum format) {
-        String accessionType = accessionDetailsMap.get(ACCESSION_FIELD).get(0);
+    public static String getScriptPath(DownloadJob downloadJob, DownloadFormatEnum format) {
+        String accessionType = downloadJob.getAccessionField();
         return getJarDir() + File.separator + "download_" + StringUtils.substringBefore(accessionType, "_")
                 + "-" + format + getScriptExtension();
     }
@@ -101,27 +101,23 @@ public class FileUtils {
         return "\"" + str + "\"";
     }
 
-    public static void createDownloadScript(Map<String, List<String>> accessionDetailsMap, DownloadFormatEnum format,
+    public static void createDownloadScript(DownloadJob downloadJob, DownloadFormatEnum format,
                                             String location, ProtocolEnum protocol, String asperaLocation,
                                             String emailId) {
         File file = new File(location);
         if (file.exists()) {
-            File file1 = new File(getScriptPath(accessionDetailsMap, format));
+            File file1 = new File(getScriptPath(downloadJob, format));
             try (FileOutputStream fileOut = new FileOutputStream(file1)) {
                 if (asperaLocation != null && asperaLocation.contains(" ")) {
                     asperaLocation = addDoubleQuotes(Paths.get(asperaLocation));
                 }
-                List<String> accessionList;
-                if (accessionDetailsMap.containsKey(AccessionsEntryMethodEnum.DOWNLOAD_FROM_FILE)) {
-                    accessionList = accessionDetailsMap.get(AccessionsEntryMethodEnum.DOWNLOAD_FROM_FILE);
-                } else {
-                    accessionList = accessionDetailsMap.get(ACCESSION_LIST);
-                }
+                List<String> accessionList = downloadJob.getAccessionList();
+
                 String content =
                         "java -jar " + getJarPath() + " --accessions=" + StringUtils.join(accessionList, ',') +
                                 " --format=" + format + " --location=" + location + " --protocol=" + protocol +
                                 " --asperaLocation=" + asperaLocation + " --email=" + emailId;
-                log.info("content:{}", content);
+                console.info("script content:{}", content);
                 fileOut.write(content.getBytes());
 
                 file1.setExecutable(true);

@@ -26,16 +26,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_FIELD;
-import static uk.ac.ebi.ena.app.constants.Constants.ACCESSION_LIST;
 
 
 public class CommonUtils {
@@ -61,9 +56,8 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static Map<String, List<String>> processAccessions(List<String> accessions) {
+    public static DownloadJob processAccessions(List<String> accessions) {
         String baseAccession = accessions.get(0);
-        Map<String, List<String>> accessionDetailsMap = null;
         AccessionTypeEnum type = AccessionTypeEnum.getAccessionTypeByPattern(baseAccession);
         if (type == null) {
             System.out.println("Unsupported accession type provided:" + baseAccession + " Supported types are "
@@ -73,8 +67,7 @@ public class CommonUtils {
         String invalid =
                 accessions.stream().filter(acc -> !Pattern.matches(type.getPattern(), acc)).collect(Collectors.joining(","));
         if (StringUtils.isBlank(invalid)) {
-            accessionDetailsMap = getAccessionDetailsMap(type.getAccessionField(), accessions);
-            return accessionDetailsMap;
+            return makeDownloadJob(type.getAccessionField(), accessions);
         } else {
             System.out.println("Invalid accession patterns provided:" + invalid + ",\nSupported types are "
                     + AccessionTypeEnum.getDisplayTypes() + ".  All accessions should be of the same type.");
@@ -82,11 +75,11 @@ public class CommonUtils {
         }
     }
 
-    public static Map<String, List<String>> getAccessionDetailsMap(String accessionField, List<String> accessions) {
-        Map<String, List<String>> accessionDetailsMap = new HashMap<>();
-        accessionDetailsMap.put(ACCESSION_FIELD, Collections.singletonList(accessionField));
-        accessionDetailsMap.put(ACCESSION_LIST, accessions);
-        return accessionDetailsMap;
+    public static DownloadJob makeDownloadJob(String accessionField, List<String> accessions) {
+        DownloadJob job = new DownloadJob();
+        job.setAccessionField(accessionField);
+        job.setAccessionList(accessions);
+        return job;
     }
 
     public static String getAscpExtension() {

@@ -70,10 +70,11 @@ public class FileDownloaderService {
             try (final FileInputStream fileInputStream = new FileInputStream(fileDownloaderPath)) {
                 String md5Hex = DigestUtils.md5DigestAsHex(fileInputStream);
                 if (fileDetail.getMd5().equals(md5Hex)) {
-                    log.info("MD5 validation successful for file:{}", fileDetail.getFtpUrl());
+                    fileDetail.setSuccess(true);
+                    log.debug("MD5 validation successful for file:{}", fileDetail.getFtpUrl());
                     return true;
                 } else {
-                    log.info("MD5 failed for file:{}",
+                    log.warn("MD5 failed for file:{}",
                             fileDetail.getFtpUrl());
                     return false;
                 }
@@ -83,7 +84,7 @@ public class FileDownloaderService {
             }
         }
 
-        log.info("Unsuccessful Validation for remoteFile:{}. Bytes downloaded does not match with given bytes",
+        log.warn("Unsuccessful Validation for remoteFile:{}. Bytes downloaded does not match with given bytes",
                 fileDetail.getFtpUrl());
         return false;
     }
@@ -120,12 +121,13 @@ public class FileDownloaderService {
         } else {
             if (Files.exists(remoteFilePath)) {
                 if (fileDetail.getBytes() == Files.size(remoteFilePath)) {
-                    log.info("file:{} size matches", remoteFilePath);
+                    log.debug("file:{} size matches", remoteFilePath);
                     fileProgressBar.stepBy(1);
                     fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
+                    fileDetail.setSuccess(true);
                     return true;
                 }
-                log.info("file:{} already exists at the download location but size mismatched.", remoteFileName);
+                log.warn("file:{} already exists at the download location but size mismatched.", remoteFileName);
             }
             return false;
         }
@@ -133,7 +135,7 @@ public class FileDownloaderService {
 
     private void deleteIfPartialFileExists(Path partialFilePath, String partialFileName) throws IOException {
         if (Files.exists(partialFilePath)) {
-            log.info("Partial file {} exist, deleting it", partialFileName);
+            log.warn("Partial file {} exist, deleting it", partialFileName);
             Files.delete(partialFilePath);
         }
     }
@@ -145,13 +147,13 @@ public class FileDownloaderService {
         FileDownloadStatus fileDownloadStatus = new FileDownloadStatus(fileDetails.size(), 0, new ArrayList<>());
 
         return executorService.submit(() -> {
-            System.out.println("\nStarting set " + set + " of " + fileDetails.size() + " files.");
+            System.out.println("\nStarting set " + (set + 1) + " with " + fileDetails.size() + " files.");
             final ProgressBar fileProgressBar =
-                    getProgressBarBuilder("Downloading set " + set + " of " + fileDetails.size() + " files",
+                    getProgressBarBuilder("Downloading set " + (set + 1) + " with " + fileDetails.size() + " files",
                             fileDetails.size()).build();
 
             String remoteFileName = null;
-            log.info("Starting {} files starting with {}", fileDetails.size(), fileDetails.get(0).getFtpUrl());
+            log.debug("Starting {} files starting with {}", fileDetails.size(), fileDetails.get(0).getFtpUrl());
             for (FileDetail fileDetail : fileDetails) {
 
                 try {
@@ -175,13 +177,14 @@ public class FileDownloaderService {
                     } else {
                         if (Files.exists(remoteFilePath)) {
                             if (fileDetail.getBytes() == Files.size(remoteFilePath)) {
-                                log.info("File {} already exists and size matches {}. Skipping.", remoteFileName,
+                                log.debug("File {} already exists and size matches {}. Skipping.", remoteFileName,
                                         fileDetail.getBytes());
                                 fileProgressBar.stepBy(1);
                                 fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
+                                fileDetail.setSuccess(true);
                                 continue;
                             }
-                            log.info("File {} exists but size mismatch {}. Redownloading", remoteFileName,
+                            log.warn("File {} exists but size mismatch {}. Redownloading", remoteFileName,
                                     fileDetail.getBytes());
 
                         }
@@ -202,7 +205,7 @@ public class FileDownloaderService {
                             fileDownloaderPath + File.separator + remoteFileName, bytesCopied);
                     if (isDownloaded) {
                         fileProgressBar.stepBy(1);
-                        log.info("{} completed.", fileDownloaderPath + File.separator + remoteFileName);
+                        log.debug("{} completed.", fileDownloaderPath + File.separator + remoteFileName);
                         fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
                     } else {
                         log.error("Failed to download file:{}, experimentId:{}", remoteFileName,

@@ -22,8 +22,12 @@ import com.univocity.parsers.tsv.TsvParser;
 import com.univocity.parsers.tsv.TsvParserSettings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
+import uk.ac.ebi.ena.app.menu.enums.AccessionsEntryMethodEnum;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -40,6 +44,9 @@ import static uk.ac.ebi.ena.app.utils.CommonUtils.printSeparatorLine;
 
 @Slf4j
 public class MenuUtils {
+
+    static final Logger console = LoggerFactory.getLogger("console");
+
     public static final String exitMessage = "To exit enter 0 (zero)";
     public static final String validEmailMessage = "The provided email is invalid. Please enter a valid email address.";
     public static final String emailMessage = "If you would like to receive an email when the downloads are complete," +
@@ -84,7 +91,7 @@ public class MenuUtils {
     public static boolean isValidAsperaConnectLoc(String asperaConnectLocation) {
         boolean isValidLocation = false;
         String ascpFile = Constants.ascpFileName + CommonUtils.getAscpExtension();
-        log.info("assumed aspera client:{}", ascpFile);
+        console.info("Assumed aspera client:{}", ascpFile);
         if (Files.exists(Paths.get(asperaConnectLocation))) {
             if (!Files.exists(Paths.get(asperaConnectLocation, Constants.binFolder))) {
                 log.error("bin folder not found in path:{}", asperaConnectLocation);
@@ -124,20 +131,21 @@ public class MenuUtils {
         return result;
     }
 
-    public static Map<String, List<String>> parseAccessions(String accessions) {
-        Map<String, List<String>> accessionDetailsMap = new HashMap<>();
+    public static DownloadJob parseAccessions(String accessions) {
+        DownloadJob job = new DownloadJob();
         if (StringUtils.isEmpty(accessions)) {
 
-            return accessionDetailsMap;
         } else if (new File(accessions).exists()) {
             List<String> accessionList = accsFromFile(accessions);
 
-            return CommonUtils.processAccessions(Objects.requireNonNull(accessionList));
+            job = CommonUtils.processAccessions(Objects.requireNonNull(accessionList));
+            job.setAccessionEntryMethod(AccessionsEntryMethodEnum.DOWNLOAD_FROM_FILE);
         } else {
             List<String> accessionList = Arrays.asList(accessions.split(","));
-
-            return CommonUtils.processAccessions(accessionList);
+            job = CommonUtils.processAccessions(accessionList);
+            job.setAccessionEntryMethod(AccessionsEntryMethodEnum.DOWNLOAD_FROM_LIST);
         }
+        return job;
     }
 
     public static List<String> accsFromFile(String inputValues) {
