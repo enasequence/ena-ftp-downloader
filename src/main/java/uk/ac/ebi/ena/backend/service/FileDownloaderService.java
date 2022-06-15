@@ -18,7 +18,6 @@
 
 package uk.ac.ebi.ena.backend.service;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
@@ -45,14 +44,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static uk.ac.ebi.ena.app.utils.CommonUtils.getProgressBarBuilder;
 
 @Service
 @Slf4j
 public class FileDownloaderService {
-    AtomicLong verified = new AtomicLong(0), redownloading = new AtomicLong(0);
 
     private final FileDownloaderClient fileDownloaderClient;
 
