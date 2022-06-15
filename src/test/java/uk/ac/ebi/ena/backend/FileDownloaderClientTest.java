@@ -50,6 +50,6 @@ public class FileDownloaderClientTest {
 
     private FileDetail createFileDetailAspera() {
         return new FileDetail("SRX7264284", "SRR10583966", "fasp.sra.ebi.ac.uk:/vol1/fastq/SRR105/066/SRR10583966/SRR10583966_1.fastq.gz",
-                6424881L, "59383f5b12bbebc361eadd5ccc1ddaca",false);
+                6424881L, "59383f5b12bbebc361eadd5ccc1ddaca", false);
     }
 }
