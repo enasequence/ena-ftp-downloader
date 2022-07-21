@@ -18,7 +18,6 @@
 
 package uk.ac.ebi.ena.backend.service;
 
-import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import me.tongfei.progressbar.ProgressBar;
@@ -86,10 +85,7 @@ public class FileDownloaderClient {
     }
 
     @SneakyThrows
-    public long downloadHttpClient(URL url, Path remoteFilePath, long size, int retryCount) {
-        if (retryCount == APP_RETRY) {
-            return 0;
-        }
+    public long downloadHttpClient(URL url, Path remoteFilePath, long size) {
         try (CloseableHttpClient client = HttpClientBuilder.create()
                 .setDefaultRequestConfig(requestConfig)
                 .setRetryHandler(httpRequestRetryHandler)
@@ -105,17 +101,15 @@ public class FileDownloaderClient {
             HttpResponse response = client.execute(request);
             HttpEntity entity = response.getEntity();
 
-            try (InputStream is = retryCount > 0 ?
-                    ProgressBar.wrap(entity.getContent(),
-                            getBProgressBar(url + ":attempt " + (retryCount + 1), size)) :
-                    entity.getContent()
+            try (InputStream is = ProgressBar.wrap(entity.getContent(),
+                    getBProgressBar(url.toString(), size))
                  ;
                  FileOutputStream fos = new FileOutputStream(outFile)) {
                 return IOUtils.copyLarge(is, fos);
             }
         } catch (Exception e) {
-            log.error(remoteFilePath + " retry " + (retryCount + 1), e.getMessage());
-            return downloadHttpClient(url, remoteFilePath, size, retryCount + 1);
+            log.error(remoteFilePath + " failed to download", e);
+            return 0;
         }
     }
 
@@ -168,11 +162,7 @@ public class FileDownloaderClient {
     }
 
     @SneakyThrows
-    public long downloadFTPUrlConnection(URL url, Path remoteFilePath, long size, int retryCount) {
-        if (retryCount == APP_RETRY) {
-            return 0;
-        }
-
+    public long downloadFTPUrlConnection(URL url, Path remoteFilePath, long size) {
         FTPClient ftp = null;
         try {
             File outFile = new File(remoteFilePath.toString());
@@ -183,17 +173,14 @@ public class FileDownloaderClient {
             URLConnection conn = url.openConnection();
             long copied = 0;
             try (InputStream in =
-                         ProgressBar.wrap(conn.getInputStream(), getBProgressBar(fileName +
-                                 ":attempt " + (retryCount + 1), size));
+                         ProgressBar.wrap(conn.getInputStream(), getBProgressBar(fileName, size));
                  FileOutputStream fos = new FileOutputStream(outFile)) {
                 copied = IOUtils.copyLarge(in, fos);
             }
             return copied;
         } catch (Exception e) {
-            log.error(remoteFilePath + " retry " + (retryCount + 1), e);
-            Thread.sleep(5000); // wait 5 sec before retrying
-            return downloadFTPUrlConnection(url, remoteFilePath, size, retryCount + 1);
-        } finally {
+            log.error(remoteFilePath + " failed to download", e);
+            return 0;
         }
     }
 
@@ -221,7 +208,6 @@ public class FileDownloaderClient {
                             fileDetails.size()).build();
             String remoteFileName;
             for (FileDetail fileDetail : fileDetails) {
-                int retryCount = 0;
                 log.debug("Downloading file {}", fileDetail.getFtpUrl());
                 String fileDownloaderPath = getFileDownloadPath(downloadLocation, accessionType, format,
                         fileDetail);
@@ -245,8 +231,6 @@ public class FileDownloaderClient {
                 }
                 List<String> commands = getAsperaCommandParts(asperaLocation, fileDetail, remoteFilePath);
 
-                outer:
-                while (retryCount < Constants.TOTAL_RETRIES) {
                     deleteIfPartialFileExists(partialFilePath, partialFileName);
                     ProcessBuilder processBuilder = new ProcessBuilder(commands);
                     Process process = processBuilder.start();
@@ -280,12 +264,9 @@ public class FileDownloaderClient {
                                             fileDetail.getParentId());
                                     fileProgressBar.stepBy(1);
                                     fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
-                                    break outer;
                                 }
-                                retryCount++;
                             } else if (result.contains("Error")) {
-                                log.error("Download for file {} could not be completed. Will retry", remoteFileName);
-                                retryCount++;
+                                log.error("Download for file {} could not be completed.", remoteFileName);
                             }
                         }
                     } catch (Exception exception) {
@@ -293,13 +274,6 @@ public class FileDownloaderClient {
                                 exception);
                         fileDownloadStatus.getFailedFiles().add(fileDetail);
                     }
-                }
-
-                if (retryCount > Constants.TOTAL_RETRIES) {
-                    log.error("FAILED download remoteFile:{}, parentId:{}, Retry Count:{}",
-                            remoteFileName, fileDetail.getParentId(), --retryCount);
-                    fileDownloadStatus.getFailedFiles().add(fileDetail);
-                }
 
             }
             return fileDownloadStatus;

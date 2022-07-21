@@ -191,10 +191,10 @@ public class FileDownloaderService {
                     long bytesCopied;
                     if (url.toString().startsWith("http")) {
                         bytesCopied = fileDownloaderClient.downloadHttpClient(url, remoteFilePath,
-                                fileDetail.getBytes(), 0);
+                                fileDetail.getBytes());
                     } else {
                         bytesCopied = fileDownloaderClient.downloadFTPUrlConnection(url, remoteFilePath,
-                                fileDetail.getBytes(), 0);
+                                fileDetail.getBytes());
                     }
                     log.debug("Completed download {}, parentId:{}, bytesCopied:{}",
                             remoteFileName, fileDetail.getParentId(), bytesCopied);

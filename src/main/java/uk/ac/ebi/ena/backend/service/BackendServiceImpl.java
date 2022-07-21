@@ -31,9 +31,7 @@ import uk.ac.ebi.ena.backend.dto.FileDetail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -41,7 +39,9 @@ import java.util.stream.Collectors;
 public class BackendServiceImpl implements BackendService {
 
     final Logger console = LoggerFactory.getLogger("console");
-    
+
+    private static final int RETRY_COUNT = 5;
+
     private final EmailService emailService;
     private final AccessionDetailsService accessionDetailsService;
 
@@ -51,28 +51,36 @@ public class BackendServiceImpl implements BackendService {
 
         console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}",
                 format, location, protocol, asperaConnectLocation, emailId);
-        long failedCount = 0;
-        List<List<FileDetail>> listList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol);
+        List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol);
+        final List<FileDetail> finallyFailedFiles = new ArrayList<>();
         AtomicLong count = new AtomicLong();
-        listList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> count.getAndIncrement()));
+        fileDetailsList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> count.getAndIncrement()));
 
         do {
-            accessionDetailsService.doDownload(format, location, downloadJob, listList, protocol,
+            accessionDetailsService.doDownload(format, location, downloadJob, fileDetailsList, protocol,
                     asperaConnectLocation);
-            List<List<FileDetail>> newListList = new ArrayList<>();
-            listList.forEach(fileDetails -> {
-                final List<FileDetail> collect =
-                        fileDetails.stream().filter(fileDetail -> !fileDetail.isSuccess()).collect(Collectors.toList());
-                if (collect.size() > 0) {
-                    newListList.add(collect);
+            List<List<FileDetail>> failedFileList = new ArrayList<>();
+            final List<FileDetail> failedFiles = new ArrayList<>();
+            fileDetailsList.forEach(fileDetails -> {
+                for (FileDetail fileDetail : fileDetails) {
+                    if (!fileDetail.isSuccess() && fileDetail.getRetryCount() < RETRY_COUNT) {
+                        failedFiles.add(fileDetail);
+                        int retryCount = fileDetail.getRetryCount();
+                        fileDetail.setRetryCount(++retryCount);
+                    }
+                    if (fileDetail.getRetryCount() >= RETRY_COUNT) {
+                        finallyFailedFiles.add(fileDetail);
+                    }
+                }
+                if (failedFiles.size() > 0) {
+                    failedFileList.add(failedFiles);
                 }
             });
 
             AtomicLong newCount = new AtomicLong();
-            newListList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> newCount.getAndIncrement()));
-            failedCount = newCount.get();
+            failedFileList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> newCount.getAndIncrement()));
 
-            if (newListList.size() > 0) {
+            if (failedFileList.size() > 0) {
                 log.warn("Number of files:{} successfully downloaded for accessionField:{}, format:{}",
                         count.get() - newCount.get(), downloadJob.getAccessionField(), format);
                 log.warn("Number of files:{} failed downloaded for accessionField:{}, format:{}",
@@ -82,12 +90,22 @@ public class BackendServiceImpl implements BackendService {
                             "same script=" + FileUtils.getScriptPath(downloadJob, format) + " to re-attempt to download those files");
                 }
                 System.out.println("Automatically retrying failed downloads...");
-                listList = newListList;
             }
-        } while (failedCount > 0);
+            fileDetailsList = failedFileList;
+
+        } while (fileDetailsList.size() > 0);
+
 
         console.info("{} files successfully downloaded for accessionField:{}, format:{} to {}",
                 count.get(), downloadJob.getAccessionField(), format, location);
+
+        if (finallyFailedFiles.size() > 0) {
+            console.info("{} files failed to be downloaded for accessionField:{}, format:{}",
+                    finallyFailedFiles.size(), downloadJob.getAccessionField(), format);
+            for (FileDetail fileDetail : finallyFailedFiles) {
+                console.info("{}", fileDetail);
+            }
+        }
 
         emailService.sendEmailForFastqSubmitted(emailId, count.get(), 0,
                 FileUtils.getScriptPath(downloadJob, format), downloadJob.getAccessionField(), format, location);

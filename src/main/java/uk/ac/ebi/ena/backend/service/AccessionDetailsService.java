@@ -32,20 +32,22 @@ import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
-import uk.ac.ebi.ena.app.utils.FileUtils;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static uk.ac.ebi.ena.app.constants.Constants.*;
+import static uk.ac.ebi.ena.app.constants.Constants.CHUNK_SIZE;
 import static uk.ac.ebi.ena.app.utils.CommonUtils.getProgressBarBuilder;
 
 /**
@@ -75,7 +77,7 @@ public class AccessionDetailsService {
 
             for (int i = 0; i < ftpUrlsList.size(); i++) {
                 fileDetails.add(new FileDetail(enaPortalResponse.getParentId(), enaPortalResponse.getRecordId(),
-                        ftpUrlsList.get(i), bytesList.get(i), md5List.get(i), false));
+                        ftpUrlsList.get(i), bytesList.get(i), md5List.get(i), false, 0));
             }
         }
         return fileDetails;
