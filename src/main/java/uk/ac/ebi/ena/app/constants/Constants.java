@@ -28,7 +28,7 @@ public class Constants {
     public static final int CHUNK_SIZE = 1000;
     public static final int EXECUTOR_THREAD_COUNT = 3;
     public static final String FTP = "ftp://";
-    public static final int TOTAL_RETRIES = 10;
+    public static final int TOTAL_RETRIES = 5;
 
     public static final String binFolder = "bin";
     public static final String etcFolder = "etc";

@@ -33,14 +33,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static uk.ac.ebi.ena.app.constants.Constants.TOTAL_RETRIES;
+
 @Component
 @Slf4j
 @AllArgsConstructor
 public class BackendServiceImpl implements BackendService {
 
     final Logger console = LoggerFactory.getLogger("console");
-
-    private static final int RETRY_COUNT = 5;
 
     private final EmailService emailService;
     private final AccessionDetailsService accessionDetailsService;
@@ -63,12 +63,12 @@ public class BackendServiceImpl implements BackendService {
             final List<FileDetail> failedFiles = new ArrayList<>();
             fileDetailsList.forEach(fileDetails -> {
                 for (FileDetail fileDetail : fileDetails) {
-                    if (!fileDetail.isSuccess() && fileDetail.getRetryCount() < RETRY_COUNT) {
+                    if (!fileDetail.isSuccess() && fileDetail.getRetryCount() < TOTAL_RETRIES) {
                         failedFiles.add(fileDetail);
                         int retryCount = fileDetail.getRetryCount();
                         fileDetail.setRetryCount(++retryCount);
                     }
-                    if (fileDetail.getRetryCount() >= RETRY_COUNT) {
+                    if (fileDetail.getRetryCount() >= TOTAL_RETRIES) {
                         finallyFailedFiles.add(fileDetail);
                     }
                 }
