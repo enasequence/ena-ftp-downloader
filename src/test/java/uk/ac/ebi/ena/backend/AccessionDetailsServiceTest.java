@@ -69,11 +69,11 @@ public class AccessionDetailsServiceTest {
     private List<FileDetail> createFileDetailFtp() {
         List<FileDetail> fileDetailList = new ArrayList<>();
         FileDetail fileDetail1 = new FileDetail("SRX2000905", "SRR4000583", "ftp.sra.ebi.ac.uk/vol1/fastq/SRR400/003/SRR4000583/SRR4000583.fastq.gz",
-                1174738707L, "a991ce890047ffca760c6de2617b5fec", true);
+                1174738707L, "a991ce890047ffca760c6de2617b5fec", true, 0);
         FileDetail fileDetail2 = new FileDetail("SRX6415696", "SRR9654360", "ftp.sra.ebi.ac.uk/vol1/fastq/SRR965/000/SRR9654360/SRR9654360.fastq.gz",
-                14139836L, "f3611f35a977b8b82a7adcf0a28c397d", true);
+                14139836L, "f3611f35a977b8b82a7adcf0a28c397d", true, 0);
         FileDetail fileDetail3 = new FileDetail("SRX6415695", "SRR9654361", "ftp.sra.ebi.ac.uk/vol1/fastq/SRR965/001/SRR9654361/SRR9654361.fastq.gz",
-                15541843L, "1236b79cd93a63289841765aabacb880", true);
+                15541843L, "1236b79cd93a63289841765aabacb880", true, 0);
         fileDetailList.add(fileDetail1);
         fileDetailList.add(fileDetail2);
         fileDetailList.add(fileDetail3);

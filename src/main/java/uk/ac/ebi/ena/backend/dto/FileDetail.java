@@ -30,4 +30,9 @@ public class FileDetail {
     private Long bytes;
     private String md5;
     private boolean success;
+    private int retryCount;
+
+    public void incrementRetryCount() {
+        ++retryCount;
+    }
 }
