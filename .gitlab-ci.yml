@@ -50,8 +50,8 @@ deploy_prod:
     - mkdir -p ~/.ssh
   script:
     - chmod u+x build/dist/${APP_NAME}-${APP_VERSION}.zip
-    - scp -o StrictHostKeyChecking=no build/dist/${APP_NAME}-${APP_VERSION}.zip datalib@noah-login-01.ebi.ac.uk:${FTP_DIR}
-    - ssh datalib@noah-login-01.ebi.ac.uk "cd ${FTP_DIR} && ln -sf ${APP_NAME}-${APP_VERSION}.zip ${APP_NAME}.zip"
+    - scp -o StrictHostKeyChecking=no build/dist/${APP_NAME}-${APP_VERSION}.zip datalib@codon-login-01.ebi.ac.uk:${FTP_DIR}
+    - ssh datalib@codon-login-01.ebi.ac.uk "cd ${FTP_DIR} && ln -sf ${APP_NAME}-${APP_VERSION}.zip ${APP_NAME}.zip"
   dependencies:
     - build_prod
   when: manual
