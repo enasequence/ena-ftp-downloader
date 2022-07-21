@@ -85,7 +85,7 @@ public class FileDownloaderClient {
     }
 
     @SneakyThrows
-    public long downloadHttpClient(URL url, Path remoteFilePath, long size) {
+    public long downloadHttpClient(URL url, Path remoteFilePath, long size, int retryCount) {
         try (CloseableHttpClient client = HttpClientBuilder.create()
                 .setDefaultRequestConfig(requestConfig)
                 .setRetryHandler(httpRequestRetryHandler)
@@ -101,9 +101,10 @@ public class FileDownloaderClient {
             HttpResponse response = client.execute(request);
             HttpEntity entity = response.getEntity();
 
-            try (InputStream is = ProgressBar.wrap(entity.getContent(),
-                    getBProgressBar(url.toString(), size))
-                 ;
+            try (InputStream is = retryCount > 0 ?
+                    ProgressBar.wrap(entity.getContent(),
+                            getBProgressBar(url + ":attempt " + (retryCount + 1), size)) :
+                    entity.getContent();
                  FileOutputStream fos = new FileOutputStream(outFile)) {
                 return IOUtils.copyLarge(is, fos);
             }
@@ -162,7 +163,7 @@ public class FileDownloaderClient {
     }
 
     @SneakyThrows
-    public long downloadFTPUrlConnection(URL url, Path remoteFilePath, long size) {
+    public long downloadFTPUrlConnection(URL url, Path remoteFilePath, long size, int retryCount) {
         FTPClient ftp = null;
         try {
             File outFile = new File(remoteFilePath.toString());
@@ -173,7 +174,8 @@ public class FileDownloaderClient {
             URLConnection conn = url.openConnection();
             long copied = 0;
             try (InputStream in =
-                         ProgressBar.wrap(conn.getInputStream(), getBProgressBar(fileName, size));
+                         ProgressBar.wrap(conn.getInputStream(), getBProgressBar(fileName +
+                                 ":attempt " + (retryCount + 1), size));
                  FileOutputStream fos = new FileOutputStream(outFile)) {
                 copied = IOUtils.copyLarge(in, fos);
             }

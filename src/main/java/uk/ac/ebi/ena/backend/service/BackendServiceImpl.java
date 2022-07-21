@@ -65,10 +65,8 @@ public class BackendServiceImpl implements BackendService {
                 for (FileDetail fileDetail : fileDetails) {
                     if (!fileDetail.isSuccess() && fileDetail.getRetryCount() < TOTAL_RETRIES) {
                         failedFiles.add(fileDetail);
-                        int retryCount = fileDetail.getRetryCount();
-                        fileDetail.setRetryCount(++retryCount);
-                    }
-                    if (fileDetail.getRetryCount() >= TOTAL_RETRIES) {
+                        fileDetail.incrementRetryCount();
+                    } else if (fileDetail.getRetryCount() >= TOTAL_RETRIES) {
                         finallyFailedFiles.add(fileDetail);
                     }
                 }
@@ -103,7 +101,7 @@ public class BackendServiceImpl implements BackendService {
             console.info("{} files failed to be downloaded for accessionField:{}, format:{}",
                     finallyFailedFiles.size(), downloadJob.getAccessionField(), format);
             for (FileDetail fileDetail : finallyFailedFiles) {
-                console.info("{}", fileDetail);
+                console.info("{}", fileDetail.getFtpUrl());
             }
         }
 
