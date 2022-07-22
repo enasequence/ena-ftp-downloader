@@ -7,7 +7,6 @@ variables:
   APP_NAME_VERSION: ${APP_NAME}-${APP_VERSION}.zip
   FTP_STG_DIR: "/nfs/production/cochrane/ena/ftp-staging/tools"
 
-
 stages:
   - test
   - build
@@ -53,7 +52,7 @@ deploy_prod:
   script:
     - chmod u+x build/dist/${APP_NAME_VERSION}
     - scp -o StrictHostKeyChecking=no build/dist/${APP_NAME_VERSION} datalib@codon-login-01.ebi.ac.uk:${FTP_STG_DIR}
-    - ssh datalib@codon-login-01.ebi.ac.uk "bsub -q datamover cp ${FTP_STG_DIR}/${APP_NAME_VERSION} ${FTP_DIR}/ && cd ${FTP_DIR}/ && ln -sf ${APP_NAME_VERSION} ${APP_NAME}.zip"
+    - ssh datalib@codon-login-01.ebi.ac.uk "bsub -q datamover 'cp ${FTP_STG_DIR}/${APP_NAME_VERSION} ${FTP_DIR} && cd ${FTP_DIR} && ln -sf ${APP_NAME_VERSION} ${APP_NAME}.zip'"
   dependencies:
     - build_prod
   when: manual
