@@ -6,9 +6,6 @@ variables:
   FTP_DIR: "/nfs/ftp/public/databases/ena/tools"
   APP_NAME_VERSION: ${APP_NAME}-${APP_VERSION}.zip
   FTP_STG_DIR: "/nfs/production/cochrane/ena/ftp-staging/tools"
-  SCRIPT_PATH: "/nfs/production/cochrane/ena/tools/ena-file-downloader"
-  SCRIPT_NAME: "copy_to_ftp.sh"
-
 
 stages:
   - test
