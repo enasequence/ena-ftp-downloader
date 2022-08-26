@@ -37,10 +37,7 @@ import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -110,8 +107,8 @@ public class AccessionDetailsService {
     }
 
     @SneakyThrows
-    public List<List<FileDetail>> fetchFileDetails(DownloadFormatEnum format,
-                                                            DownloadJob downloadJob, ProtocolEnum protocol) {
+    public List<List<FileDetail>> fetchFileDetails(DownloadFormatEnum format, DownloadJob downloadJob, ProtocolEnum protocol,
+                                                   String userName, String password) {
 
         AccessionTypeEnum accessionType = AccessionTypeEnum.getAccessionType(downloadJob.getAccessionField());
         List<List<String>> accLists = Collections.synchronizedList(Lists.partition(downloadJob.getAccessionList(), 10000));
@@ -130,7 +127,7 @@ public class AccessionDetailsService {
                     accList.size() > CHUNK_SIZE * 5 ? CHUNK_SIZE : (int) Math.ceil(new Double(accList.size()) / 5));
             for (List<String> partition : partitions) {
                 final List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(partition, format,
-                        protocol, downloadJob);
+                        protocol, downloadJob, userName, password);
                 final List<FileDetail> fileDetails = createFileDetails(portalResponses);
                 totalFiles += fileDetails.size();
                 listList.add(fileDetails);
@@ -140,35 +137,60 @@ public class AccessionDetailsService {
             System.out.println("No records found for the accessions submitted under type=" + accessionType + " format=" + format);
         }
 
+        // Compare the list of accessions provided by user and acessions returns from portal api
+
+        if (StringUtils.isNotEmpty(userName)) {
+            Set<String> missingAccessions = getMissingAccessions(downloadJob, listList);
+            if (missingAccessions.size() > 0)
+                System.out.println("Below accessions not available in " + userName + " data hub \n");
+            missingAccessions.stream().collect(Collectors.joining(","));
+        }
+
         if (totalFiles > 0) {
             console.info("Downloading {} files in total", totalFiles);
         }
         return listList;
     }
 
+    private Set<String> getMissingAccessions(DownloadJob downloadJob, List<List<FileDetail>> list) {
+
+        Set<String> userAccessions = new HashSet<>();
+        for (String acc : downloadJob.getAccessionList()) {
+            userAccessions.add(acc);
+        }
+        for (List<FileDetail> fileDetails : list) {
+            for (FileDetail fileDetail : fileDetails) {
+                userAccessions.remove(fileDetail.getRecordId());
+            }
+        }
+        return userAccessions;
+
+    }
+
     @SneakyThrows
     public long doDownload(DownloadFormatEnum format, String downloadLocation, DownloadJob downloadJob,
                            List<List<FileDetail>> partitions, ProtocolEnum protocol,
-                           String asperaLocation) {
+                           String asperaLocation,
+                           String userName, String password) {
         final ExecutorService executorService = Executors.newFixedThreadPool(Constants.EXECUTOR_THREAD_COUNT);
         AccessionTypeEnum accessionType = AccessionTypeEnum.getAccessionType(downloadJob.getAccessionField());
 
         List<Future<FileDownloadStatus>> futures = new ArrayList<>();
 
-            for (int thisSet = 0; thisSet < partitions.size(); thisSet++) {
-                List<FileDetail> fileDetails = partitions.get(thisSet);
-                if (fileDetails.size() == 0) {
-                    continue;
-                }
+        for (int thisSet = 0; thisSet < partitions.size(); thisSet++) {
+            List<FileDetail> fileDetails = partitions.get(thisSet);
+            if (fileDetails.size() == 0) {
+                continue;
+            }
                 if (protocol == ProtocolEnum.FTP) {
                     final Future<FileDownloadStatus> listFuture =
                             fileDownloaderService.startDownload(executorService, fileDetails,
-                                    downloadLocation, accessionType, format, thisSet);
+                                    downloadLocation, accessionType, format, thisSet, userName, password);
                     futures.add(listFuture);
                 } else if (protocol == ProtocolEnum.ASPERA) {
                     final Future<FileDownloadStatus> listFuture =
                             fileDownloaderClient.startDownloadAspera(executorService, fileDetails,
-                                    asperaLocation, downloadLocation, accessionType, format, thisSet);
+                                    asperaLocation, downloadLocation, accessionType, format, thisSet, userName, password);
                     futures.add(listFuture);
                 }
             }

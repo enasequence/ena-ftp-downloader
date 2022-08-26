@@ -46,23 +46,24 @@ public class BackendServiceImplTest {
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         String location = System.getProperty("user.home");
         List<FileDetail> fileDetailList = createFileDetailFtp();
-
-        DownloadJob accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
+        DownloadJob downloadJob = new DownloadJob();
+        CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
         ProtocolEnum protocol = ProtocolEnum.FTP;
         String asperaConnectLocation = null;
         String emailId = "datasubs@ebi.ac.uk";
-        Mockito.when(accessionDetailsService.fetchFileDetails(format, accessionDetailsMap, protocol))
+        Mockito.when(accessionDetailsService.fetchFileDetails(format, downloadJob, protocol, null, null))
                 .thenReturn(Collections.singletonList(fileDetailList));
         Mockito.doNothing().when(emailService).sendEmailForFastqSubmitted(Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong()
                 , Mockito.anyString(), Mockito.anyString(), Mockito.any(DownloadFormatEnum.class), Mockito.anyString());
         //ACT
-        backendService.startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId);
+        backendService.startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId,
+                null, null);
         //ASSERT
-        verify(accessionDetailsService, times(1)).doDownload(format, location, accessionDetailsMap,
-                Collections.singletonList(fileDetailList), protocol, asperaConnectLocation);
+        verify(accessionDetailsService, times(1)).doDownload(format, location, downloadJob,
+                Collections.singletonList(fileDetailList), protocol, asperaConnectLocation, null, null);
 
         verify(emailService, times(1)).sendEmailForFastqSubmitted(emailId, 3, 0,
-                FileUtils.getScriptPath(accessionDetailsMap, format), accessionDetailsMap.getAccessionField(), format, location);
+                FileUtils.getScriptPath(downloadJob, format), downloadJob.getAccessionField(), format, location);
 
     }
 

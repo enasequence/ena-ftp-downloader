@@ -42,5 +42,5 @@ public interface BackendService {
      */
 
     void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
-                       ProtocolEnum protocol, String asperaConnectLocation, String emailId);
+                       ProtocolEnum protocol, String asperaConnectLocation, String emailId, String userName, String password);
 }

@@ -21,6 +21,7 @@ package uk.ac.ebi.ena.backend.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -29,9 +30,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
+import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.backend.config.BeanConfig;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
@@ -83,8 +86,7 @@ public class EnaPortalService {
     private static final String RUN = "run";
 
     private static final String COMMA = ",";
-    private static final String URLENCODED = "application/x-www-form-urlencoded";
-    private static final String APPLICATION_JSON = "application/json";
+
     private static final String MULTIPART_FORM_DATA = "multipart/form-data;boundary=%s";
 
     private final RestTemplate restTemplate;
@@ -102,7 +104,8 @@ public class EnaPortalService {
      */
     public List<EnaPortalResponse> getPortalResponses(List<String> accessionList, DownloadFormatEnum format,
                                                       ProtocolEnum protocol,
-                                                      DownloadJob downloadJob) {
+                                                      DownloadJob downloadJob,
+                                                      String userName, String password) {
 
         String accessionField = downloadJob.getAccessionField();
         String accessionType = AccessionTypeEnum.getAccessionType(accessionField).name().toLowerCase();
@@ -287,16 +290,21 @@ public class EnaPortalService {
                         }
                 }
         }
-
+        portalAPIEndpoint = portalAPIEndpoint + "&dataPortal=" + CommonUtils.getDataPortalId(userName) + "&dccDataOnly=" + false;
         Assert.notNull(accessionList, "Accessions cannot be null");
         String includeAccs = String.join(COMMA, accessionList);
         URI uri = URI.create(Objects.requireNonNull(portalAPIEndpoint));
+        log.info("portalAPIEndpoint: " + portalAPIEndpoint);
         String body = "includeAccessions=" + includeAccs;
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Content-Type", URLENCODED);
-        httpHeaders.add("Accept", APPLICATION_JSON);
+        httpHeaders.add("Content-Type", Constants.URLENCODED);
+        httpHeaders.add("Accept", Constants.APPLICATION_JSON);
+        if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
+            httpHeaders.setBasicAuth(userName, password);
+        }
         HttpEntity<String> request = new HttpEntity<>(body, httpHeaders);
         log.debug("url:{}, body:{}", portalAPIEndpoint, body);
+
         while (retryCount <= BeanConfig.APP_RETRY) {
             try {
                 EnaPortalResponse[] response = restTemplate.postForObject(uri, request, EnaPortalResponse[].class);
@@ -306,7 +314,7 @@ public class EnaPortalService {
                 }
                 return Arrays.asList(Objects.requireNonNull(response));
             } catch (RestClientException rce) {
-                log.error("Exception encountered while getting portalResponse for accession type:{}, format:{}",
+                log.error("Exception encountered while getting portalResponse for accession type:{}, format:{}  @@" + rce.getMessage(),
                         accessionType, format, rce);
                 retryCount++;
             }

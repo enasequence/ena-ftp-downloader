@@ -47,18 +47,19 @@ public class BackendServiceImpl implements BackendService {
 
     @Override
     public void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
-                              ProtocolEnum protocol, String asperaConnectLocation, String emailId) {
+                              ProtocolEnum protocol, String asperaConnectLocation, String emailId,
+                              String userName, String password) {
 
         console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}",
                 format, location, protocol, asperaConnectLocation, emailId);
-        List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol);
+        List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol, userName, password);
         final List<FileDetail> finallyFailedFiles = new ArrayList<>();
         AtomicLong count = new AtomicLong();
         fileDetailsList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> count.getAndIncrement()));
 
         do {
             accessionDetailsService.doDownload(format, location, downloadJob, fileDetailsList, protocol,
-                    asperaConnectLocation);
+                    asperaConnectLocation, userName, password);
             List<List<FileDetail>> failedFileList = new ArrayList<>();
             final List<FileDetail> failedFiles = new ArrayList<>();
             fileDetailsList.forEach(fileDetails -> {

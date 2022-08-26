@@ -89,4 +89,15 @@ public class CommonUtils {
     public static String getAscpFileName() {
         return Constants.ascpFileName + CommonUtils.getAscpExtension();
     }
+
+    public static String getDataPortalId(String userName) {
+        if (StringUtils.isNotEmpty(userName) && StringUtils.startsWith(userName, "dcc_")) {
+            if ("metagenome".equalsIgnoreCase(StringUtils.substringAfter(userName, "dcc_"))) {
+                return "metagenome";
+            } else {
+                return "pathogen";
+            }
+        }
+        return "ena";
+    }
 }

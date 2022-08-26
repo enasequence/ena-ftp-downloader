@@ -32,15 +32,20 @@ in the end will be prompted with the below options :
 If the user selects 1, then a script file will be created with the provided arguments, that can be invoked
 directly, and download will also be started. If the user selects 2, then only the script file will be created.
 
-
 2. Command to run jar file from Console by providing
    inputs `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format= READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com`
+3. Command to run jar file from Console to download the private files associated with dcc user
+   `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format= READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com --dataHubUsername=dcc_abc --dataHubPassword=*****`
 
-* `--accessions` Comma separated list of accessions or file path to the accession list. If providing a list, it should be a plain text file in TSV (tab separated values) format. If there are more than one columns, the first column must be the accessions. Header row is optional and will be ignored. Values can be enclosed in double quotes or not.
+* `--accessions` Comma separated list of accessions or file path to the accession list. If providing a list, it should
+  be a plain text file in TSV (tab separated values) format. If there are more than one column, the first column must be
+  the accessions. Header row is optional and will be ignored. Values can be enclosed in double quotes or not.
 * `--format` The format for the download (`eg : READS_FASTQ,READS_SUBMITTED,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)
 * `--location` The location for the download
 * `--protocol` The protocol to be used for download.(`eg : FTP, ASPERA`). Default is FTP.
 * `--asperaLocation` The location of local Aspera Connect/CLI folder. Required if Protocol is Aspera.
 * `--email` The email at which one wishes to receive the alert.(optional)
+* `--dccUsername` DCC Username to download the private data associated with dcc user.(not required for public data)
+* `--dccUsername` DCC password to download the private data associated with dcc user.(not required for public data)
 
 

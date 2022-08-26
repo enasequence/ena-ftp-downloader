@@ -34,6 +34,7 @@ import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.menu.services.MenuService;
 import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.app.utils.MenuUtils;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.service.BackendService;
 
 import java.io.File;
@@ -66,6 +67,12 @@ public class MainRunner implements CommandLineRunner {
     @Value("${email:#{null}}")
     public String emailId;
 
+    @Value("${dataHubUsername:#{null}}")
+    public String userName;
+
+    @Value("${dataHubPassword:#{null}}")
+    public String password;
+
     MenuService menuBuilder;
     private BackendService backendService;
 
@@ -89,7 +96,7 @@ public class MainRunner implements CommandLineRunner {
                 System.out.println("Provided parameters:\n" + StringUtils.join(args, "\n"));
             }
 
-            if (args.length >= 5) {
+            if (args.length >= 7) {
                 try {
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
@@ -101,16 +108,21 @@ public class MainRunner implements CommandLineRunner {
                             if (protocol == ProtocolEnum.ASPERA) {
                                 Assert.notNull(asperaLocation, ASPERA_PATH_MSG);
                             }
+                            if (StringUtils.isNotBlank(userName) && !StringUtils.startsWith(userName, "dcc_")) {
+                                System.out.println("Please use data hub name (dcc username)");
+                                log.error("Invalid data hub name (dcc user) parameters provided. ", userName);
+                                throw new IllegalArgumentException();
+                            }
                             backendService.startDownload(format, downloadLocation,
-                                    MenuUtils.parseAccessions(accessions), protocol,
-                                    asperaLocation, emailId);
+                                    MenuUtils.parseAccessions(accessions), protocol, asperaLocation,
+                                    emailId, userName, password);
                         }
                         console.info("Downloads Completed");
                     }
                 } catch (IllegalArgumentException iae) {
                     System.out.println("Invalid/insufficient parameters provided. Please select your options.");
                     log.error("Invalid/insufficient parameters provided.", iae);
-                    menuBuilder.aBuildAccessionEntryMenu();
+                    menuBuilder.showTypeOfDataMenu();
                 } catch (Exception e) {
                     log.error("Exception Occurred while downloading", e);
                 }
@@ -118,7 +130,8 @@ public class MainRunner implements CommandLineRunner {
                 if (args.length > 0) {
                     log.error("Not enough parameters provided. Running menu interface..");
                 }
-                menuBuilder.aBuildAccessionEntryMenu();
+                //menuBuilder.aBuildAccessionEntryMenu();
+                menuBuilder.showTypeOfDataMenu();
 
             }
         } catch (Exception e) {

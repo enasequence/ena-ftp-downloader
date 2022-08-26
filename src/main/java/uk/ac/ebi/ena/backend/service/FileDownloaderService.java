@@ -137,10 +137,18 @@ public class FileDownloaderService {
         }
     }
 
+    private String prepareFTPUrl(FileDetail fileDetail, String userName, String password) {
+        String filePath = fileDetail.getFtpUrl();
+        if (StringUtils.isNotBlank(filePath) && filePath.contains(Constants.DCC_PRIVATE_FTP_FILE_PATH)) {
+            return Constants.FTP + userName + ":" + password + "@" + filePath;
+        } else {
+            return Constants.FTP + filePath;
+        }
+    }
 
     public Future<FileDownloadStatus> startDownload(ExecutorService executorService, List<FileDetail> fileDetails,
                                                     String downloadLoc, AccessionTypeEnum accessionType,
-                                                    DownloadFormatEnum format, int set) {
+                                                    DownloadFormatEnum format, int set, String userName, String password) {
         FileDownloadStatus fileDownloadStatus = new FileDownloadStatus(fileDetails.size(), 0, new ArrayList<>());
 
         return executorService.submit(() -> {
@@ -154,7 +162,8 @@ public class FileDownloaderService {
             for (FileDetail fileDetail : fileDetails) {
 
                 try {
-                    String fileUrl = Constants.FTP + fileDetail.getFtpUrl();
+                    String fileUrl = prepareFTPUrl(fileDetail, userName, password);
+                    log.info("FileURL: " + fileUrl);
                     String fileDownloaderPath = getFileDownloadPath(downloadLoc, accessionType, format, fileDetail);
                     remoteFileName = StringUtils.substringAfterLast(fileUrl, "/");
 

@@ -42,7 +42,7 @@ public class FileDownloaderServiceTest {
         //ACT
         FileDownloadStatus fileDownloadStatus = fileDownloaderService.
                 startDownload(executorService, fileDetailList, downloadFolderPath, AccessionTypeEnum.EXPERIMENT, format,
-                        set).get();
+                        set, null, null).get();
         System.out.println(fileDownloadStatus);
 
     }

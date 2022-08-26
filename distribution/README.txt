@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
-version:unspecified
+version:1.0.7
 Ena File Downloader
 Copyright © EMBL 2021 | EMBL-EBI is part of the European Molecular Biology Laboratory
 
