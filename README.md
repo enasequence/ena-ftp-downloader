@@ -34,7 +34,7 @@ directly, and download will also be started. If the user selects 2, then only th
 
 2. Command to run jar file from Console by providing
    inputs `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format= READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com`
-3. Command to run jar file from Console to download the private files associated with dcc user
+3. Command to run jar file from Console to download files from data hub
    `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format= READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com --dataHubUsername=dcc_abc --dataHubPassword=*****`
 
 * `--accessions` Comma separated list of accessions or file path to the accession list. If providing a list, it should
@@ -45,7 +45,7 @@ directly, and download will also be started. If the user selects 2, then only th
 * `--protocol` The protocol to be used for download.(`eg : FTP, ASPERA`). Default is FTP.
 * `--asperaLocation` The location of local Aspera Connect/CLI folder. Required if Protocol is Aspera.
 * `--email` The email at which one wishes to receive the alert.(optional)
-* `--dccUsername` DCC Username to download the private data associated with dcc user.(not required for public data)
-* `--dccUsername` DCC password to download the private data associated with dcc user.(not required for public data)
+* `--dccUsername` Data hub Username .(Required only If you want to download the data from data hub)
+* `--dccUsername` Data hub password.(Required only If you want to download the data from data hub)
 
 

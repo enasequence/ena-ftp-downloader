@@ -108,15 +108,19 @@ public class MainRunner implements CommandLineRunner {
                             if (protocol == ProtocolEnum.ASPERA) {
                                 Assert.notNull(asperaLocation, ASPERA_PATH_MSG);
                             }
-                            if (StringUtils.isNotBlank(userName) && !StringUtils.startsWith(userName, "dcc_")) {
-                                System.out.println("Please use data hub name (dcc username)");
-                                log.error("Invalid data hub name (dcc user) parameters provided. ", userName);
-                                throw new IllegalArgumentException();
-                            } else if (StringUtils.isNotBlank(userName) && !"FTP".equals(protocol.name())) {
-                                System.out.println("Only FTP protocol is supported to download the files from data hub");
-                                log.error("Only FTP protocol is supported to download the files from data hub. Provided protocol is ", protocol);
-                                throw new IllegalArgumentException();
+                            //Download the data from dataHub
+                            if (StringUtils.isNotBlank(userName)) {
+                                if (!StringUtils.startsWith(userName, "dcc_")) {
+                                    System.out.println("Please use data hub name (dcc username)");
+                                    log.error("Invalid data hub name (dcc user) parameters provided. ", userName);
+                                    throw new IllegalArgumentException();
+                                } else if (!"FTP".equals(protocol.name())) {
+                                    System.out.println("Only FTP protocol is supported to download the files from data hub");
+                                    log.error("Only FTP protocol is supported to download the files from data hub. Provided protocol is ", protocol);
+                                    throw new IllegalArgumentException();
+                                }
                             }
+
                             backendService.startDownload(format, downloadLocation,
                                     MenuUtils.parseAccessions(accessions), protocol, asperaLocation,
                                     emailId, userName, password);
