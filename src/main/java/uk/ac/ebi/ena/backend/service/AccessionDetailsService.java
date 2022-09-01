@@ -141,9 +141,11 @@ public class AccessionDetailsService {
 
         if (StringUtils.isNotEmpty(userName)) {
             Set<String> missingAccessions = getMissingAccessions(downloadJob, listList);
-            if (missingAccessions.size() > 0)
-                System.out.println("Below accessions not available in " + userName + " data hub \n");
-            missingAccessions.stream().collect(Collectors.joining(","));
+            if (missingAccessions.size() > 0) {
+                console.info("Below accessions not available in " + userName + " data hub \n"
+                        + missingAccessions.stream().collect(Collectors.joining(",")));
+            }
+
         }
 
         if (totalFiles > 0) {
@@ -158,9 +160,18 @@ public class AccessionDetailsService {
         for (String acc : downloadJob.getAccessionList()) {
             userAccessions.add(acc);
         }
+
         for (List<FileDetail> fileDetails : list) {
             for (FileDetail fileDetail : fileDetails) {
-                userAccessions.remove(fileDetail.getRecordId());
+                if (Objects.isNull(fileDetail.getParentId())) {
+                    userAccessions.remove(fileDetail.getRecordId());
+                } else {
+                    userAccessions.remove(fileDetail.getParentId());
+                }
+                if (userAccessions.isEmpty()) {
+                    break;
+                }
+
             }
         }
         return userAccessions;

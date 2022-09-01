@@ -96,7 +96,7 @@ public class MainRunner implements CommandLineRunner {
                 System.out.println("Provided parameters:\n" + StringUtils.join(args, "\n"));
             }
 
-            if (args.length >= 7) {
+            if (args.length >= 5) {
                 try {
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
@@ -111,6 +111,10 @@ public class MainRunner implements CommandLineRunner {
                             if (StringUtils.isNotBlank(userName) && !StringUtils.startsWith(userName, "dcc_")) {
                                 System.out.println("Please use data hub name (dcc username)");
                                 log.error("Invalid data hub name (dcc user) parameters provided. ", userName);
+                                throw new IllegalArgumentException();
+                            } else if (StringUtils.isNotBlank(userName) && !"FTP".equals(protocol.name())) {
+                                System.out.println("Only FTP protocol is supported to download the files from data hub");
+                                log.error("Only FTP protocol is supported to download the files from data hub. Provided protocol is ", protocol);
                                 throw new IllegalArgumentException();
                             }
                             backendService.startDownload(format, downloadLocation,
@@ -130,7 +134,6 @@ public class MainRunner implements CommandLineRunner {
                 if (args.length > 0) {
                     log.error("Not enough parameters provided. Running menu interface..");
                 }
-                //menuBuilder.aBuildAccessionEntryMenu();
                 menuBuilder.showTypeOfDataMenu();
 
             }

@@ -202,8 +202,9 @@ public class MenuService {
 
         if (StringUtils.isNotEmpty(userName) && StringUtils.startsWith(userName, "dcc_")) {
             String password = requestForDataHubPassword();
-            if (validateDataHubCredentials(userName, password, getDataPortalId(userName))) {
-                aBuildAccessionEntryMenu(userName, password);
+            if (StringUtils.isNotEmpty(password)) {
+                System.out.println("Data hub password is empty.");
+                requestForDataHubCredentials();
             } else {
                 System.out.println("Data hub username and or password are not correct.");
                 requestForDataHubCredentials();
@@ -221,30 +222,6 @@ public class MenuService {
         } else {
             return "pathogen";
         }
-    }
-
-    public boolean validateDataHubCredentials(String userName, String password, String dataPortalId) {
-
-        String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth?dataPortal=" + dataPortalId;
-        log.info("portalAPIAuthEndpoint: " + portalAPIAuthEndpoint);
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Accept", Constants.APPLICATION_JSON);
-        httpHeaders.setBasicAuth(userName, password);
-
-        restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(userName, password));
-        try {
-            ResponseEntity<String> resp = restTemplate.exchange(portalAPIAuthEndpoint, HttpMethod.GET, null, String.class);
-            if (resp.getStatusCode() == HttpStatus.OK) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (RestClientException restClientException) {
-            log.error(" Data hub authorization failed-  " + restClientException.getMessage());
-            return false;
-        }
-
     }
 
     public String requestForDataHubPassword() {
@@ -358,6 +335,11 @@ public class MenuService {
         System.out.println("***** Choose the method of downloading:");
         CommonUtils.printSeparatorLine();
         for (ProtocolEnum protocolEnum : ProtocolEnum.values()) {
+            //For downloading files from datahub only FTP format is supported
+            if (StringUtils.isNotEmpty(userName) && StringUtils.isNotEmpty(password)) {
+                System.out.println(Constants.toMessage + protocolEnum.getMessage() + "," + Constants.enterMessage + protocolEnum.getValue());
+                break;
+            }
             System.out.println(Constants.toMessage + protocolEnum.getMessage() + "," + Constants.enterMessage + protocolEnum.getValue());
         }
         MenuUtils.printBackMessage();

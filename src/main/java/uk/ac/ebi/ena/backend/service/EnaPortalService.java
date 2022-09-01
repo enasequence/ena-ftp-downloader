@@ -26,9 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
@@ -313,10 +314,18 @@ public class EnaPortalService {
                     return Collections.emptyList();
                 }
                 return Arrays.asList(Objects.requireNonNull(response));
-            } catch (RestClientException rce) {
-                log.error("Exception encountered while getting portalResponse for accession type:{}, format:{}  @@" + rce.getMessage(),
-                        accessionType, format, rce);
-                retryCount++;
+            } catch (RestClientResponseException rce) {
+                if (rce.getRawStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
+                    log.error("User name and password for given datahub is not correct. type:{}, format:{}  @@" + rce.getMessage(),
+                            accessionType, format, rce);
+                    console.info("User name and password for given datahub is not correct");
+                    break;
+                } else {
+                    log.error("Exception encountered while getting portalResponse for accession type:{}, format:{}  @@" + rce.getMessage(),
+                            accessionType, format, rce);
+                    retryCount++;
+                }
+
             }
         }
         log.error("Count not fetch get portalResponse for accession type:{}, format:{} even after {} retries",
