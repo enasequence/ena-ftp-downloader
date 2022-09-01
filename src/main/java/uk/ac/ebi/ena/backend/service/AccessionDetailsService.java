@@ -140,7 +140,7 @@ public class AccessionDetailsService {
         // Compare the list of accessions provided by user and acessions returns from portal api
 
         if (StringUtils.isNotEmpty(userName)) {
-            Set<String> missingAccessions = getMissingAccessions(downloadJob, listList);
+            Set<String> missingAccessions = getMissingAccessionsFromDataHub(downloadJob, listList);
             if (missingAccessions.size() > 0) {
                 console.info("Below accessions not available in " + userName + " data hub \n"
                         + missingAccessions.stream().collect(Collectors.joining(",")));
@@ -154,11 +154,12 @@ public class AccessionDetailsService {
         return listList;
     }
 
-    private Set<String> getMissingAccessions(DownloadJob downloadJob, List<List<FileDetail>> list) {
+    private Set<String> getMissingAccessionsFromDataHub(DownloadJob downloadJob, List<List<FileDetail>> list) {
 
         Set<String> userAccessions = new HashSet<>();
         for (String acc : downloadJob.getAccessionList()) {
             userAccessions.add(acc);
+
         }
 
         for (List<FileDetail> fileDetails : list) {
@@ -193,18 +194,18 @@ public class AccessionDetailsService {
             if (fileDetails.size() == 0) {
                 continue;
             }
-                if (protocol == ProtocolEnum.FTP) {
-                    final Future<FileDownloadStatus> listFuture =
-                            fileDownloaderService.startDownload(executorService, fileDetails,
-                                    downloadLocation, accessionType, format, thisSet, userName, password);
-                    futures.add(listFuture);
-                } else if (protocol == ProtocolEnum.ASPERA) {
-                    final Future<FileDownloadStatus> listFuture =
-                            fileDownloaderClient.startDownloadAspera(executorService, fileDetails,
-                                    asperaLocation, downloadLocation, accessionType, format, thisSet, userName, password);
-                    futures.add(listFuture);
-                }
+            if (protocol == ProtocolEnum.FTP) {
+                final Future<FileDownloadStatus> listFuture =
+                        fileDownloaderService.startDownload(executorService, fileDetails,
+                                downloadLocation, accessionType, format, thisSet, userName, password);
+                futures.add(listFuture);
+            } else if (protocol == ProtocolEnum.ASPERA) {
+                final Future<FileDownloadStatus> listFuture =
+                        fileDownloaderClient.startDownloadAspera(executorService, fileDetails,
+                                asperaLocation, downloadLocation, accessionType, format, thisSet, userName, password);
+                futures.add(listFuture);
             }
+        }
 
         long successfulDownloadsCount = 0, failedDownloadsCount = 0;
         for (Future<FileDownloadStatus> f : futures) {

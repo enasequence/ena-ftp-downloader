@@ -186,19 +186,14 @@ public class FileDownloaderClient {
         }
     }
 
-    private List<String> getAsperaCommandParts(String asperaLocation, FileDetail fileDetail, Path remoteFilePath,
-                                               String userName, String password) {
+    private List<String> getAsperaCommandParts(String asperaLocation, FileDetail fileDetail, Path remoteFilePath) {
         String ascpFile = CommonUtils.getAscpFileName();
         List<String> commands = new ArrayList<>();
         commands.add(Paths.get(asperaLocation, Constants.binFolder, ascpFile).toString());
         commands.addAll(Arrays.asList(DOWNLOAD_PARAMS_ASPERA.split("\\s")));
         commands.add("-i");
         commands.add(Paths.get(asperaLocation, Constants.etcFolder, Constants.asperaWebFile).toString());
-        if (fileDetail.getFtpUrl().contains(Constants.DCC_PRIVATE_FTP_FILE_PATH)) {
-            commands.add(userName + ":" + password + "@" + fileDetail.getFtpUrl());
-        } else {
-            commands.add("era-fasp@" + fileDetail.getFtpUrl());
-        }
+        commands.add("era-fasp@" + fileDetail.getFtpUrl());
         commands.add(remoteFilePath.toString());
         return commands;
     }
@@ -237,7 +232,7 @@ public class FileDownloaderClient {
                 if (rl % 1000 == 0) {
                     System.out.println(redownloading + " files marked for download. Last was " + remoteFilePath.toString());
                 }
-                List<String> commands = getAsperaCommandParts(asperaLocation, fileDetail, remoteFilePath, userName, password);
+                List<String> commands = getAsperaCommandParts(asperaLocation, fileDetail, remoteFilePath);
 
                     deleteIfPartialFileExists(partialFilePath, partialFileName);
                     ProcessBuilder processBuilder = new ProcessBuilder(commands);

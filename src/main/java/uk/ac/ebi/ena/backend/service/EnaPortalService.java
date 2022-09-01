@@ -316,9 +316,9 @@ public class EnaPortalService {
                 return Arrays.asList(Objects.requireNonNull(response));
             } catch (RestClientResponseException rce) {
                 if (rce.getRawStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
-                    log.error("User name and password for given datahub is not correct. type:{}, format:{}  @@" + rce.getMessage(),
+                    log.error("User name and password for given data hub is not correct. type:{}, format:{}  @@" + rce.getMessage(),
                             accessionType, format, rce);
-                    console.info("User name and password for given datahub is not correct");
+                    console.info("User name and password for given data hub is not correct");
                     break;
                 } else {
                     log.error("Exception encountered while getting portalResponse for accession type:{}, format:{}  @@" + rce.getMessage(),

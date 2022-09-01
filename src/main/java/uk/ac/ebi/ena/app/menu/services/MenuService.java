@@ -212,15 +212,6 @@ public class MenuService {
         }
     }
 
-    private String getDataPortalId(String userName) {
-        if (StringUtils.isNotEmpty(userName) &&
-                "metagenome".equalsIgnoreCase(StringUtils.substringAfter(userName, "_"))) {
-            return "metagenome";
-        } else {
-            return "pathogen";
-        }
-    }
-
     public String requestForDataHubPassword() {
         CommonUtils.printSeparatorLine();
         MenuUtils.printEmptyline();

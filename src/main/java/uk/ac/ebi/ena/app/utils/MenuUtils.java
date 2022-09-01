@@ -93,13 +93,6 @@ public class MenuUtils {
         System.out.println(MenuUtils.dataHubPasswordInputMessage);
     }
 
-    public static void printDownloadDccOnlyMessage() {
-        System.out.println(MenuUtils.downloadDccOnlyMessage);
-    }
-
-    public static void printDataHubDownloadMessage() {
-        System.out.println(MenuUtils.dataHubDownloadMessage);
-    }
 
     public static void printEmptyline() {
         System.out.println("");
