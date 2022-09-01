@@ -64,14 +64,11 @@ public class MenuService {
     private ScannerUtils scannerUtils;
     private BackendService backendService;
 
-    private RestTemplate restTemplate;
-
 
     @Autowired
-    public MenuService(ScannerUtils scannerUtils, BackendService backendService, RestTemplate restTemplate) {
+    public MenuService(ScannerUtils scannerUtils, BackendService backendService) {
         this.scannerUtils = scannerUtils;
         this.backendService = backendService;
-        this.restTemplate = restTemplate;
     }
 
     private String showEmailOption() {

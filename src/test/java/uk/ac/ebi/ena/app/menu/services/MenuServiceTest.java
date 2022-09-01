@@ -23,12 +23,9 @@ public class MenuServiceTest {
     @Mock
     BackendService backendService;
 
-    @Mock
-    RestTemplate restTemplate;
-
     @Spy
     @InjectMocks
-    private MenuService menuService = new MenuService(new ScannerUtils(), backendService, restTemplate);
+    private MenuService menuService = new MenuService(new ScannerUtils(), backendService);
 
     @Test
     public void testBuildAccessionEntryMenu_WhenFtpProtocol() {
