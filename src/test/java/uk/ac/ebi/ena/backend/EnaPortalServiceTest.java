@@ -50,7 +50,7 @@ public class EnaPortalServiceTest {
         Mockito.when(restTemplate.postForObject(Mockito.any(URI.class), Mockito.any(HttpEntity.class),
                 Mockito.eq(EnaPortalResponse[].class))).thenReturn(getPortalResponses());
         //ACT
-        List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(accessionIdList, format, protocol, downloadJob, null, null);
+        List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(accessionIdList, format, protocol, downloadJob, null);
         //ASSERT
         Assertions.assertEquals(getPortalResponses().length, portalResponses.size());
 

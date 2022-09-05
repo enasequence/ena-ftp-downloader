@@ -59,7 +59,7 @@ public class MenuUtils {
 
     public static final String dataHubUsernameInputMessage = "Enter data hub name (dcc username)";
 
-    public static final String dataHubPasswordInputMessage = "Enter datahub password";
+    public static final String dataHubPasswordInputMessage = "Enter data hub password";
 
     public static final String welcomeMessage = "Welcome to the ENA File Downloader utility!";
     public static final String lineMessage = "----------------------------------------------";

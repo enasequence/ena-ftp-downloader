@@ -40,6 +40,7 @@ import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.utils.CommonUtils;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
 
@@ -201,7 +202,7 @@ public class FileDownloaderClient {
     public Future<FileDownloadStatus> startDownloadAspera(ExecutorService executorService, List<FileDetail> fileDetails,
                                                           String asperaLocation, String downloadLocation,
                                                           AccessionTypeEnum accessionType, DownloadFormatEnum format, int set,
-                                                          String userName, String password) {
+                                                          AuthenticationDetail authenticationDetail) {
         FileDownloadStatus fileDownloadStatus = new FileDownloadStatus(fileDetails.size(), 0,
                 new ArrayList<>());
         return executorService.submit(() -> {

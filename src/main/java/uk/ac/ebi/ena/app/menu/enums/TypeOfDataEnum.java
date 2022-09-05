@@ -10,9 +10,9 @@ import java.util.Map;
 @Getter
 @AllArgsConstructor
 public enum TypeOfDataEnum {
-    PUBLIC_DATA_DEFAULT(1, "Public data(default) or hit enter"),
-    No(2, "From a specific data hub (dcc)"),
-    EXIT(0, "Exit");
+    PUBLIC_DATA(1, "For public data, just hit enter or press "),
+    DATA_HUB(2, "From a specific data hub (dcc), enter "),
+    EXIT(0, "To Exit enter ");
 
     private final static Map<Integer, TypeOfDataEnum> map = new HashMap<>();
 

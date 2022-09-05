@@ -29,6 +29,7 @@ import org.springframework.util.DigestUtils;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
 
@@ -148,7 +149,7 @@ public class FileDownloaderService {
 
     public Future<FileDownloadStatus> startDownload(ExecutorService executorService, List<FileDetail> fileDetails,
                                                     String downloadLoc, AccessionTypeEnum accessionType,
-                                                    DownloadFormatEnum format, int set, String userName, String password) {
+                                                    DownloadFormatEnum format, int set, AuthenticationDetail authenticationDetail) {
         FileDownloadStatus fileDownloadStatus = new FileDownloadStatus(fileDetails.size(), 0, new ArrayList<>());
 
         return executorService.submit(() -> {
@@ -162,7 +163,7 @@ public class FileDownloaderService {
             for (FileDetail fileDetail : fileDetails) {
 
                 try {
-                    String fileUrl = prepareFTPUrl(fileDetail, userName, password);
+                    String fileUrl = prepareFTPUrl(fileDetail, authenticationDetail.getUserName(), authenticationDetail.getPassword());
                     log.info("FileURL: " + fileUrl);
                     String fileDownloaderPath = getFileDownloadPath(downloadLoc, accessionType, format, fileDetail);
                     remoteFileName = StringUtils.substringAfterLast(fileUrl, "/");

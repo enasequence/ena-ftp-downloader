@@ -25,15 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.app.MainRunner;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.*;
@@ -41,13 +34,17 @@ import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.app.utils.FileUtils;
 import uk.ac.ebi.ena.app.utils.MenuUtils;
 import uk.ac.ebi.ena.app.utils.ScannerUtils;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.service.BackendService;
+import uk.ac.ebi.ena.backend.service.EnaPortalService;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static uk.ac.ebi.ena.app.MainRunner.ASPERA_PATH_MSG;
@@ -64,11 +61,14 @@ public class MenuService {
     private ScannerUtils scannerUtils;
     private BackendService backendService;
 
+    private EnaPortalService portalService;
+
 
     @Autowired
-    public MenuService(ScannerUtils scannerUtils, BackendService backendService) {
+    public MenuService(ScannerUtils scannerUtils, BackendService backendService, EnaPortalService portalService) {
         this.scannerUtils = scannerUtils;
         this.backendService = backendService;
+        this.portalService = portalService;
     }
 
     private String showEmailOption() {
@@ -89,7 +89,7 @@ public class MenuService {
         }
     }
 
-    private DownloadJob a1GetAccessionListFromFilePath(AccessionsEntryMethodEnum accessionsEntry, String userName, String password) {
+    private DownloadJob a1GetAccessionListFromFilePath(AccessionsEntryMethodEnum accessionsEntry, AuthenticationDetail authenticationDetail) {
         System.out.println("*** Please provide full path to the file containing accessions.");
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
@@ -99,7 +99,7 @@ public class MenuService {
         if ("0".equalsIgnoreCase(inputValues)) {
             MainRunner.exit();
         } else if (inputValues.equalsIgnoreCase("b")) { // back
-            aBuildAccessionEntryMenu(userName, password);
+            aBuildAccessionEntryMenu(authenticationDetail);
         } else {
             try {
                 if (Files.exists(Paths.get(inputValues))) {
@@ -113,7 +113,7 @@ public class MenuService {
                         } else {
                             System.out.println(MenuUtils.accessionsSameTypeErrorMessage);
                             MenuUtils.printEmptyline();
-                            return a1GetAccessionListFromFilePath(accessionsEntry, userName, password);
+                            return a1GetAccessionListFromFilePath(accessionsEntry, authenticationDetail);
                         }
                     } else {
                         if (accessions == null) {
@@ -124,12 +124,12 @@ public class MenuService {
                             System.out.println(MenuUtils.accessionsErrorMessage);
                         }
                         MenuUtils.printEmptyline();
-                        return a1GetAccessionListFromFilePath(accessionsEntry, userName, password);
+                        return a1GetAccessionListFromFilePath(accessionsEntry, authenticationDetail);
                     }
                 } else {
                     System.out.println(MenuUtils.accessionsFileErrorMessage);
                     MenuUtils.printEmptyline();
-                    a1GetAccessionListFromFilePath(accessionsEntry, userName, password);
+                    a1GetAccessionListFromFilePath(accessionsEntry, authenticationDetail);
                 }
             } catch (Exception e) {
                 log.error("Exception occurred while reading accessions from file.", e);
@@ -138,7 +138,7 @@ public class MenuService {
         return null;
     }
 
-    private DownloadJob a2GetAccessionListFromCommaSeparated(AccessionsEntryMethodEnum accessionsEntryMethodEnum, String userName, String password) {
+    private DownloadJob a2GetAccessionListFromCommaSeparated(AccessionsEntryMethodEnum accessionsEntryMethodEnum, AuthenticationDetail authenticationDetail) {
         System.out.println("*** Please provide the list of accessions separated by commas.");
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
@@ -148,7 +148,7 @@ public class MenuService {
         if ("0".equalsIgnoreCase(inputValues)) {
             MainRunner.exit();
         } else if (inputValues.equalsIgnoreCase("b")) { // back
-            aBuildAccessionEntryMenu(userName, password);
+            aBuildAccessionEntryMenu(authenticationDetail);
         } else {
             String[] accessions = inputValues.split(",");
             if (accessions.length > 0) {
@@ -159,36 +159,39 @@ public class MenuService {
                     return downloadJob;
                 } else {
                     System.out.println(MenuUtils.accessionsErrorMessage);
-                    return a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum, userName, password);
+                    return a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum, authenticationDetail);
                 }
             } else {
                 System.out.println(MenuUtils.accessionsErrorMessage);
-                return a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum, userName, password);
+                return a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum, authenticationDetail);
             }
         }
         return null;
     }
 
     public void showTypeOfDataMenu() {
+        AuthenticationDetail authenticationDetail = null;
         CommonUtils.printSeparatorLine();
-        System.out.println("*** What do you want to download ?");
+        System.out.println("*** What do you want to download ? ***");
 
         for (TypeOfDataEnum typeOfDataEnum : TypeOfDataEnum.values()) {
-            System.out.println(Constants.toMessage + typeOfDataEnum.getMessage() + Constants.enterMessage + typeOfDataEnum.getValue());
+            System.out.println(typeOfDataEnum.getMessage() + typeOfDataEnum.getValue());
         }
 
-        int input = scannerUtils.getNextInt();
+        String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
-        if (input == 0) {
+        if (StringUtils.isEmpty(input)) {
+            aBuildAccessionEntryMenu(authenticationDetail);
+        } else if (input.equals("0")) {
             MainRunner.exit();
-        } else if (input == 1) {
-            aBuildAccessionEntryMenu(null, null);
-        } else {
-            requestForDataHubCredentials();
+        } else if (input.equals("1")) {
+            aBuildAccessionEntryMenu(authenticationDetail);
+        } else if (input.equals("2")) { // Flow to download the files from datahub
+            requestForDataHubCredentials(authenticationDetail);
         }
     }
 
-    public void requestForDataHubCredentials() {
+    public void requestForDataHubCredentials(AuthenticationDetail authenticationDetail) {
 
         CommonUtils.printSeparatorLine();
         MenuUtils.printEmptyline();
@@ -199,18 +202,24 @@ public class MenuService {
 
         if (StringUtils.isNotEmpty(userName) && StringUtils.startsWith(userName, "dcc_")) {
             String password = requestForDataHubPassword();
-            if (StringUtils.isNotEmpty(password)) {
-                System.out.println("Data hub password is empty.");
-                requestForDataHubCredentials();
+
+            authenticationDetail = new AuthenticationDetail();
+
+            authenticationDetail.setUserName(userName);
+            authenticationDetail.setPassword(password);
+
+            if (portalService.authenticateUser(authenticationDetail)) {
+                aBuildAccessionEntryMenu(authenticationDetail);
             } else {
-                System.out.println("Data hub username and or password are not correct.");
-                requestForDataHubCredentials();
+                System.out.println("Data hub username/password  are not correct.");
+                requestForDataHubCredentials(authenticationDetail);
             }
         } else {
             System.out.println("Please provide valid dcc username(starts with dcc_)");
-            requestForDataHubCredentials();
+            requestForDataHubCredentials(authenticationDetail);
         }
     }
+
 
     public String requestForDataHubPassword() {
         CommonUtils.printSeparatorLine();
@@ -226,7 +235,7 @@ public class MenuService {
         return null;
     }
 
-    public void aBuildAccessionEntryMenu(String userName, String password) {
+    public void aBuildAccessionEntryMenu(AuthenticationDetail authenticationDetail) {
         System.out.println("*** How would you like to enter accessions?");
         CommonUtils.printSeparatorLine();
         for (AccessionsEntryMethodEnum accessionsEntryMethodEnum : AccessionsEntryMethodEnum.values()) {
@@ -242,25 +251,25 @@ public class MenuService {
             DownloadJob downloadJob = new DownloadJob();
             switch (accessionsEntryMethodEnum) {
                 case DOWNLOAD_FROM_FILE:
-                    downloadJob = a1GetAccessionListFromFilePath(accessionsEntryMethodEnum, userName, password);
+                    downloadJob = a1GetAccessionListFromFilePath(accessionsEntryMethodEnum, authenticationDetail);
                     break;
                 case DOWNLOAD_FROM_LIST:
-                    downloadJob = a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum, userName, password);
+                    downloadJob = a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum, authenticationDetail);
                     break;
             }
             if (!CollectionUtils.isEmpty(downloadJob.getAccessionList())) {
                 // proceed
-                bShowDownloadFormatMenu(downloadJob, userName, password);
+                bShowDownloadFormatMenu(downloadJob, authenticationDetail);
             }
         } else {
             // replay
             MenuUtils.printInvalidMessage();
-            aBuildAccessionEntryMenu(userName, password);
+            aBuildAccessionEntryMenu(authenticationDetail);
         }
 
     }
 
-    private void bShowDownloadFormatMenu(DownloadJob downloadJob, String userName, String password) {
+    private void bShowDownloadFormatMenu(DownloadJob downloadJob, AuthenticationDetail authenticationDetail) {
         System.out.println("**** To download data " +
                 (!CollectionUtils.isEmpty(downloadJob.getAccessionList()) ? " for provided accessions" : "") + ", select the format.");
         CommonUtils.printSeparatorLine();
@@ -279,7 +288,7 @@ public class MenuService {
         int input = scannerUtils.getNextInt();
         MenuUtils.printEmptyline();
         if (input == -1) { // back
-            aBuildAccessionEntryMenu(userName, password);
+            aBuildAccessionEntryMenu(authenticationDetail);
         } else {
             if (input == 0) {
                 MainRunner.exit();
@@ -288,43 +297,43 @@ public class MenuService {
 
             if (format != null) {
                 // proceed
-                cRequestDownloadLocation(format, downloadJob, userName, password);
+                cRequestDownloadLocation(format, downloadJob, authenticationDetail);
             } else {
                 // replay
                 MenuUtils.printInvalidMessage();
-                bShowDownloadFormatMenu(downloadJob, userName, password);
+                bShowDownloadFormatMenu(downloadJob, authenticationDetail);
             }
         }
 
 
     }
 
-    private String cRequestDownloadLocation(DownloadFormatEnum format, DownloadJob downloadJob, String userName, String password) {
+    private String cRequestDownloadLocation(DownloadFormatEnum format, DownloadJob downloadJob, AuthenticationDetail authenticationDetail) {
         System.out.println("***** Provide the full path to where you want to save downloaded files.");
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
-            bShowDownloadFormatMenu(downloadJob, userName, password);
+            bShowDownloadFormatMenu(downloadJob, authenticationDetail);
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
         } else if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
-            dRequestProtocolSelection(format, input, downloadJob, userName, password);
+            dRequestProtocolSelection(format, input, downloadJob, authenticationDetail);
         } else {
             // replay
-            return cRequestDownloadLocation(format, downloadJob, userName, password);
+            return cRequestDownloadLocation(format, downloadJob, authenticationDetail);
         }
         return input;
     }
 
     private String dRequestProtocolSelection(DownloadFormatEnum format, String location, DownloadJob downloadJob,
-                                             String userName, String password) {
+                                             AuthenticationDetail authenticationDetail) {
         System.out.println("***** Choose the method of downloading:");
         CommonUtils.printSeparatorLine();
         for (ProtocolEnum protocolEnum : ProtocolEnum.values()) {
             //For downloading files from datahub only FTP format is supported
-            if (StringUtils.isNotEmpty(userName) && StringUtils.isNotEmpty(password)) {
+            if (Objects.nonNull(authenticationDetail) && StringUtils.isNotEmpty(authenticationDetail.getUserName())) {
                 System.out.println(Constants.toMessage + protocolEnum.getMessage() + "," + Constants.enterMessage + protocolEnum.getValue());
                 break;
             }
@@ -334,22 +343,22 @@ public class MenuService {
         int input = scannerUtils.getNextInt();
         MenuUtils.printEmptyline();
         if (input == -1) {
-            return cRequestDownloadLocation(format, downloadJob, userName, password);
+            return cRequestDownloadLocation(format, downloadJob, authenticationDetail);
         }
         final ProtocolEnum protocolEnum = ProtocolEnum.valueOf(input);
         switch (protocolEnum) {
             case ASPERA:
-                String asperaConnectLocation = d1RequestAsperaConnectOption(format, location, downloadJob, userName, password);
-                return eRequestEmailId(format, location, downloadJob, protocolEnum, asperaConnectLocation, userName, password);
+                String asperaConnectLocation = d1RequestAsperaConnectOption(format, location, downloadJob, null);
+                return eRequestEmailId(format, location, downloadJob, protocolEnum, asperaConnectLocation, null);
             case FTP:
-                return eRequestEmailId(format, location, downloadJob, protocolEnum, null, userName, password);
+                return eRequestEmailId(format, location, downloadJob, protocolEnum, null, authenticationDetail);
         }
         return null;
 
     }
 
     private String eRequestEmailId(DownloadFormatEnum format, String location, DownloadJob downloadJob,
-                                   ProtocolEnum protocolEnum, String asperaConnectLocation, String userName, String password) {
+                                   ProtocolEnum protocolEnum, String asperaConnectLocation, AuthenticationDetail authenticationDetail) {
         CommonUtils.printSeparatorLine();
         MenuUtils.printEmptyline();
         MenuUtils.printEmailMessage();
@@ -358,17 +367,17 @@ public class MenuService {
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
-            dRequestProtocolSelection(format, location, downloadJob, userName, password);
+            dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
         } else if (StringUtils.isNotEmpty(input)) {
             boolean isValidId = MenuUtils.isValidEmailAddress(input);
             if (!isValidId) {
                 MenuUtils.printValidEmailMessage();
                 return showEmailOption();
             } else {
-                fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, input, userName, password);
+                fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, input, authenticationDetail);
             }
         } else {
-            fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, NONE, userName, password);
+            fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, NONE, authenticationDetail);
         }
         return null;
     }
@@ -376,7 +385,7 @@ public class MenuService {
     private void fShowConfirmationAndPerformAction(DownloadFormatEnum format, String location,
                                                    DownloadJob downloadJob,
                                                    ProtocolEnum protocol, String asperaConnectLocation,
-                                                   String emailId, String userName, String password) {
+                                                   String emailId, AuthenticationDetail authenticationDetail) {
         String msg = "You are ready to download " + format.getMessage()
                 + " to " + location + " using " + protocol + ".";
         if (protocol == ProtocolEnum.ASPERA) {
@@ -395,7 +404,7 @@ public class MenuService {
         int input = scannerUtils.getNextInt();
         MenuUtils.printEmptyline();
         if (input == -1) { // back
-            eRequestEmailId(format, location, downloadJob, protocol, asperaConnectLocation, userName, password);
+            eRequestEmailId(format, location, downloadJob, protocol, asperaConnectLocation, authenticationDetail);
         } else {
             if (input == 0) {
                 MainRunner.exit();
@@ -418,13 +427,13 @@ public class MenuService {
                             System.out.println("Script created at " + FileUtils.getScriptPath(downloadJob, format)
                                     + ". Download started.");
                             CommonUtils.printSeparatorLine();
-                            startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId, userName, password);
+                            startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId, authenticationDetail);
                             break;
                     }
                 } else {
                     // replay
                     fShowConfirmationAndPerformAction(format, location, downloadJob, protocol,
-                            asperaConnectLocation, emailId, userName, password);
+                            asperaConnectLocation, emailId, authenticationDetail);
                 }
             }
         }
@@ -433,11 +442,11 @@ public class MenuService {
 
     private void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob
             , ProtocolEnum protocol, String asperaConnectLocation, String emailId,
-                               String userName, String password) {
+                               AuthenticationDetail authenticationDetail) {
         try {
             console.info("Starting download at location {}", location);
             backendService.startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId
-                    , userName, password);
+                    , authenticationDetail);
         } catch (Exception exception) {
             log.error("Exception encountered while starting download");
             exception.printStackTrace();
@@ -445,24 +454,24 @@ public class MenuService {
 
     }
 
-    private String d1RequestAsperaConnectOption(DownloadFormatEnum format, String location, DownloadJob downloadJob, String userName, String password) {
+    private String d1RequestAsperaConnectOption(DownloadFormatEnum format, String location, DownloadJob downloadJob, AuthenticationDetail authenticationDetail) {
         System.out.println("***** " + ASPERA_PATH_MSG);
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
-            return dRequestProtocolSelection(format, location, downloadJob, userName, password);
+            return dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
         } else if (StringUtils.isNotEmpty(input)) {
             boolean isValidLocation = MenuUtils.isValidAsperaConnectLoc(input);
             if (!isValidLocation) {
                 MenuUtils.printInvalidAsperaConnectLocation();
-                d1RequestAsperaConnectOption(format, location, downloadJob, userName, password);
+                d1RequestAsperaConnectOption(format, location, downloadJob, authenticationDetail);
             }
         } else {
-            return d1RequestAsperaConnectOption(format, location, downloadJob, userName, password);
+            return d1RequestAsperaConnectOption(format, location, downloadJob, authenticationDetail);
         }
         return input;
     }

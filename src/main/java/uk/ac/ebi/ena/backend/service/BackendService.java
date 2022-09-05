@@ -20,10 +20,8 @@ package uk.ac.ebi.ena.backend.service;
 
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Class that will expose methods to download accessions based on the inputs provided by the user
@@ -42,5 +40,5 @@ public interface BackendService {
      */
 
     void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
-                       ProtocolEnum protocol, String asperaConnectLocation, String emailId, String userName, String password);
+                       ProtocolEnum protocol, String asperaConnectLocation, String emailId, AuthenticationDetail authenticationDetail);
 }

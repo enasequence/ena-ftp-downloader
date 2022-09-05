@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.app.menu.enums.AccessionsEntryMethodEnum;
 import uk.ac.ebi.ena.app.menu.enums.ActionEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
@@ -25,7 +24,7 @@ public class MenuServiceTest {
 
     @Spy
     @InjectMocks
-    private MenuService menuService = new MenuService(new ScannerUtils(), backendService);
+    private MenuService menuService = new MenuService(new ScannerUtils(), backendService, null);
 
     @Test
     public void testBuildAccessionEntryMenu_WhenFtpProtocol() {
@@ -38,7 +37,7 @@ public class MenuServiceTest {
                 + ActionEnum.CREATE_AND_DOWNLOAD.getValue();
         System.setIn(new java.io.ByteArrayInputStream(inputData.getBytes()));
         //ACT
-        menuService.aBuildAccessionEntryMenu(null, null);
+        menuService.aBuildAccessionEntryMenu(null);
     }
 
     @Test
@@ -53,7 +52,7 @@ public class MenuServiceTest {
                 + ActionEnum.CREATE_AND_DOWNLOAD.getValue();
         System.setIn(new java.io.ByteArrayInputStream(inputData.getBytes()));
         //ACT
-        menuService.aBuildAccessionEntryMenu(null, null);
+        menuService.aBuildAccessionEntryMenu(null);
     }
 
     @Test
@@ -70,6 +69,6 @@ public class MenuServiceTest {
                 + ActionEnum.CREATE_AND_DOWNLOAD.getValue();
         System.setIn(new java.io.ByteArrayInputStream(inputData.getBytes()));
         //ACT
-        menuService.aBuildAccessionEntryMenu(null, null);
+        menuService.aBuildAccessionEntryMenu(null);
     }
 }

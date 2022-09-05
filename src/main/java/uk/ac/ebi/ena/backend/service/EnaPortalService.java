@@ -24,11 +24,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
+import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.app.constants.Constants;
@@ -37,6 +37,7 @@ import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.backend.config.BeanConfig;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
 
@@ -97,16 +98,16 @@ public class EnaPortalService {
      * for the
      * accessionList and dataType
      *
-     * @param accessionList       The experimentIds
-     * @param format              The format provided by the user
-     * @param protocol            The protocol for the download
-     * @param downloadJob The map for accessionDetails
+     * @param accessionList The experimentIds
+     * @param format        The format provided by the user
+     * @param protocol      The protocol for the download
+     * @param downloadJob   The map for accessionDetails
      * @return The details  for the accession Ids
      */
     public List<EnaPortalResponse> getPortalResponses(List<String> accessionList, DownloadFormatEnum format,
                                                       ProtocolEnum protocol,
                                                       DownloadJob downloadJob,
-                                                      String userName, String password) {
+                                                      AuthenticationDetail authenticationDetail) {
 
         String accessionField = downloadJob.getAccessionField();
         String accessionType = AccessionTypeEnum.getAccessionType(accessionField).name().toLowerCase();
@@ -291,7 +292,10 @@ public class EnaPortalService {
                         }
                 }
         }
-        portalAPIEndpoint = portalAPIEndpoint + "&dataPortal=" + CommonUtils.getDataPortalId(userName) + "&dccDataOnly=" + false;
+        portalAPIEndpoint = portalAPIEndpoint + "&dataPortal="
+                + (Objects.nonNull(authenticationDetail) ? CommonUtils.getDataPortalId(authenticationDetail.getUserName()) : "ena")
+                + "&dccDataOnly=" + false;
+        ;
         Assert.notNull(accessionList, "Accessions cannot be null");
         String includeAccs = String.join(COMMA, accessionList);
         URI uri = URI.create(Objects.requireNonNull(portalAPIEndpoint));
@@ -300,8 +304,10 @@ public class EnaPortalService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Content-Type", Constants.URLENCODED);
         httpHeaders.add("Accept", Constants.APPLICATION_JSON);
-        if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
-            httpHeaders.setBasicAuth(userName, password);
+
+        if (Objects.nonNull(authenticationDetail) && authenticationDetail.isAuthenticated()) {
+            System.out.println("SessionId : " + authenticationDetail.getSessionId());
+            httpHeaders.add("sid", authenticationDetail.getSessionId());
         }
         HttpEntity<String> request = new HttpEntity<>(body, httpHeaders);
         log.debug("url:{}, body:{}", portalAPIEndpoint, body);
@@ -316,8 +322,6 @@ public class EnaPortalService {
                 return Arrays.asList(Objects.requireNonNull(response));
             } catch (RestClientResponseException rce) {
                 if (rce.getRawStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
-                    log.error("User name and password for given data hub is not correct. type:{}, format:{}  @@" + rce.getMessage(),
-                            accessionType, format, rce);
                     console.info("User name and password for given data hub is not correct");
                     break;
                 } else {
@@ -352,4 +356,50 @@ public class EnaPortalService {
         console.info("Email successfully sent to:{}", recipientEmail);
 
     }
+
+    public boolean authenticateUser(AuthenticationDetail authenticationDetail) {
+
+        String userName = authenticationDetail.getUserName();
+        String password = authenticationDetail.getPassword();
+
+        if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
+
+            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth?dataPortal=" +
+                    CommonUtils.getDataPortalId(userName);
+            log.info("portalAPIAuthEndpoint: " + portalAPIAuthEndpoint);
+
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add("Accept", Constants.APPLICATION_JSON);
+            httpHeaders.setBasicAuth(userName, password);
+
+            restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(userName, password));
+            try {
+                ResponseEntity<String> resp = restTemplate.exchange(portalAPIAuthEndpoint, HttpMethod.GET,
+                        null, String.class);
+                if (resp.getStatusCode() == HttpStatus.OK) {
+                    authenticationDetail.setSessionId(parseSessionID(resp.getBody()));
+                    authenticationDetail.setAuthenticated(true);
+                    return true;
+                } else {
+                    authenticationDetail.setAuthenticated(false);
+                }
+            } catch (RestClientException restClientException) {
+                log.error(" Data hub authorization failed-  " + restClientException.getMessage());
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private String parseSessionID(String rawSessionId) {
+        String sessionId = "";
+        if (StringUtils.isNotBlank(rawSessionId)) {
+            rawSessionId = StringUtils.split(rawSessionId, ":")[1];
+            sessionId = rawSessionId.replaceAll("\"}", "");
+        }
+        sessionId = sessionId.replace("\"", "");
+        return sessionId;
+    }
+
+
 }

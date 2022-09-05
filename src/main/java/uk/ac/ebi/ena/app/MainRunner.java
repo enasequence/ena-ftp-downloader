@@ -34,9 +34,11 @@ import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.menu.services.MenuService;
 import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.app.utils.MenuUtils;
-import uk.ac.ebi.ena.backend.dto.DownloadJob;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.service.BackendService;
+import uk.ac.ebi.ena.backend.service.EnaPortalService;
 
+import javax.security.auth.message.AuthException;
 import java.io.File;
 
 @Profile("!test")
@@ -76,10 +78,13 @@ public class MainRunner implements CommandLineRunner {
     MenuService menuBuilder;
     private BackendService backendService;
 
+    private EnaPortalService enaPortalService;
+
     @Autowired
-    MainRunner(MenuService menuBuilder, BackendService backendService) {
+    MainRunner(MenuService menuBuilder, BackendService backendService, EnaPortalService enaPortalService) {
         this.menuBuilder = menuBuilder;
         this.backendService = backendService;
+        this.enaPortalService = enaPortalService;
     }
 
     public static void exit() {
@@ -101,6 +106,7 @@ public class MainRunner implements CommandLineRunner {
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
                     File dLoc = new File(downloadLocation);
+                    AuthenticationDetail authenticationDetail = null;
                     if (!dLoc.exists() || !dLoc.canWrite()) {
                         System.out.println(dLoc + " does not exists or is read only.");
                     } else {
@@ -110,6 +116,7 @@ public class MainRunner implements CommandLineRunner {
                             }
                             //Download the data from dataHub
                             if (StringUtils.isNotBlank(userName)) {
+                                authenticationDetail = new AuthenticationDetail();
                                 if (!StringUtils.startsWith(userName, "dcc_")) {
                                     System.out.println("Please use data hub name (dcc username)");
                                     log.error("Invalid data hub name (dcc user) parameters provided. ", userName);
@@ -119,11 +126,18 @@ public class MainRunner implements CommandLineRunner {
                                     log.error("Only FTP protocol is supported to download the files from data hub. Provided protocol is ", protocol);
                                     throw new IllegalArgumentException();
                                 }
-                            }
+                                authenticationDetail.setUserName(userName);
+                                authenticationDetail.setPassword(password);
+                                //Validate username and password
+                                if (!enaPortalService.authenticateUser(authenticationDetail)) {
+                                    log.error("Data hub username and or password are not correct.");
+                                    throw new AuthException("Data hub authentication failed");
+                                }
 
+                            }
                             backendService.startDownload(format, downloadLocation,
                                     MenuUtils.parseAccessions(accessions), protocol, asperaLocation,
-                                    emailId, userName, password);
+                                    emailId, authenticationDetail);
                         }
                         console.info("Downloads Completed");
                     }

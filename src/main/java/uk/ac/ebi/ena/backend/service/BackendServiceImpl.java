@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.utils.FileUtils;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 
@@ -45,21 +46,22 @@ public class BackendServiceImpl implements BackendService {
     private final EmailService emailService;
     private final AccessionDetailsService accessionDetailsService;
 
+
     @Override
     public void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
                               ProtocolEnum protocol, String asperaConnectLocation, String emailId,
-                              String userName, String password) {
+                              AuthenticationDetail authenticationDetail) {
 
         console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}",
                 format, location, protocol, asperaConnectLocation, emailId);
-        List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol, userName, password);
+        List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol, authenticationDetail);
         final List<FileDetail> finallyFailedFiles = new ArrayList<>();
         AtomicLong count = new AtomicLong();
         fileDetailsList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> count.getAndIncrement()));
 
         do {
             accessionDetailsService.doDownload(format, location, downloadJob, fileDetailsList, protocol,
-                    asperaConnectLocation, userName, password);
+                    asperaConnectLocation, authenticationDetail);
             List<List<FileDetail>> failedFileList = new ArrayList<>();
             final List<FileDetail> failedFiles = new ArrayList<>();
             fileDetailsList.forEach(fileDetails -> {
@@ -110,4 +112,6 @@ public class BackendServiceImpl implements BackendService {
                 FileUtils.getScriptPath(downloadJob, format), downloadJob.getAccessionField(), format, location);
 
     }
+
+
 }
