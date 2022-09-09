@@ -24,7 +24,7 @@ public class MenuServiceTest {
 
     @Spy
     @InjectMocks
-    private MenuService menuService = new MenuService(new ScannerUtils(), backendService);
+    private MenuService menuService = new MenuService(new ScannerUtils(), backendService, null);
 
     @Test
     public void testBuildAccessionEntryMenu_WhenFtpProtocol() {
@@ -37,7 +37,7 @@ public class MenuServiceTest {
                 + ActionEnum.CREATE_AND_DOWNLOAD.getValue();
         System.setIn(new java.io.ByteArrayInputStream(inputData.getBytes()));
         //ACT
-        menuService.aBuildAccessionEntryMenu();
+        menuService.aBuildAccessionEntryMenu(null);
     }
 
     @Test
@@ -52,7 +52,7 @@ public class MenuServiceTest {
                 + ActionEnum.CREATE_AND_DOWNLOAD.getValue();
         System.setIn(new java.io.ByteArrayInputStream(inputData.getBytes()));
         //ACT
-        menuService.aBuildAccessionEntryMenu();
+        menuService.aBuildAccessionEntryMenu(null);
     }
 
     @Test
@@ -69,6 +69,6 @@ public class MenuServiceTest {
                 + ActionEnum.CREATE_AND_DOWNLOAD.getValue();
         System.setIn(new java.io.ByteArrayInputStream(inputData.getBytes()));
         //ACT
-        menuService.aBuildAccessionEntryMenu();
+        menuService.aBuildAccessionEntryMenu(null);
     }
 }

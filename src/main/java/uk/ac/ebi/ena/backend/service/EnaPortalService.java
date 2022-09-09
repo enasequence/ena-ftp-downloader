@@ -21,18 +21,22 @@ package uk.ac.ebi.ena.backend.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
+import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.backend.config.BeanConfig;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
 
@@ -83,8 +87,7 @@ public class EnaPortalService {
     private static final String RUN = "run";
 
     private static final String COMMA = ",";
-    private static final String URLENCODED = "application/x-www-form-urlencoded";
-    private static final String APPLICATION_JSON = "application/json";
+
     private static final String MULTIPART_FORM_DATA = "multipart/form-data;boundary=%s";
 
     private final RestTemplate restTemplate;
@@ -94,15 +97,16 @@ public class EnaPortalService {
      * for the
      * accessionList and dataType
      *
-     * @param accessionList       The experimentIds
-     * @param format              The format provided by the user
-     * @param protocol            The protocol for the download
-     * @param downloadJob The map for accessionDetails
+     * @param accessionList The experimentIds
+     * @param format        The format provided by the user
+     * @param protocol      The protocol for the download
+     * @param downloadJob   The map for accessionDetails
      * @return The details  for the accession Ids
      */
     public List<EnaPortalResponse> getPortalResponses(List<String> accessionList, DownloadFormatEnum format,
                                                       ProtocolEnum protocol,
-                                                      DownloadJob downloadJob) {
+                                                      DownloadJob downloadJob,
+                                                      AuthenticationDetail authenticationDetail) {
 
         String accessionField = downloadJob.getAccessionField();
         String accessionType = AccessionTypeEnum.getAccessionType(accessionField).name().toLowerCase();
@@ -287,16 +291,24 @@ public class EnaPortalService {
                         }
                 }
         }
-
+        String dataPortal = Objects.nonNull(authenticationDetail) ? CommonUtils.getDataPortalId(authenticationDetail.getUserName()) : "ena";
+        portalAPIEndpoint = portalAPIEndpoint + "&dataPortal=" + dataPortal +
+                (!StringUtils.equals(dataPortal, "ena") ? "&dccDataOnly=" + true : "");
         Assert.notNull(accessionList, "Accessions cannot be null");
         String includeAccs = String.join(COMMA, accessionList);
         URI uri = URI.create(Objects.requireNonNull(portalAPIEndpoint));
+        log.info("portalAPIEndpoint: " + portalAPIEndpoint);
         String body = "includeAccessions=" + includeAccs;
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Content-Type", URLENCODED);
-        httpHeaders.add("Accept", APPLICATION_JSON);
+        httpHeaders.add("Content-Type", Constants.URLENCODED);
+        httpHeaders.add("Accept", Constants.APPLICATION_JSON);
+
+        if (Objects.nonNull(authenticationDetail)) {
+            httpHeaders.setBasicAuth(authenticationDetail.getUserName(), authenticationDetail.getPassword());
+        }
         HttpEntity<String> request = new HttpEntity<>(body, httpHeaders);
         log.debug("url:{}, body:{}", portalAPIEndpoint, body);
+
         while (retryCount <= BeanConfig.APP_RETRY) {
             try {
                 EnaPortalResponse[] response = restTemplate.postForObject(uri, request, EnaPortalResponse[].class);
@@ -305,10 +317,16 @@ public class EnaPortalService {
                     return Collections.emptyList();
                 }
                 return Arrays.asList(Objects.requireNonNull(response));
-            } catch (RestClientException rce) {
-                log.error("Exception encountered while getting portalResponse for accession type:{}, format:{}",
-                        accessionType, format, rce);
-                retryCount++;
+            } catch (RestClientResponseException rce) {
+                if (rce.getRawStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
+                    console.info("User name and password for given data hub is not correct");
+                    break;
+                } else {
+                    log.error("Exception encountered while getting portalResponse for accession type:{}, format:{}  @@" + rce.getMessage(),
+                            accessionType, format, rce);
+                    retryCount++;
+                }
+
             }
         }
         log.error("Count not fetch get portalResponse for accession type:{}, format:{} even after {} retries",
@@ -335,4 +353,47 @@ public class EnaPortalService {
         console.info("Email successfully sent to:{}", recipientEmail);
 
     }
+
+    public boolean authenticateUser(AuthenticationDetail authenticationDetail) {
+
+        String userName = authenticationDetail.getUserName();
+        String password = authenticationDetail.getPassword();
+        authenticationDetail.setAuthenticated(false);
+        if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
+
+            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth?dataPortal=" + CommonUtils.getDataPortalId(userName);
+            log.info("portalAPIAuthEndpoint: " + portalAPIAuthEndpoint);
+
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add("Accept", Constants.APPLICATION_JSON);
+            httpHeaders.setBasicAuth(userName, password);
+
+            HttpEntity<Void> requestEntity = new HttpEntity<>(httpHeaders);
+
+            try {
+                ResponseEntity<String> resp = restTemplate.exchange(portalAPIAuthEndpoint, HttpMethod.GET, requestEntity, String.class);
+                if (resp.getStatusCode() == HttpStatus.OK) {
+                    authenticationDetail.setSessionId(parseSessionID(resp.getBody()));
+                    authenticationDetail.setAuthenticated(true);
+                    return true;
+                }
+            } catch (RestClientException restClientException) {
+                log.error(" Data hub authorization failed-  " + restClientException.getMessage());
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private String parseSessionID(String rawSessionId) {
+        String sessionId = "";
+        if (StringUtils.isNotBlank(rawSessionId)) {
+            rawSessionId = StringUtils.split(rawSessionId, ":")[1];
+            sessionId = rawSessionId.replaceAll("\"}", "");
+        }
+        sessionId = sessionId.replace("\"", "");
+        return sessionId;
+    }
+
+
 }

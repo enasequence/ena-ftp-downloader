@@ -42,7 +42,7 @@ public class FileDownloaderClientTest {
         int set = 1;
         //ACT
         FileDownloadStatus fileDownloadStatus = fileDownloaderClient.startDownloadAspera
-                (executorService, fileDetailList, asperaLocation, downloadFolderPath, AccessionTypeEnum.EXPERIMENT, format, set).get();
+                (executorService, fileDetailList, asperaLocation, downloadFolderPath, AccessionTypeEnum.EXPERIMENT, format, set, null).get();
         //ASSERT
         Assert.assertEquals(1, fileDownloadStatus.getSuccesssful());
 

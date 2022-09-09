@@ -51,15 +51,15 @@ public class BackendServiceImplTest {
         ProtocolEnum protocol = ProtocolEnum.FTP;
         String asperaConnectLocation = null;
         String emailId = "datasubs@ebi.ac.uk";
-        Mockito.when(accessionDetailsService.fetchFileDetails(format, accessionDetailsMap, protocol))
+        Mockito.when(accessionDetailsService.fetchFileDetails(format, accessionDetailsMap, protocol, null))
                 .thenReturn(Collections.singletonList(fileDetailList));
         Mockito.doNothing().when(emailService).sendEmailForFastqSubmitted(Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong()
                 , Mockito.anyString(), Mockito.anyString(), Mockito.any(DownloadFormatEnum.class), Mockito.anyString());
         //ACT
-        backendService.startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId);
+        backendService.startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId, null);
         //ASSERT
         verify(accessionDetailsService, times(1)).doDownload(format, location, accessionDetailsMap,
-                Collections.singletonList(fileDetailList), protocol, asperaConnectLocation);
+                Collections.singletonList(fileDetailList), protocol, asperaConnectLocation, null);
 
         verify(emailService, times(1)).sendEmailForFastqSubmitted(emailId, 3, 0,
                 FileUtils.getScriptPath(accessionDetailsMap, format), accessionDetailsMap.getAccessionField(), format, location);

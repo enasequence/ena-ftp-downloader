@@ -29,6 +29,7 @@ import org.springframework.util.DigestUtils;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
 
@@ -42,6 +43,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -92,9 +94,28 @@ public class FileDownloaderService {
                 .setMaxRenderedLength(100)
                 .setStyle(ProgressBarStyle.ASCII)
                 .setTaskName(getShortThreadName()
-                        + ":" + StringUtils.substringAfter(s, "://"))
+                        + ":" + StringUtils.substringAfter(maskPassword(s), "://"))
                 .setInitialMax(size)
                 .setUnit("B", 1); // setting the progress bar to use MB as the unit
+    }
+
+    private static String maskPassword(String url) {
+        String password = stripPassword(url);
+        if (StringUtils.isNotBlank(password)) {
+            return StringUtils.replace(url, password, "********");
+        }
+        return url;
+    }
+
+    private static String stripPassword(String url) {
+        if (StringUtils.isNotBlank(url)) {
+            String userNamePassword = StringUtils.substringBetween(url, "ftp://", "@");
+            if (StringUtils.isNotBlank(userNamePassword) && userNamePassword.split(":").length == 2) {
+                return userNamePassword.split(":")[1];
+            }
+        }
+
+        return null;
     }
 
     public static String getFileDownloadPath(String downloadLoc, AccessionTypeEnum accessionType,
@@ -137,10 +158,19 @@ public class FileDownloaderService {
         }
     }
 
+    private String prepareFTPUrl(FileDetail fileDetail, AuthenticationDetail authenticationDetail) {
+        String filePath = fileDetail.getFtpUrl();
+        if (Objects.nonNull(authenticationDetail) && authenticationDetail.isAuthenticated() &&
+                StringUtils.isNotBlank(filePath) && filePath.contains(Constants.DCC_PRIVATE_FTP_FILE_PATH)) {
+            return Constants.FTP + authenticationDetail.getUserName() + ":" + authenticationDetail.getPassword() + "@" + filePath;
+        } else {
+            return Constants.FTP + filePath;
+        }
+    }
 
     public Future<FileDownloadStatus> startDownload(ExecutorService executorService, List<FileDetail> fileDetails,
                                                     String downloadLoc, AccessionTypeEnum accessionType,
-                                                    DownloadFormatEnum format, int set) {
+                                                    DownloadFormatEnum format, int set, AuthenticationDetail authenticationDetail) {
         FileDownloadStatus fileDownloadStatus = new FileDownloadStatus(fileDetails.size(), 0, new ArrayList<>());
 
         return executorService.submit(() -> {
@@ -154,7 +184,9 @@ public class FileDownloaderService {
             for (FileDetail fileDetail : fileDetails) {
 
                 try {
-                    String fileUrl = Constants.FTP + fileDetail.getFtpUrl();
+                    String fileUrl = prepareFTPUrl(fileDetail, authenticationDetail);
+                    log.info("FileURL: " + StringUtils.replace(fileUrl, Objects.nonNull(authenticationDetail) ? authenticationDetail.getPassword() : null,
+                            "********"));
                     String fileDownloaderPath = getFileDownloadPath(downloadLoc, accessionType, format, fileDetail);
                     remoteFileName = StringUtils.substringAfterLast(fileUrl, "/");
 

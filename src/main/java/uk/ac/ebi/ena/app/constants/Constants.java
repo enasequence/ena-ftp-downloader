@@ -38,4 +38,12 @@ public class Constants {
 
     public static final String FTP_SRA_SERVER = "ftp.sra.ebi.ac.uk";
 
+    public static final String DCC_PRIVATE_FTP_FILE_PATH = "dcc-private.ebi.ac.uk";
+
+    public static final String PORTAL_API_EP = "https://www.ebi.ac.uk/ena/portal/api";
+
+    public static final String URLENCODED = "application/x-www-form-urlencoded";
+    public static final String APPLICATION_JSON = "application/json";
+
+
 }

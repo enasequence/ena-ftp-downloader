@@ -58,12 +58,13 @@ public class AccessionDetailsServiceTest {
         when(mockedFuture.get()).thenReturn(new FileDownloadStatus(0, 0, new ArrayList<>()));
         Mockito.when(fileDownloaderService.startDownload(Mockito.any(ExecutorService.class), Mockito.any(List.class),
                 Mockito.any(String.class), Mockito.any(AccessionTypeEnum.class), Mockito.any(DownloadFormatEnum.class),
-                Mockito.anyInt())).thenReturn(mockedFuture);
+                Mockito.anyInt(), Mockito.any())
+        ).thenReturn(mockedFuture);
         //ACT
-        accessionDetailsService.doDownload(format, downloadLocation, accessionDetailsMap, Collections.singletonList(fileDetailList), protocol, asperaLocation);
+        accessionDetailsService.doDownload(format, downloadLocation, accessionDetailsMap, Collections.singletonList(fileDetailList), protocol, asperaLocation, null);
         //ASSERT
         verify(fileDownloaderService, times(1)).startDownload(Mockito.any(ExecutorService.class), Mockito.anyList(), Mockito.any(String.class),
-                Mockito.any(AccessionTypeEnum.class), Mockito.any(DownloadFormatEnum.class), Mockito.anyInt());
+                Mockito.any(AccessionTypeEnum.class), Mockito.any(DownloadFormatEnum.class), Mockito.anyInt(), Mockito.any());
     }
 
     private List<FileDetail> createFileDetailFtp() {

@@ -51,6 +51,16 @@ public class MenuUtils {
     public static final String validEmailMessage = "The provided email is invalid. Please enter a valid email address.";
     public static final String emailMessage = "If you would like to receive an email when the downloads are complete," +
             " type your email address here and press Enter. Or just press Enter to skip";
+
+    public static final String dataHubDownloadMessage = "Do you want to download the files from datahub. Or just press Enter to skip";
+
+    public static final String downloadDccOnlyMessage = "Do you want to download only from dataHub data or include public data as well";
+
+
+    public static final String dataHubUsernameInputMessage = "Enter data hub name (dcc username) or enter b to go back.";
+
+    public static final String dataHubPasswordInputMessage = "Enter data hub password";
+
     public static final String welcomeMessage = "Welcome to the ENA File Downloader utility!";
     public static final String lineMessage = "----------------------------------------------";
     public static final String accessionsErrorMessage = "Please provide valid accessions! ";
@@ -74,6 +84,15 @@ public class MenuUtils {
     public static void printEmailMessage() {
         System.out.println(MenuUtils.emailMessage);
     }
+
+    public static void printUserNameMessage() {
+        System.out.println(MenuUtils.dataHubUsernameInputMessage);
+    }
+
+    public static void printPasswordMessage() {
+        System.out.println(MenuUtils.dataHubPasswordInputMessage);
+    }
+
 
     public static void printEmptyline() {
         System.out.println("");

@@ -34,8 +34,11 @@ import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.menu.services.MenuService;
 import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.app.utils.MenuUtils;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.service.BackendService;
+import uk.ac.ebi.ena.backend.service.EnaPortalService;
 
+import javax.security.auth.message.AuthException;
 import java.io.File;
 
 @Profile("!test")
@@ -66,13 +69,22 @@ public class MainRunner implements CommandLineRunner {
     @Value("${email:#{null}}")
     public String emailId;
 
+    @Value("${dataHubUsername:#{null}}")
+    public String userName;
+
+    @Value("${dataHubPassword:#{null}}")
+    public String password;
+
     MenuService menuBuilder;
     private BackendService backendService;
 
+    private EnaPortalService enaPortalService;
+
     @Autowired
-    MainRunner(MenuService menuBuilder, BackendService backendService) {
+    MainRunner(MenuService menuBuilder, BackendService backendService, EnaPortalService enaPortalService) {
         this.menuBuilder = menuBuilder;
         this.backendService = backendService;
+        this.enaPortalService = enaPortalService;
     }
 
     public static void exit() {
@@ -94,6 +106,7 @@ public class MainRunner implements CommandLineRunner {
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
                     File dLoc = new File(downloadLocation);
+                    AuthenticationDetail authenticationDetail = null;
                     if (!dLoc.exists() || !dLoc.canWrite()) {
                         System.out.println(dLoc + " does not exists or is read only.");
                     } else {
@@ -101,24 +114,46 @@ public class MainRunner implements CommandLineRunner {
                             if (protocol == ProtocolEnum.ASPERA) {
                                 Assert.notNull(asperaLocation, ASPERA_PATH_MSG);
                             }
+                            //Download the data from dataHub
+                            if (StringUtils.isNotBlank(userName)) {
+                                authenticationDetail = new AuthenticationDetail();
+                                if (!StringUtils.startsWith(userName, "dcc_")) {
+                                    System.out.println("Please provide a valid data hub name (dcc_username)");
+                                    log.error("Invalid data hub name {} (dcc user) provided. ", userName);
+                                    throw new IllegalArgumentException("Invalid data hub name");
+                                } else if (!"FTP".equals(protocol.name())) {
+                                    System.out.println("Only FTP protocol is supported to download the files from a data hub");
+                                    log.error("Only FTP protocol is supported to download the files from a data hub. Provided protocol is {}", protocol);
+                                    throw new IllegalArgumentException("Only FTP protocol is supported to download the files from a data hub");
+                                }
+                                authenticationDetail.setUserName(userName);
+                                authenticationDetail.setPassword(password);
+                                //Validate username and password
+                                if (!enaPortalService.authenticateUser(authenticationDetail)) {
+                                    log.error("Data hub username and/or password is incorrect.");
+                                    throw new AuthException("Data hub authentication failed");
+                                }
+
+                            }
                             backendService.startDownload(format, downloadLocation,
-                                    MenuUtils.parseAccessions(accessions), protocol,
-                                    asperaLocation, emailId);
+                                    MenuUtils.parseAccessions(accessions), protocol, asperaLocation,
+                                    emailId, authenticationDetail);
                         }
                         console.info("Downloads Completed");
                     }
                 } catch (IllegalArgumentException iae) {
                     System.out.println("Invalid/insufficient parameters provided. Please select your options.");
                     log.error("Invalid/insufficient parameters provided.", iae);
-                    menuBuilder.aBuildAccessionEntryMenu();
+                    menuBuilder.showTypeOfDataMenu();
                 } catch (Exception e) {
                     log.error("Exception Occurred while downloading", e);
                 }
             } else {
                 if (args.length > 0) {
-                    log.error("Not enough parameters provided. Running menu interface..");
+                    log.error("Not enough parameters provided. Starting interactive flow..");
+                    System.out.println("Not enough parameters provided. Starting interactive flow..");
                 }
-                menuBuilder.aBuildAccessionEntryMenu();
+                menuBuilder.showTypeOfDataMenu();
 
             }
         } catch (Exception e) {
