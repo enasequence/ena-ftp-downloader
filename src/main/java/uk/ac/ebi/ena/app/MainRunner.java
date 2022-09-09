@@ -118,13 +118,13 @@ public class MainRunner implements CommandLineRunner {
                             if (StringUtils.isNotBlank(userName)) {
                                 authenticationDetail = new AuthenticationDetail();
                                 if (!StringUtils.startsWith(userName, "dcc_")) {
-                                    System.out.println("Please use data hub name (dcc username)");
+                                    System.out.println("Please provide a valid data hub name (dcc_username)");
                                     log.error("Invalid data hub name {} (dcc user) provided. ", userName);
                                     throw new IllegalArgumentException("Invalid data hub name");
                                 } else if (!"FTP".equals(protocol.name())) {
-                                    System.out.println("Only FTP protocol is supported to download the files from data hub");
-                                    log.error("Only FTP protocol is supported to download the files from data hub. Provided protocol is {}", protocol);
-                                    throw new IllegalArgumentException("Only FTP protocol is supported to download the files from data hub");
+                                    System.out.println("Only FTP protocol is supported to download the files from a data hub");
+                                    log.error("Only FTP protocol is supported to download the files from a data hub. Provided protocol is {}", protocol);
+                                    throw new IllegalArgumentException("Only FTP protocol is supported to download the files from a data hub");
                                 }
                                 authenticationDetail.setUserName(userName);
                                 authenticationDetail.setPassword(password);
