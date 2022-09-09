@@ -46,24 +46,23 @@ public class BackendServiceImplTest {
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         String location = System.getProperty("user.home");
         List<FileDetail> fileDetailList = createFileDetailFtp();
-        DownloadJob downloadJob = new DownloadJob();
-        CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
+
+        DownloadJob accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
         ProtocolEnum protocol = ProtocolEnum.FTP;
         String asperaConnectLocation = null;
         String emailId = "datasubs@ebi.ac.uk";
-        Mockito.when(accessionDetailsService.fetchFileDetails(format, downloadJob, protocol, null))
+        Mockito.when(accessionDetailsService.fetchFileDetails(format, accessionDetailsMap, protocol, null))
                 .thenReturn(Collections.singletonList(fileDetailList));
         Mockito.doNothing().when(emailService).sendEmailForFastqSubmitted(Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong()
                 , Mockito.anyString(), Mockito.anyString(), Mockito.any(DownloadFormatEnum.class), Mockito.anyString());
         //ACT
-        backendService.startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId,
-                null);
+        backendService.startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId, null);
         //ASSERT
-        verify(accessionDetailsService, times(1)).doDownload(format, location, downloadJob,
+        verify(accessionDetailsService, times(1)).doDownload(format, location, accessionDetailsMap,
                 Collections.singletonList(fileDetailList), protocol, asperaConnectLocation, null);
 
         verify(emailService, times(1)).sendEmailForFastqSubmitted(emailId, 3, 0,
-                FileUtils.getScriptPath(downloadJob, format), downloadJob.getAccessionField(), format, location);
+                FileUtils.getScriptPath(accessionDetailsMap, format), accessionDetailsMap.getAccessionField(), format, location);
 
     }
 

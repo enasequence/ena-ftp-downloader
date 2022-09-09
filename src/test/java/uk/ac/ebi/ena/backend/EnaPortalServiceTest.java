@@ -45,12 +45,11 @@ public class EnaPortalServiceTest {
         List<String> accessionIdList = Arrays.asList(accessionList.split(","));
         DownloadFormatEnum format = DownloadFormatEnum.READS_FASTQ;
         ProtocolEnum protocol = ProtocolEnum.FTP;
-        DownloadJob downloadJob = new DownloadJob();
-        CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
+        DownloadJob accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
         Mockito.when(restTemplate.postForObject(Mockito.any(URI.class), Mockito.any(HttpEntity.class),
                 Mockito.eq(EnaPortalResponse[].class))).thenReturn(getPortalResponses());
         //ACT
-        List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(accessionIdList, format, protocol, downloadJob, null);
+        List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(accessionIdList, format, protocol, accessionDetailsMap, null);
         //ASSERT
         Assertions.assertEquals(getPortalResponses().length, portalResponses.size());
 
