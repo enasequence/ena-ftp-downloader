@@ -11,7 +11,7 @@ import java.util.Map;
 @AllArgsConstructor
 public enum TypeOfDataEnum {
     PUBLIC_DATA(1, "For public data, just hit enter or press "),
-    DATA_HUB(2, "From a specific data hub (dcc), enter "),
+    DATA_HUB(2, "For data from a specific data hub (dcc), enter "),
     EXIT(0, "To Exit enter ");
 
     private final static Map<Integer, TypeOfDataEnum> map = new HashMap<>();

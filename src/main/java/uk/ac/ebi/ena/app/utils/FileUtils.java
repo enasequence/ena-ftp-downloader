@@ -29,6 +29,7 @@ import org.springframework.boot.system.ApplicationHome;
 import uk.ac.ebi.ena.EnaFileDownloaderApplication;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
+import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
 import java.io.File;
@@ -37,6 +38,7 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 public class FileUtils {
@@ -103,7 +105,7 @@ public class FileUtils {
 
     public static void createDownloadScript(DownloadJob downloadJob, DownloadFormatEnum format,
                                             String location, ProtocolEnum protocol, String asperaLocation,
-                                            String emailId) {
+                                            String emailId, AuthenticationDetail authenticationDetail) {
         File file = new File(location);
         if (file.exists()) {
             File file1 = new File(getScriptPath(downloadJob, format));
@@ -116,7 +118,11 @@ public class FileUtils {
                 String content =
                         "java -jar " + getJarPath() + " --accessions=" + StringUtils.join(accessionList, ',') +
                                 " --format=" + format + " --location=" + location + " --protocol=" + protocol +
-                                " --asperaLocation=" + asperaLocation + " --email=" + emailId;
+                                " --asperaLocation=" + asperaLocation + " --email=" + emailId +
+                                (Objects.nonNull(authenticationDetail) ?
+                                        " --dataHubUsername=" + authenticationDetail.getUserName() +
+                                                " --dataHubPassword=" + authenticationDetail.getPassword()
+                                        : "");
                 console.info("script content:{}", content);
                 fileOut.write(content.getBytes());
 

@@ -172,7 +172,7 @@ public class MenuService {
     public void showTypeOfDataMenu() {
         AuthenticationDetail authenticationDetail = null;
         CommonUtils.printSeparatorLine();
-        System.out.println("*** What do you want to download ? ***");
+        System.out.println("\n*** What do you want to download? ***");
 
         for (TypeOfDataEnum typeOfDataEnum : TypeOfDataEnum.values()) {
             System.out.println(typeOfDataEnum.getMessage() + typeOfDataEnum.getValue());
@@ -196,22 +196,22 @@ public class MenuService {
         CommonUtils.printSeparatorLine();
         MenuUtils.printEmptyline();
         MenuUtils.printUserNameMessage();
+        String input = scannerUtils.getNextString();
 
-        String userName = scannerUtils.getNextString();
-        MenuUtils.printEmptyline();
-
-        if (StringUtils.isNotEmpty(userName) && StringUtils.startsWith(userName, "dcc_")) {
+        if ("b".equals(input)) {
+            showTypeOfDataMenu();
+        } else if (StringUtils.isNotEmpty(input) && StringUtils.startsWith(input, "dcc_")) {
             String password = requestForDataHubPassword();
 
             authenticationDetail = new AuthenticationDetail();
 
-            authenticationDetail.setUserName(userName);
+            authenticationDetail.setUserName(input);
             authenticationDetail.setPassword(password);
 
             if (portalService.authenticateUser(authenticationDetail)) {
                 aBuildAccessionEntryMenu(authenticationDetail);
             } else {
-                System.out.println("Data hub username/password  are not correct.");
+                System.out.println("Data hub username and/or password is incorrect.");
                 requestForDataHubCredentials(authenticationDetail);
             }
         } else {
@@ -228,7 +228,6 @@ public class MenuService {
 
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
-
         if (StringUtils.isNotEmpty(input)) {
             return input;
         }
@@ -319,7 +318,12 @@ public class MenuService {
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
         } else if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
-            dRequestProtocolSelection(format, input, downloadJob, authenticationDetail);
+            if (Objects.nonNull(authenticationDetail)) {
+                //Set FTP protocol selection and skip protocol selection menu
+                eRequestEmailId(format, input, downloadJob, ProtocolEnum.FTP, null, authenticationDetail);
+            } else {
+                dRequestProtocolSelection(format, input, downloadJob, null);
+            }
         } else {
             // replay
             return cRequestDownloadLocation(format, downloadJob, authenticationDetail);
@@ -332,11 +336,6 @@ public class MenuService {
         System.out.println("***** Choose the method of downloading:");
         CommonUtils.printSeparatorLine();
         for (ProtocolEnum protocolEnum : ProtocolEnum.values()) {
-            //For downloading files from datahub only FTP format is supported
-            if (Objects.nonNull(authenticationDetail) && StringUtils.isNotEmpty(authenticationDetail.getUserName())) {
-                System.out.println(Constants.toMessage + protocolEnum.getMessage() + "," + Constants.enterMessage + protocolEnum.getValue());
-                break;
-            }
             System.out.println(Constants.toMessage + protocolEnum.getMessage() + "," + Constants.enterMessage + protocolEnum.getValue());
         }
         MenuUtils.printBackMessage();
@@ -414,7 +413,7 @@ public class MenuService {
                     switch (actionEnumInput) {
                         case CREATE_SCRIPT:
                             FileUtils.createDownloadScript(downloadJob, format, location, protocol,
-                                    asperaConnectLocation, emailId);
+                                    asperaConnectLocation, emailId, authenticationDetail);
                             CommonUtils.printSeparatorLine();
                             System.out.println("Script created=" + FileUtils.getScriptPath(downloadJob, format));
                             CommonUtils.printSeparatorLine();
@@ -422,7 +421,7 @@ public class MenuService {
                         case CREATE_AND_DOWNLOAD:
                             CommonUtils.printSeparatorLine();
                             FileUtils.createDownloadScript(downloadJob, format, location, protocol,
-                                    asperaConnectLocation, emailId);
+                                    asperaConnectLocation, emailId, authenticationDetail);
                             CommonUtils.printSeparatorLine();
                             System.out.println("Script created at " + FileUtils.getScriptPath(downloadJob, format)
                                     + ". Download started.");

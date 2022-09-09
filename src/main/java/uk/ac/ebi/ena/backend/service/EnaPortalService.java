@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestClientException;
@@ -305,9 +304,8 @@ public class EnaPortalService {
         httpHeaders.add("Content-Type", Constants.URLENCODED);
         httpHeaders.add("Accept", Constants.APPLICATION_JSON);
 
-        if (Objects.nonNull(authenticationDetail) && authenticationDetail.isAuthenticated()) {
-            System.out.println("SessionId : " + authenticationDetail.getSessionId());
-            httpHeaders.add("sid", authenticationDetail.getSessionId());
+        if (Objects.nonNull(authenticationDetail)) {
+            httpHeaders.setBasicAuth(authenticationDetail.getUserName(), authenticationDetail.getPassword());
         }
         HttpEntity<String> request = new HttpEntity<>(body, httpHeaders);
         log.debug("url:{}, body:{}", portalAPIEndpoint, body);
@@ -361,27 +359,24 @@ public class EnaPortalService {
 
         String userName = authenticationDetail.getUserName();
         String password = authenticationDetail.getPassword();
-
+        authenticationDetail.setAuthenticated(false);
         if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
 
-            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth?dataPortal=" +
-                    CommonUtils.getDataPortalId(userName);
+            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth?dataPortal=" + CommonUtils.getDataPortalId(userName);
             log.info("portalAPIAuthEndpoint: " + portalAPIAuthEndpoint);
 
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add("Accept", Constants.APPLICATION_JSON);
             httpHeaders.setBasicAuth(userName, password);
 
-            restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(userName, password));
+            HttpEntity<Void> requestEntity = new HttpEntity<>(httpHeaders);
+
             try {
-                ResponseEntity<String> resp = restTemplate.exchange(portalAPIAuthEndpoint, HttpMethod.GET,
-                        null, String.class);
+                ResponseEntity<String> resp = restTemplate.exchange(portalAPIAuthEndpoint, HttpMethod.GET, requestEntity, String.class);
                 if (resp.getStatusCode() == HttpStatus.OK) {
                     authenticationDetail.setSessionId(parseSessionID(resp.getBody()));
                     authenticationDetail.setAuthenticated(true);
                     return true;
-                } else {
-                    authenticationDetail.setAuthenticated(false);
                 }
             } catch (RestClientException restClientException) {
                 log.error(" Data hub authorization failed-  " + restClientException.getMessage());

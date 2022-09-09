@@ -45,7 +45,7 @@ directly, and download will also be started. If the user selects 2, then only th
 * `--protocol` The protocol to be used for download.(`eg : FTP, ASPERA`). Default is FTP.
 * `--asperaLocation` The location of local Aspera Connect/CLI folder. Required if Protocol is Aspera.
 * `--email` The email at which one wishes to receive the alert.(optional)
-* `--dccUsername` Data hub Username .(Required only If you want to download the data from data hub)
-* `--dccUsername` Data hub password.(Required only If you want to download the data from data hub)
+* `--dataHubUsername` Data hub username. (Required only If you want to download the data from data hub)
+* `--dataHubPassword` Data hub password. (Required only If you want to download the data from data hub)
 
 

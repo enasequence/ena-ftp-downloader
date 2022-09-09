@@ -119,18 +119,18 @@ public class MainRunner implements CommandLineRunner {
                                 authenticationDetail = new AuthenticationDetail();
                                 if (!StringUtils.startsWith(userName, "dcc_")) {
                                     System.out.println("Please use data hub name (dcc username)");
-                                    log.error("Invalid data hub name (dcc user) parameters provided. ", userName);
-                                    throw new IllegalArgumentException();
+                                    log.error("Invalid data hub name {} (dcc user) provided. ", userName);
+                                    throw new IllegalArgumentException("Invalid data hub name");
                                 } else if (!"FTP".equals(protocol.name())) {
                                     System.out.println("Only FTP protocol is supported to download the files from data hub");
-                                    log.error("Only FTP protocol is supported to download the files from data hub. Provided protocol is ", protocol);
-                                    throw new IllegalArgumentException();
+                                    log.error("Only FTP protocol is supported to download the files from data hub. Provided protocol is {}", protocol);
+                                    throw new IllegalArgumentException("Only FTP protocol is supported to download the files from data hub");
                                 }
                                 authenticationDetail.setUserName(userName);
                                 authenticationDetail.setPassword(password);
                                 //Validate username and password
                                 if (!enaPortalService.authenticateUser(authenticationDetail)) {
-                                    log.error("Data hub username and or password are not correct.");
+                                    log.error("Data hub username and/or password is incorrect.");
                                     throw new AuthException("Data hub authentication failed");
                                 }
 
@@ -150,7 +150,8 @@ public class MainRunner implements CommandLineRunner {
                 }
             } else {
                 if (args.length > 0) {
-                    log.error("Not enough parameters provided. Running menu interface..");
+                    log.error("Not enough parameters provided. Starting interactive flow..");
+                    System.out.println("Not enough parameters provided. Starting interactive flow..");
                 }
                 menuBuilder.showTypeOfDataMenu();
 

@@ -143,7 +143,7 @@ public class AccessionDetailsService {
         if (Objects.nonNull(authenticationDetail) && StringUtils.isNotEmpty(authenticationDetail.getUserName())) {
             Set<String> missingAccessions = getMissingAccessionsFromDataHub(downloadJob, listList);
             if (missingAccessions.size() > 0) {
-                console.info("Below accessions not available in " + authenticationDetail.getUserName() + " data hub \n"
+                console.info("Below accessions are not available in " + authenticationDetail.getUserName() + " data hub \n"
                         + missingAccessions.stream().collect(Collectors.joining(",")));
             }
 
@@ -157,10 +157,8 @@ public class AccessionDetailsService {
 
     private Set<String> getMissingAccessionsFromDataHub(DownloadJob downloadJob, List<List<FileDetail>> list) {
 
-        Set<String> userAccessions = new HashSet<>();
-        for (String acc : downloadJob.getAccessionList()) {
-            userAccessions.add(acc);
-        }
+        Set<String> userAccessions = new HashSet<>(downloadJob.getAccessionList());
+
         for (List<FileDetail> fileDetails : list) {
             for (FileDetail fileDetail : fileDetails) {
                 if (Objects.isNull(fileDetail.getParentId())) {

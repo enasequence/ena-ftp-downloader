@@ -57,7 +57,7 @@ public class MenuUtils {
     public static final String downloadDccOnlyMessage = "Do you want to download only from dataHub data or include public data as well";
 
 
-    public static final String dataHubUsernameInputMessage = "Enter data hub name (dcc username)";
+    public static final String dataHubUsernameInputMessage = "Enter data hub name (dcc username) or enter b to go back.";
 
     public static final String dataHubPasswordInputMessage = "Enter data hub password";
 

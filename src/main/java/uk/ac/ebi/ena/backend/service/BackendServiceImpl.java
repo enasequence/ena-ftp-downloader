@@ -32,6 +32,7 @@ import uk.ac.ebi.ena.backend.dto.FileDetail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static uk.ac.ebi.ena.app.constants.Constants.TOTAL_RETRIES;
@@ -52,8 +53,9 @@ public class BackendServiceImpl implements BackendService {
                               ProtocolEnum protocol, String asperaConnectLocation, String emailId,
                               AuthenticationDetail authenticationDetail) {
 
-        console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}",
-                format, location, protocol, asperaConnectLocation, emailId);
+        console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}, data hub:{}",
+                format, location, protocol, asperaConnectLocation, emailId,
+                Objects.nonNull(authenticationDetail) ? authenticationDetail.getUserName() : null);
         List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol, authenticationDetail);
         final List<FileDetail> finallyFailedFiles = new ArrayList<>();
         AtomicLong count = new AtomicLong();
