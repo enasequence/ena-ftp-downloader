@@ -95,6 +95,7 @@ public class MenuService {
         MenuUtils.printBackMessage();
 
         String inputValues = scannerUtils.getNextString();
+        inputValues = StringUtils.trim(inputValues);
         MenuUtils.printEmptyline();
         if ("0".equalsIgnoreCase(inputValues)) {
             MainRunner.exit();
@@ -102,7 +103,6 @@ public class MenuService {
             aBuildAccessionEntryMenu(authenticationDetail);
         } else {
             try {
-                inputValues = inputValues.trim();
                 if (Files.exists(Paths.get(inputValues))) {
                     List<String> accessions = MenuUtils.accsFromFile(inputValues);
 
@@ -144,6 +144,7 @@ public class MenuService {
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
         String inputValues = scannerUtils.getNextString();
+        inputValues = StringUtils.trim(inputValues);
         MenuUtils.printEmptyline();
 
         if ("0".equalsIgnoreCase(inputValues)) {
@@ -151,7 +152,6 @@ public class MenuService {
         } else if (inputValues.equalsIgnoreCase("b")) { // back
             aBuildAccessionEntryMenu(authenticationDetail);
         } else {
-            inputValues = inputValues.trim();
             String[] accessions = inputValues.split(",");
             if (accessions.length > 0) {
                 DownloadJob downloadJob = CommonUtils.processAccessions(Arrays.asList(accessions));
@@ -199,11 +199,11 @@ public class MenuService {
         MenuUtils.printEmptyline();
         MenuUtils.printUserNameMessage();
         String input = scannerUtils.getNextString();
+        input = StringUtils.trim(input);
 
         if ("b".equals(input)) {
             showTypeOfDataMenu();
         } else if (StringUtils.isNotEmpty(input) && StringUtils.startsWith(input, "dcc_")) {
-            input = input.trim();
             String password = requestForDataHubPassword();
 
             authenticationDetail = new AuthenticationDetail();
@@ -315,13 +315,13 @@ public class MenuService {
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();
+        input = StringUtils.trim(input);
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
             bShowDownloadFormatMenu(downloadJob, authenticationDetail);
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
         } else if (StringUtils.isNotEmpty(input)) {
-            input = input.trim();
             if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
                 if (Objects.nonNull(authenticationDetail)) {
                     //Set FTP protocol selection and skip protocol selection menu
@@ -370,11 +370,11 @@ public class MenuService {
         MenuUtils.printBackMessage();
 
         String input = scannerUtils.getNextString();
+        input = StringUtils.trim(input);
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
             dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
         } else if (StringUtils.isNotEmpty(input)) {
-            input = input.trim();
             boolean isValidId = MenuUtils.isValidEmailAddress(input);
             if (!isValidId) {
                 MenuUtils.printValidEmailMessage();
@@ -465,13 +465,13 @@ public class MenuService {
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();
+        input = StringUtils.trim(input);
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
             return dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
         } else if (StringUtils.isNotEmpty(input)) {
-            input = input.trim();
             boolean isValidLocation = MenuUtils.isValidAsperaConnectLoc(input);
             if (!isValidLocation) {
                 MenuUtils.printInvalidAsperaConnectLocation();

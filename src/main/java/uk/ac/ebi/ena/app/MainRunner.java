@@ -103,9 +103,10 @@ public class MainRunner implements CommandLineRunner {
 
             if (args.length >= 5) {
                 try {
-                    trimInputs(formatStr, protocolStr, downloadLocation, asperaLocation, accessions, userName, password,
-                            emailId);
+                    trimInputs(downloadLocation, asperaLocation, accessions, userName);
+                    formatStr = StringUtils.trim(formatStr);
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
+                    protocolStr = StringUtils.trim(protocolStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
                     File dLoc = new File(downloadLocation);
                     AuthenticationDetail authenticationDetail = null;
@@ -129,6 +130,7 @@ public class MainRunner implements CommandLineRunner {
                                     throw new IllegalArgumentException("Only FTP protocol is supported to download the files from a data hub");
                                 }
                                 authenticationDetail.setUserName(userName);
+                                password = StringUtils.trim(password);
                                 authenticationDetail.setPassword(password);
                                 //Validate username and password
                                 if (!enaPortalService.authenticateUser(authenticationDetail)) {
@@ -137,6 +139,7 @@ public class MainRunner implements CommandLineRunner {
                                 }
 
                             }
+                            emailId = StringUtils.trim(emailId);
                             backendService.startDownload(format, downloadLocation,
                                     MenuUtils.parseAccessions(accessions), protocol, asperaLocation,
                                     emailId, authenticationDetail);
@@ -165,34 +168,11 @@ public class MainRunner implements CommandLineRunner {
         }
     }
 
-    private void trimInputs(String formatStr, String protocolStr, String downloadLocation,
-                            String asperaLocation, String accessions, String userName, String password,
-                            String emailId) {
-        if (formatStr != null) {
-            this.formatStr = formatStr.trim();
-        }
-        if (protocolStr != null) {
-            this.protocolStr = protocolStr.trim();
-        }
-        if (downloadLocation != null) {
-            this.downloadLocation = downloadLocation.trim();
-        }
-        if (asperaLocation != null) {
-            this.asperaLocation = asperaLocation.trim();
-        }
-        if (accessions != null) {
-            this.accessions = accessions.trim();
-        }
-        if (userName != null) {
-            this.userName = userName.trim();
-        }
-        if (password != null) {
-            this.password = password.trim();
-        }
-        if (emailId != null) {
-            this.emailId = emailId.trim();
-        }
-
+    private void trimInputs(String downloadLocation, String asperaLocation, String accessions, String userName) {
+        this.downloadLocation = StringUtils.trim(downloadLocation);
+        this.asperaLocation = StringUtils.trim(asperaLocation);
+        this.accessions = StringUtils.trim(accessions);
+        this.userName = StringUtils.trim(userName);
     }
 
 
