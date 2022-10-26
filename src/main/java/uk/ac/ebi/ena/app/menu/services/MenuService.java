@@ -102,6 +102,7 @@ public class MenuService {
             aBuildAccessionEntryMenu(authenticationDetail);
         } else {
             try {
+                inputValues = inputValues.trim();
                 if (Files.exists(Paths.get(inputValues))) {
                     List<String> accessions = MenuUtils.accsFromFile(inputValues);
 
@@ -150,6 +151,7 @@ public class MenuService {
         } else if (inputValues.equalsIgnoreCase("b")) { // back
             aBuildAccessionEntryMenu(authenticationDetail);
         } else {
+            inputValues = inputValues.trim();
             String[] accessions = inputValues.split(",");
             if (accessions.length > 0) {
                 DownloadJob downloadJob = CommonUtils.processAccessions(Arrays.asList(accessions));
@@ -201,6 +203,7 @@ public class MenuService {
         if ("b".equals(input)) {
             showTypeOfDataMenu();
         } else if (StringUtils.isNotEmpty(input) && StringUtils.startsWith(input, "dcc_")) {
+            input = input.trim();
             String password = requestForDataHubPassword();
 
             authenticationDetail = new AuthenticationDetail();
@@ -229,7 +232,7 @@ public class MenuService {
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (StringUtils.isNotEmpty(input)) {
-            return input;
+            return input.trim();
         }
         return null;
     }
@@ -317,12 +320,15 @@ public class MenuService {
             bShowDownloadFormatMenu(downloadJob, authenticationDetail);
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
-        } else if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
-            if (Objects.nonNull(authenticationDetail)) {
-                //Set FTP protocol selection and skip protocol selection menu
-                eRequestEmailId(format, input, downloadJob, ProtocolEnum.FTP, null, authenticationDetail);
-            } else {
-                dRequestProtocolSelection(format, input, downloadJob, null);
+        } else if (StringUtils.isNotEmpty(input)) {
+            input = input.trim();
+            if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
+                if (Objects.nonNull(authenticationDetail)) {
+                    //Set FTP protocol selection and skip protocol selection menu
+                    eRequestEmailId(format, input, downloadJob, ProtocolEnum.FTP, null, authenticationDetail);
+                } else {
+                    dRequestProtocolSelection(format, input, downloadJob, null);
+                }
             }
         } else {
             // replay
@@ -368,6 +374,7 @@ public class MenuService {
         if (input.equalsIgnoreCase("b")) { // back
             dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
         } else if (StringUtils.isNotEmpty(input)) {
+            input = input.trim();
             boolean isValidId = MenuUtils.isValidEmailAddress(input);
             if (!isValidId) {
                 MenuUtils.printValidEmailMessage();
@@ -464,6 +471,7 @@ public class MenuService {
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
         } else if (StringUtils.isNotEmpty(input)) {
+            input = input.trim();
             boolean isValidLocation = MenuUtils.isValidAsperaConnectLoc(input);
             if (!isValidLocation) {
                 MenuUtils.printInvalidAsperaConnectLocation();

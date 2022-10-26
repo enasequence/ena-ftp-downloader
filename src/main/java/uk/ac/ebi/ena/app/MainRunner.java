@@ -103,6 +103,8 @@ public class MainRunner implements CommandLineRunner {
 
             if (args.length >= 5) {
                 try {
+                    trimInputs(formatStr, protocolStr, downloadLocation, asperaLocation, accessions, userName, password,
+                            emailId);
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
                     File dLoc = new File(downloadLocation);
@@ -161,6 +163,36 @@ public class MainRunner implements CommandLineRunner {
             System.out.print("Something went wrong! Please report to the EMBL-EBI ENA helpdesk at " +
                     "https://www.ebi.ac.uk/ena/browser/support . Please provide the contents of the app.log file.");
         }
+    }
+
+    private void trimInputs(String formatStr, String protocolStr, String downloadLocation,
+                            String asperaLocation, String accessions, String userName, String password,
+                            String emailId) {
+        if (formatStr != null) {
+            this.formatStr = formatStr.trim();
+        }
+        if (protocolStr != null) {
+            this.protocolStr = protocolStr.trim();
+        }
+        if (downloadLocation != null) {
+            this.downloadLocation = downloadLocation.trim();
+        }
+        if (asperaLocation != null) {
+            this.asperaLocation = asperaLocation.trim();
+        }
+        if (accessions != null) {
+            this.accessions = accessions.trim();
+        }
+        if (userName != null) {
+            this.userName = userName.trim();
+        }
+        if (password != null) {
+            this.password = password.trim();
+        }
+        if (emailId != null) {
+            this.emailId = emailId.trim();
+        }
+
     }
 
 

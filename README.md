@@ -33,9 +33,9 @@ If the user selects 1, then a script file will be created with the provided argu
 directly, and download will also be started. If the user selects 2, then only the script file will be created.
 
 2. Command to run jar file from Console by providing
-   inputs `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format= READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com`
+   inputs `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com`
 3. Command to run jar file from Console to download files from data hub
-   `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format= READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com --dataHubUsername=dcc_abc --dataHubPassword=*****`
+   `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com --dataHubUsername=dcc_abc --dataHubPassword=*****`
 
 * `--accessions` Comma separated list of accessions or file path to the accession list. If providing a list, it should
   be a plain text file in TSV (tab separated values) format. If there are more than one column, the first column must be

@@ -1,7 +1,7 @@
 image: openjdk:8
 
 variables:
-  APP_VERSION: "1.1.0"
+  APP_VERSION: "1.1.1"
   APP_NAME: 'ena-file-downloader'
   FTP_DIR: "/nfs/ftp/public/databases/ena/tools"
   APP_NAME_VERSION: ${APP_NAME}-${APP_VERSION}.zip
