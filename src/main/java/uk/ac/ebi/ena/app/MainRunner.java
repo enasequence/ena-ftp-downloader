@@ -60,7 +60,7 @@ public class MainRunner implements CommandLineRunner {
     @Value("${location:#{null}}")
     public String downloadLocation;
 
-    @Value("${protocol:#{null}}")
+    @Value("${protocol:FTP}")
     public String protocolStr;
 
     @Value("${asperaLocation:#{null}}")
@@ -97,14 +97,12 @@ public class MainRunner implements CommandLineRunner {
         try {
             System.out.println(MenuUtils.welcomeMessage);
             CommonUtils.printSeparatorLine();
-            if (args.length > 0) {
-                System.out.println("Provided parameters:\n" + StringUtils.join(args, "\n"));
-            }
 
-            if (args.length >= 5) {
+            if (args.length >= 4) {
+                System.out.println("Provided parameters:\n" + StringUtils.join(args, "\n"));
                 try {
+                    validateInputs(accessions, formatStr, downloadLocation, protocolStr, asperaLocation);
                     trimInputs(downloadLocation, asperaLocation, accessions, userName);
-                    formatStr = StringUtils.trim(formatStr);
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
                     protocolStr = StringUtils.trim(protocolStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
@@ -147,10 +145,11 @@ public class MainRunner implements CommandLineRunner {
                         console.info("Downloads Completed");
                     }
                 } catch (IllegalArgumentException iae) {
-                    System.out.println("Invalid/insufficient parameters provided. Please select your options.");
+                    System.out.println("Invalid/insufficient parameters provided. " + iae.getMessage());
                     log.error("Invalid/insufficient parameters provided.", iae);
                     menuBuilder.showTypeOfDataMenu();
                 } catch (Exception e) {
+                    System.out.println("Exception Occurred while downloading" + e);
                     log.error("Exception Occurred while downloading", e);
                 }
             } else {
@@ -173,6 +172,19 @@ public class MainRunner implements CommandLineRunner {
         this.asperaLocation = StringUtils.trim(asperaLocation);
         this.accessions = StringUtils.trim(accessions);
         this.userName = StringUtils.trim(userName);
+    }
+
+    private void validateInputs(String accessions, String formatStr, String downloadLocation, String protocolStr,
+                                String asperaLocation) {
+        if (StringUtils.isEmpty(accessions)) {
+            throw new IllegalArgumentException("Please provide comma separated list of accessions or file path to the accession list");
+        } else if (StringUtils.isEmpty(formatStr)) {
+            throw new IllegalArgumentException("Please provide the format for the download (`eg : READS_FASTQ,READS_SUBMITTED,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)");
+        } else if (StringUtils.isEmpty(downloadLocation)) {
+            throw new IllegalArgumentException("Please provide location for the download");
+        } else if (protocolStr.equals("ASPERA") && StringUtils.isEmpty(asperaLocation)) {
+            throw new IllegalArgumentException("Please provide the location of local Aspera Connect/CLI folder");
+        }
     }
 
 
