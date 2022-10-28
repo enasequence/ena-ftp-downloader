@@ -48,4 +48,6 @@ directly, and download will also be started. If the user selects 2, then only th
 * `--dataHubUsername` Data hub username. (Required only If you want to download the data from a data hub (dcc))
 * `--dataHubPassword` Data hub password. (Required only If you want to download the data from a data hub (dcc))
 
+Please enclose the inputs within double quotes if it contains spaces. For eg:
+`java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location="C:\Users\Documents\ena ebi" --protocol=FTP --asperaLocation=null --email=email@youremail.com`
 
