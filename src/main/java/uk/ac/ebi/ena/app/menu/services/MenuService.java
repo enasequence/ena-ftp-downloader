@@ -76,7 +76,7 @@ public class MenuService {
         MenuUtils.printEmptyline();
         MenuUtils.printEmailMessage();
         CommonUtils.printSeparatorLine();
-        String emailId = StringUtils.trim(scannerUtils.getNextString());
+        String emailId = scannerUtils.getNextString();
         if (StringUtils.isNotEmpty(emailId)) {
             boolean isValidId = MenuUtils.isValidEmailAddress(emailId);
             if (!isValidId) {
@@ -94,7 +94,7 @@ public class MenuService {
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
 
-        String inputValues = StringUtils.trim(scannerUtils.getNextString());
+        String inputValues = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if ("0".equalsIgnoreCase(inputValues)) {
             MainRunner.exit();
@@ -142,7 +142,7 @@ public class MenuService {
         System.out.println("*** Please provide the list of accessions separated by commas.");
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
-        String inputValues = StringUtils.trim(scannerUtils.getNextString());
+        String inputValues = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
 
         if ("0".equalsIgnoreCase(inputValues)) {
@@ -178,7 +178,7 @@ public class MenuService {
             System.out.println(typeOfDataEnum.getMessage() + typeOfDataEnum.getValue());
         }
 
-        String input = StringUtils.trim(scannerUtils.getNextString());
+        String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (StringUtils.isEmpty(input)) {
             aBuildAccessionEntryMenu(authenticationDetail);
@@ -196,7 +196,7 @@ public class MenuService {
         CommonUtils.printSeparatorLine();
         MenuUtils.printEmptyline();
         MenuUtils.printUserNameMessage();
-        String input = StringUtils.trim(scannerUtils.getNextString());
+        String input = scannerUtils.getNextString();
 
         if ("b".equals(input)) {
             showTypeOfDataMenu();
@@ -227,7 +227,7 @@ public class MenuService {
         MenuUtils.printPasswordMessage();
         MenuUtils.printEmptyline();
 
-        return StringUtils.trim(scannerUtils.getNextString());
+        return scannerUtils.getNextString();
     }
 
     public void aBuildAccessionEntryMenu(AuthenticationDetail authenticationDetail) {
@@ -307,7 +307,7 @@ public class MenuService {
         System.out.println("***** Provide the full path to where you want to save downloaded files.");
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
-        String input = StringUtils.trim(scannerUtils.getNextString());
+        String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
             bShowDownloadFormatMenu(downloadJob, authenticationDetail);
@@ -361,7 +361,7 @@ public class MenuService {
         MenuUtils.printEmailMessage();
         MenuUtils.printBackMessage();
 
-        String input = StringUtils.trim(scannerUtils.getNextString());
+        String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
             dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
@@ -455,7 +455,7 @@ public class MenuService {
         System.out.println("***** " + ASPERA_PATH_MSG);
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
-        String input = StringUtils.trim(scannerUtils.getNextString());
+        String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if (input.equalsIgnoreCase("b")) { // back
             return dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
