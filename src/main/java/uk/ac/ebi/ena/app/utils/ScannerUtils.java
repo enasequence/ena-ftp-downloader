@@ -19,6 +19,7 @@
 package uk.ac.ebi.ena.app.utils;
 
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
@@ -48,7 +49,7 @@ public class ScannerUtils {
     }
 
     public String getNextString() {
-        return getScannerObject().nextLine();
+        return StringUtils.trim(getScannerObject().nextLine());
     }
 
 }

@@ -225,13 +225,9 @@ public class MenuService {
         CommonUtils.printSeparatorLine();
         MenuUtils.printEmptyline();
         MenuUtils.printPasswordMessage();
-
-        String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
-        if (StringUtils.isNotEmpty(input)) {
-            return input;
-        }
-        return null;
+
+        return scannerUtils.getNextString();
     }
 
     public void aBuildAccessionEntryMenu(AuthenticationDetail authenticationDetail) {
@@ -317,12 +313,14 @@ public class MenuService {
             bShowDownloadFormatMenu(downloadJob, authenticationDetail);
         } else if (input.equalsIgnoreCase("0")) {
             MainRunner.exit();
-        } else if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
-            if (Objects.nonNull(authenticationDetail)) {
-                //Set FTP protocol selection and skip protocol selection menu
-                eRequestEmailId(format, input, downloadJob, ProtocolEnum.FTP, null, authenticationDetail);
-            } else {
-                dRequestProtocolSelection(format, input, downloadJob, null);
+        } else if (StringUtils.isNotEmpty(input)) {
+            if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
+                if (Objects.nonNull(authenticationDetail)) {
+                    //Set FTP protocol selection and skip protocol selection menu
+                    eRequestEmailId(format, input, downloadJob, ProtocolEnum.FTP, null, authenticationDetail);
+                } else {
+                    dRequestProtocolSelection(format, input, downloadJob, null);
+                }
             }
         } else {
             // replay

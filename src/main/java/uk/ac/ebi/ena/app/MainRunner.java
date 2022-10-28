@@ -20,6 +20,7 @@ package uk.ac.ebi.ena.app;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.menu.services.MenuService;
@@ -60,7 +60,7 @@ public class MainRunner implements CommandLineRunner {
     @Value("${location:#{null}}")
     public String downloadLocation;
 
-    @Value("${protocol:#{null}}")
+    @Value("${protocol:FTP}")
     public String protocolStr;
 
     @Value("${asperaLocation:#{null}}")
@@ -80,6 +80,8 @@ public class MainRunner implements CommandLineRunner {
 
     private EnaPortalService enaPortalService;
 
+    private AuthenticationDetail authenticationDetail = null;
+
     @Autowired
     MainRunner(MenuService menuBuilder, BackendService backendService, EnaPortalService enaPortalService) {
         this.menuBuilder = menuBuilder;
@@ -97,55 +99,28 @@ public class MainRunner implements CommandLineRunner {
         try {
             System.out.println(MenuUtils.welcomeMessage);
             CommonUtils.printSeparatorLine();
-            if (args.length > 0) {
+
+            if (args.length >= 4) {
                 System.out.println("Provided parameters:\n" + StringUtils.join(args, "\n"));
-            }
-
-            if (args.length >= 5) {
                 try {
+                    validateInputs(accessions, formatStr, downloadLocation, protocolStr, asperaLocation, userName, password);
+                    trimInputs(downloadLocation, asperaLocation, accessions, userName);
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
+                    protocolStr = StringUtils.trim(protocolStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
-                    File dLoc = new File(downloadLocation);
-                    AuthenticationDetail authenticationDetail = null;
-                    if (!dLoc.exists() || !dLoc.canWrite()) {
-                        System.out.println(dLoc + " does not exists or is read only.");
-                    } else {
-                        if (accessions != null && new File(downloadLocation).exists() && new File(downloadLocation).canWrite()) {
-                            if (protocol == ProtocolEnum.ASPERA) {
-                                Assert.notNull(asperaLocation, ASPERA_PATH_MSG);
-                            }
-                            //Download the data from dataHub
-                            if (StringUtils.isNotBlank(userName)) {
-                                authenticationDetail = new AuthenticationDetail();
-                                if (!StringUtils.startsWith(userName, "dcc_")) {
-                                    System.out.println("Please provide a valid data hub name (dcc_username)");
-                                    log.error("Invalid data hub name {} (dcc user) provided. ", userName);
-                                    throw new IllegalArgumentException("Invalid data hub name");
-                                } else if (!"FTP".equals(protocol.name())) {
-                                    System.out.println("Only FTP protocol is supported to download the files from a data hub");
-                                    log.error("Only FTP protocol is supported to download the files from a data hub. Provided protocol is {}", protocol);
-                                    throw new IllegalArgumentException("Only FTP protocol is supported to download the files from a data hub");
-                                }
-                                authenticationDetail.setUserName(userName);
-                                authenticationDetail.setPassword(password);
-                                //Validate username and password
-                                if (!enaPortalService.authenticateUser(authenticationDetail)) {
-                                    log.error("Data hub username and/or password is incorrect.");
-                                    throw new AuthException("Data hub authentication failed");
-                                }
 
-                            }
-                            backendService.startDownload(format, downloadLocation,
-                                    MenuUtils.parseAccessions(accessions), protocol, asperaLocation,
-                                    emailId, authenticationDetail);
-                        }
-                        console.info("Downloads Completed");
-                    }
+                    emailId = StringUtils.trim(emailId);
+                    backendService.startDownload(format, downloadLocation,
+                            MenuUtils.parseAccessions(accessions), protocol, asperaLocation,
+                            emailId, authenticationDetail);
+                    console.info("Downloads Completed");
+
                 } catch (IllegalArgumentException iae) {
-                    System.out.println("Invalid/insufficient parameters provided. Please select your options.");
+                    System.out.println("Invalid/insufficient parameters provided. " + iae.getMessage());
                     log.error("Invalid/insufficient parameters provided.", iae);
                     menuBuilder.showTypeOfDataMenu();
                 } catch (Exception e) {
+                    System.out.println("Exception Occurred while downloading" + e);
                     log.error("Exception Occurred while downloading", e);
                 }
             } else {
@@ -160,6 +135,57 @@ public class MainRunner implements CommandLineRunner {
             log.error("Exception Occurred ", e);
             System.out.print("Something went wrong! Please report to the EMBL-EBI ENA helpdesk at " +
                     "https://www.ebi.ac.uk/ena/browser/support . Please provide the contents of the app.log file.");
+        }
+    }
+
+    private void trimInputs(String downloadLocation, String asperaLocation, String accessions, String userName) {
+        this.downloadLocation = StringUtils.trim(downloadLocation);
+        this.asperaLocation = StringUtils.trim(asperaLocation);
+        this.accessions = StringUtils.trim(accessions);
+        this.userName = StringUtils.trim(userName);
+    }
+
+    private void validateInputs(String accessions, String formatStr, String downloadLocation, String protocolStr,
+                                String asperaLocation, String userName, String password) throws AuthException {
+        if (StringUtils.isEmpty(accessions)) {
+            throw new IllegalArgumentException("Please provide comma separated list of accessions or file path to the accession list");
+        } else if (!EnumUtils.isValidEnum(DownloadFormatEnum.class, formatStr)) {
+            throw new IllegalArgumentException("Please provide a valid format for the download (`eg : READS_FASTQ,READS_SUBMITTED,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)");
+        } else if (StringUtils.isEmpty(downloadLocation)) {
+            throw new IllegalArgumentException("Please provide a valid location for the download");
+        } else if (!StringUtils.isEmpty(downloadLocation)) {
+            File dLoc = new File(downloadLocation);
+            if (!dLoc.exists() || !dLoc.canWrite()) {
+                System.out.println(dLoc + " does not exists or is read only. If the download location contains spaces please enclose it within double quotes");
+            }
+        } else if (!EnumUtils.isValidEnum(ProtocolEnum.class, protocolStr)) {
+            throw new IllegalArgumentException("Please provide a valid protocol to be used for download.(`eg : FTP, ASPERA`). Default is FTP");
+        } else if (protocolStr.equals("ASPERA")) {
+            if (StringUtils.isEmpty(asperaLocation)) {
+                throw new IllegalArgumentException("Please provide the location of local Aspera Connect/CLI folder.");
+            } else if (!MenuUtils.isValidAsperaConnectLoc(asperaLocation)) {
+                throw new IllegalArgumentException(ASPERA_PATH_MSG + ". If your path contains spaces please enclose it within double quotes");
+            }
+        } else if (StringUtils.isNotBlank(userName)) {
+            this.authenticationDetail = new AuthenticationDetail();
+            if (!StringUtils.startsWith(userName, "dcc_")) {
+                System.out.println("Please provide a valid data hub name (dcc_username)");
+                log.error("Invalid data hub name {} (dcc user) provided. ", userName);
+                throw new IllegalArgumentException("Invalid data hub name");
+            } else if (!"FTP".equals(protocolStr)) {
+                System.out.println("Only FTP protocol is supported to download the files from a data hub");
+                log.error("Only FTP protocol is supported to download the files from a data hub. Provided protocol is {}", protocolStr);
+                throw new IllegalArgumentException("Only FTP protocol is supported to download the files from a data hub");
+            }
+            authenticationDetail.setUserName(userName);
+            password = StringUtils.trim(password);
+            authenticationDetail.setPassword(password);
+            //Validate username and password
+            if (!enaPortalService.authenticateUser(authenticationDetail)) {
+                log.error("Data hub username and/or password is incorrect.");
+                throw new AuthException("Data hub authentication failed");
+            }
+
         }
     }
 
