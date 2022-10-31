@@ -66,8 +66,11 @@ tasks.register('packageDistribution', Zip) {
         include "ena-file-downloader.jar"
     }
 
+    from(layout.projectDirectory) {
+        include "README.md"
+    }
+
     from(layout.projectDirectory.dir("distribution")) {
-        include "README.txt"
         include "run.*"
     }
 }
