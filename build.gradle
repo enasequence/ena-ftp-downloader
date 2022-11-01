@@ -66,15 +66,18 @@ tasks.register('packageDistribution', Zip) {
         include "ena-file-downloader.jar"
     }
 
+    from(layout.projectDirectory) {
+        include "README.md"
+    }
+
     from(layout.projectDirectory.dir("distribution")) {
-        include "README.txt"
         include "run.*"
     }
 }
 
 task replaceVersion  {
     ant.replaceregexp(match:'version:[^->]*', replace:'version:' + version  , byline:true) {
-        fileset(dir: 'distribution', includes: 'README.txt')
+        fileset(dir:project.projectDir,includes: 'README.md')
     }
     ant.replaceregexp(match:'version:[^->]*', replace:'version:' + version  , byline:true) {
         fileset(dir: 'src/main/resources', includes: 'banner.txt')
