@@ -1,7 +1,7 @@
 image: openjdk:8
 
 variables:
-  APP_VERSION: "1.1.1"
+  APP_VERSION: "1.1.2"
   APP_NAME: 'ena-file-downloader'
   FTP_DIR: "/nfs/ftp/public/databases/ena/tools"
   APP_NAME_VERSION: ${APP_NAME}-${APP_VERSION}.zip
@@ -52,7 +52,9 @@ deploy_prod:
   script:
     - chmod u+x build/dist/${APP_NAME_VERSION}
     - scp -o StrictHostKeyChecking=no build/dist/${APP_NAME_VERSION} datalib@codon-login-01.ebi.ac.uk:${FTP_STG_DIR}
-    - ssh datalib@codon-login-01.ebi.ac.uk "bsub -q datamover 'cp ${FTP_STG_DIR}/${APP_NAME_VERSION} ${FTP_DIR} && cd ${FTP_DIR} && ln -sf ${APP_NAME_VERSION} ${APP_NAME}.zip'"
+    - ssh datalib@codon-login-01.ebi.ac.uk "bsub -q datamover 'cd ${FTP_STG_DIR} && find . -type f -name  '\''ena-file-downloader-*'\'' -not -name ${APP_NAME_VERSION} -delete'"
+    - ssh datalib@codon-login-01.ebi.ac.uk "bsub -q datamover 'rsync -avt --delete --include ${APP_NAME_VERSION} --exclude '\''*'\''  ${FTP_STG_DIR} ${FTP_DIR}'"
+    - ssh datalib@codon-login-01.ebi.ac.uk "bsub -q datamover 'cd ${FTP_DIR} && ln -sf ${APP_NAME_VERSION} ${APP_NAME}.zip'"
   dependencies:
     - build_prod
   when: manual
