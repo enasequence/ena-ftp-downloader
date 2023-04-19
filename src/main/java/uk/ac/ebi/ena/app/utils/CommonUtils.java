@@ -94,8 +94,10 @@ public class CommonUtils {
         if (StringUtils.isNotEmpty(userName) && StringUtils.startsWith(userName, "dcc_")) {
             if ("metagenome".equalsIgnoreCase(StringUtils.substringAfter(userName, "dcc_"))) {
                 return "metagenome";
-            } else {
+            } else if ("compare".equalsIgnoreCase(StringUtils.substringAfter(userName, "dcc_"))) {
                 return "pathogen";
+            } else if ("faang".equalsIgnoreCase(StringUtils.substringAfter(userName, "dcc_"))) {
+                return "faang";
             }
         }
         return "ena";
