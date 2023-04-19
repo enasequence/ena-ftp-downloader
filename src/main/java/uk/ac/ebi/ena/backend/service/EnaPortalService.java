@@ -71,13 +71,13 @@ public class EnaPortalService {
     public static final String FASTQ_ASPERA_FIELD = ",fastq_aspera";
     public static final String SUBMITTED_ASPERA_FIELD = ",submitted_aspera";
 
-    private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://wwwdev.ebi.ac.uk/ena/portal/api/search?result" +
+    private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
             "=read_run" +
             "&includeAccessionType=%s&fields=%s&format=json&limit=0";
-    private static final String PORTAL_API_ANALYSIS_SEARCH_URL = "https://wwwdev.ebi.ac.uk/ena/portal/api/search?result" +
+    private static final String PORTAL_API_ANALYSIS_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
             "=analysis" +
             "&includeAccessionType=%s&fields=%s&format=json&limit=0";
-    private static final String PORTAL_API_SUPPORT_URL = "https://wwwdev.ebi.ac.uk/ena/portal/api/support?email=datasubs" +
+    private static final String PORTAL_API_SUPPORT_URL = "https://www.ebi.ac.uk/ena/portal/api/support?email=datasubs" +
             "@ebi.ac.uk&message=%s&to=%s&subject=%s&name=%s";
 
     private static final String EXPERIMENT = "experiment";
