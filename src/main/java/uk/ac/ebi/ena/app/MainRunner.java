@@ -166,7 +166,8 @@ public class MainRunner implements CommandLineRunner {
             } else if (!MenuUtils.isValidAsperaConnectLoc(asperaLocation)) {
                 throw new IllegalArgumentException(ASPERA_PATH_MSG + ". If your path contains spaces please enclose it within double quotes");
             }
-        } else if (StringUtils.isNotBlank(userName)) {
+        }
+        if (StringUtils.isNotBlank(userName)) {
             this.authenticationDetail = new AuthenticationDetail();
             if (!StringUtils.startsWith(userName, "dcc_")) {
                 System.out.println("Please provide a valid data hub name (dcc_username)");
