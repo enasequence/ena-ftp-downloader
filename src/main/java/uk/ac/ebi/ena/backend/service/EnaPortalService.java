@@ -19,9 +19,14 @@
 package uk.ac.ebi.ena.backend.service;
 
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -40,6 +45,7 @@ import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,6 +76,8 @@ public class EnaPortalService {
     public static final String GENERATED_ASPERA_FIELD = ",generated_aspera";
     public static final String FASTQ_ASPERA_FIELD = ",fastq_aspera";
     public static final String SUBMITTED_ASPERA_FIELD = ",submitted_aspera";
+
+    private static final String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search";
 
     private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
             "=read_run" +
@@ -351,6 +359,27 @@ public class EnaPortalService {
             log.error("Exception encountered while sending email to emailId:{}", recipientEmail, exception);
         }
         console.info("Email successfully sent to:{}", recipientEmail);
+
+    }
+
+    @SneakyThrows
+    public InputStream getInputStream(String searchQuery) {
+
+        if (!searchQuery.startsWith(PORTAL_API_SEARCH_URL)) {
+            searchQuery = searchQuery.startsWith("?") ? PORTAL_API_SEARCH_URL + searchQuery : PORTAL_API_SEARCH_URL +
+                    "?" + searchQuery;
+        }
+        //replacing space and quotes using percent-encoding
+        searchQuery = searchQuery.replace(" ", "%20").replace("\"", "%22");
+        ;
+        log.info("search query = " + searchQuery);
+        URI uri = URI.create(searchQuery);
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpPost request = new HttpPost(uri);
+        request.addHeader("Content-Type", Constants.URLENCODED);
+        HttpResponse response = httpClient.execute(request);
+
+        return response.getEntity().getContent();
 
     }
 

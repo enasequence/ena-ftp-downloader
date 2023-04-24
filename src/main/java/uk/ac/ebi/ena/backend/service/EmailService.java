@@ -21,9 +21,12 @@ package uk.ac.ebi.ena.backend.service;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.services.MenuService;
+import uk.ac.ebi.ena.app.utils.FileUtils;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
@@ -32,6 +35,7 @@ import java.net.URLEncoder;
 public class EmailService {
 
     private static final String subject = "Ena %s %s file download completed";
+    private static final String subjectForQuery = "Query results download completed";
     private static final String supportAPILink = "https://www.ebi.ac.uk/ena/browser/support";
 
     private final EnaPortalService enaPortalService;
@@ -67,6 +71,10 @@ public class EmailService {
         return encode(String.format(subject, accesionType, format));
     }
 
+    private static String constructSubForQuery() {
+        return encode(subjectForQuery);
+    }
+
     private static String constructEmailName() {
         return encode("For any issues/support please contact us using " + supportAPILink + "\n" +
                 "European Nucleotide Archive: Data Coordination & Presentation\n" +
@@ -83,6 +91,36 @@ public class EmailService {
             String name = EmailService.constructEmailName();
             enaPortalService.sendEmail(recipientEmailId, emailMessage, subject, name);
         }
+    }
+
+    private static String constructFailureMsgForQuery(String scriptName) {
+        String message = "Query results failed to download due to possible network issues. Please re-run the " +
+                "same script (" + scriptName + ")";
+        return encode(message);
+    }
+
+    private static String constructSuccessMsgForQuery(String fileDownloaderPath) {
+        String message = "Query results have been successfully downloaded to location:" + fileDownloaderPath;
+        return encode(message);
+    }
+
+    public void sendEmailForQuery(String recipientEmailId, String fileDownloaderPath, boolean isSuccess, String
+            query) {
+        if (StringUtils.isEmpty(recipientEmailId) || MenuService.NONE.equals(recipientEmailId)) {
+            return;
+        }
+        String emailMessage;
+        if (isSuccess) {
+            String searchResultPath = fileDownloaderPath + File.separator + Constants.DOWNLOAD_QUERY_FILE_NAME;
+            emailMessage = EmailService.constructSuccessMsgForQuery(searchResultPath);
+        } else {
+            String scriptFileName = FileUtils.getScriptPath(null, null, query);
+            emailMessage = EmailService.constructFailureMsgForQuery(scriptFileName);
+        }
+
+        String subject = EmailService.constructSubForQuery();
+        String name = EmailService.constructEmailName();
+        enaPortalService.sendEmail(recipientEmailId, emailMessage, subject, name);
     }
 
 

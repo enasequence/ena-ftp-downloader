@@ -75,6 +75,8 @@ public class MenuUtils {
 
     private static final String ACCESSION = "accession";
 
+    public static final String queryErrorMessage = "Please provide valid search query";
+
     public static void printBackMessage() {
         System.out.println(Constants.backMessage);
         printExitMessage();
@@ -219,6 +221,10 @@ public class MenuUtils {
             return Pattern.matches(type.getPattern(), firstColumn);
         }
         return false;
+    }
+
+    public static boolean validateSearchRequest(String searchQuery) {
+        return (searchQuery.contains("portal/api/search") || searchQuery.contains("result="));
     }
 
 }

@@ -54,6 +54,9 @@ public class MainRunner implements CommandLineRunner {
     @Value("${accessions:#{null}}")
     public String accessions;
 
+    @Value("${searchQuery:#{null}}")
+    public String query;
+
     @Value("${format:#{null}}")
     public String formatStr;
 
@@ -74,6 +77,7 @@ public class MainRunner implements CommandLineRunner {
 
     @Value("${dataHubPassword:#{null}}")
     public String password;
+
 
     MenuService menuBuilder;
     private BackendService backendService;
@@ -100,19 +104,24 @@ public class MainRunner implements CommandLineRunner {
             System.out.println(MenuUtils.welcomeMessage);
             CommonUtils.printSeparatorLine();
 
-            if (args.length >= 4) {
+            if (args.length >= 3) {
                 System.out.println("Provided parameters:\n" + StringUtils.join(args, "\n"));
                 try {
-                    validateInputs(accessions, formatStr, downloadLocation, protocolStr, asperaLocation, userName, password);
+                    validateInputs(accessions, formatStr, downloadLocation, protocolStr, asperaLocation, userName, password,
+                            query);
                     trimInputs(downloadLocation, asperaLocation, accessions, userName);
-                    DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
-                    protocolStr = StringUtils.trim(protocolStr);
-                    ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
+                    DownloadFormatEnum format = null;
+                    ProtocolEnum protocol = null;
+                    if (StringUtils.isNotEmpty(accessions)) {
+                        format = DownloadFormatEnum.valueOf(formatStr);
+                        protocolStr = StringUtils.trim(protocolStr);
+                        protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
+                    }
 
                     emailId = StringUtils.trim(emailId);
                     backendService.startDownload(format, downloadLocation,
                             MenuUtils.parseAccessions(accessions), protocol, asperaLocation,
-                            emailId, authenticationDetail);
+                            emailId, authenticationDetail, query);
                     console.info("Downloads Completed");
 
                 } catch (IllegalArgumentException iae) {
@@ -128,7 +137,7 @@ public class MainRunner implements CommandLineRunner {
                     log.error("Not enough parameters provided. Starting interactive flow..");
                     System.out.println("Not enough parameters provided. Starting interactive flow..");
                 }
-                menuBuilder.showTypeOfDataMenu();
+                menuBuilder.howToDownload();
 
             }
         } catch (Exception e) {
@@ -146,47 +155,70 @@ public class MainRunner implements CommandLineRunner {
     }
 
     private void validateInputs(String accessions, String formatStr, String downloadLocation, String protocolStr,
-                                String asperaLocation, String userName, String password) throws AuthException {
-        if (StringUtils.isEmpty(accessions)) {
-            throw new IllegalArgumentException("Please provide comma separated list of accessions or file path to the accession list");
-        } else if (!EnumUtils.isValidEnum(DownloadFormatEnum.class, formatStr)) {
-            throw new IllegalArgumentException("Please provide a valid format for the download (`eg : READS_FASTQ,READS_SUBMITTED,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)");
-        } else if (StringUtils.isEmpty(downloadLocation)) {
-            throw new IllegalArgumentException("Please provide a valid location for the download");
-        } else if (!StringUtils.isEmpty(downloadLocation)) {
+                                String asperaLocation, String userName, String password, String query)
+            throws AuthException {
+        if (StringUtils.isEmpty(query) && StringUtils.isEmpty(accessions)) {
+            throw new IllegalArgumentException("Please provide list of accessions or search query");
+        } else if (StringUtils.isEmpty(query)) {
+            if (StringUtils.isEmpty(accessions)) {
+                throw new IllegalArgumentException("Please provide comma separated list of accessions or file path to the accession list");
+            } else if (!EnumUtils.isValidEnum(DownloadFormatEnum.class, formatStr)) {
+                throw new IllegalArgumentException("Please provide a valid format for the download (`eg : READS_FASTQ,READS_SUBMITTED,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)");
+            } else if (StringUtils.isEmpty(downloadLocation)) {
+                throw new IllegalArgumentException("Please provide a valid location for the download");
+            } else if (!StringUtils.isEmpty(downloadLocation)) {
+                validateDownloadLocation();
+            } else if (!EnumUtils.isValidEnum(ProtocolEnum.class, protocolStr)) {
+                throw new IllegalArgumentException("Please provide a valid protocol to be used for download.(`eg : FTP, ASPERA`). Default is FTP");
+            } else if (protocolStr.equals("ASPERA")) {
+                if (StringUtils.isEmpty(asperaLocation)) {
+                    throw new IllegalArgumentException("Please provide the location of local Aspera Connect/CLI folder.");
+                } else if (!MenuUtils.isValidAsperaConnectLoc(asperaLocation)) {
+                    throw new IllegalArgumentException(ASPERA_PATH_MSG + ". If your path contains spaces please enclose it within double quotes");
+                }
+            }
+
+            if (StringUtils.isNotBlank(userName)) {
+                this.authenticationDetail = new AuthenticationDetail();
+                if (!StringUtils.startsWith(userName, "dcc_")) {
+                    System.out.println("Please provide a valid data hub name (dcc_username)");
+                    log.error("Invalid data hub name {} (dcc user) provided. ", userName);
+                    throw new IllegalArgumentException("Invalid data hub name");
+                } else if (!"FTP".equals(protocolStr)) {
+                    System.out.println("Only FTP protocol is supported to download the files from a data hub");
+                    log.error("Only FTP protocol is supported to download the files from a data hub. Provided protocol is {}", protocolStr);
+                    throw new IllegalArgumentException("Only FTP protocol is supported to download the files from a data hub");
+                }
+                authenticationDetail.setUserName(userName);
+                password = StringUtils.trim(password);
+                authenticationDetail.setPassword(password);
+                //Validate username and password
+                if (!enaPortalService.authenticateUser(authenticationDetail)) {
+                    log.error("Data hub username and/or password is incorrect.");
+                    throw new AuthException("Data hub authentication failed");
+                }
+
+            }
+        }
+
+        if (StringUtils.isNotBlank(query)) {
+            if (!MenuUtils.validateSearchRequest(query)) {
+                log.error("Invalid query {} provided. ", query);
+                throw new IllegalArgumentException("Invalid query provided.");
+            } else if (StringUtils.isEmpty(downloadLocation)) {
+                throw new IllegalArgumentException("Please provide a valid location for the download");
+            } else if (!StringUtils.isEmpty(downloadLocation)) {
+                validateDownloadLocation();
+            }
+        }
+    }
+
+    private void validateDownloadLocation() {
+        if (!StringUtils.isEmpty(downloadLocation)) {
             File dLoc = new File(downloadLocation);
             if (!dLoc.exists() || !dLoc.canWrite()) {
                 System.out.println(dLoc + " does not exists or is read only. If the download location contains spaces please enclose it within double quotes");
             }
-        } else if (!EnumUtils.isValidEnum(ProtocolEnum.class, protocolStr)) {
-            throw new IllegalArgumentException("Please provide a valid protocol to be used for download.(`eg : FTP, ASPERA`). Default is FTP");
-        } else if (protocolStr.equals("ASPERA")) {
-            if (StringUtils.isEmpty(asperaLocation)) {
-                throw new IllegalArgumentException("Please provide the location of local Aspera Connect/CLI folder.");
-            } else if (!MenuUtils.isValidAsperaConnectLoc(asperaLocation)) {
-                throw new IllegalArgumentException(ASPERA_PATH_MSG + ". If your path contains spaces please enclose it within double quotes");
-            }
-        }
-        if (StringUtils.isNotBlank(userName)) {
-            this.authenticationDetail = new AuthenticationDetail();
-            if (!StringUtils.startsWith(userName, "dcc_")) {
-                System.out.println("Please provide a valid data hub name (dcc_username)");
-                log.error("Invalid data hub name {} (dcc user) provided. ", userName);
-                throw new IllegalArgumentException("Invalid data hub name");
-            } else if (!"FTP".equals(protocolStr)) {
-                System.out.println("Only FTP protocol is supported to download the files from a data hub");
-                log.error("Only FTP protocol is supported to download the files from a data hub. Provided protocol is {}", protocolStr);
-                throw new IllegalArgumentException("Only FTP protocol is supported to download the files from a data hub");
-            }
-            authenticationDetail.setUserName(userName);
-            password = StringUtils.trim(password);
-            authenticationDetail.setPassword(password);
-            //Validate username and password
-            if (!enaPortalService.authenticateUser(authenticationDetail)) {
-                log.error("Data hub username and/or password is incorrect.");
-                throw new AuthException("Data hub authentication failed");
-            }
-
         }
     }
 

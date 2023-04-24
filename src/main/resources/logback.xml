@@ -12,12 +12,16 @@
     </appender>
 
     <logger level="INFO" name="console" additivity="false">
-        <appender-ref ref="FILE" />
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="STDOUT"/>
     </logger>
 
     <root level="DEBUG">
         <appender-ref ref="FILE"/>
     </root>
+
+    <logger name="httpclient" level="WARN"/>
+
+    <logger name="org.apache" level="WARN"/>
 
 </configuration>

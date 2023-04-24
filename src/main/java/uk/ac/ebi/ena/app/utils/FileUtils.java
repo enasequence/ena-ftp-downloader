@@ -68,10 +68,14 @@ public class FileUtils {
     }
 
 
-    public static String getScriptPath(DownloadJob downloadJob, DownloadFormatEnum format) {
-        String accessionType = downloadJob.getAccessionField();
-        return getJarDir() + File.separator + "download_" + StringUtils.substringBefore(accessionType, "_")
-                + "-" + format + getScriptExtension();
+    public static String getScriptPath(DownloadJob downloadJob, DownloadFormatEnum format, String query) {
+        if (StringUtils.isEmpty(query)) {
+            String accessionType = downloadJob.getAccessionField();
+            return getJarDir() + File.separator + "download_" + StringUtils.substringBefore(accessionType, "_")
+                    + "-" + format + getScriptExtension();
+        } else {
+            return getJarDir() + File.separator + "download_query" + getScriptExtension();
+        }
     }
 
     public static String getScriptExtension() {
@@ -105,24 +109,32 @@ public class FileUtils {
 
     public static void createDownloadScript(DownloadJob downloadJob, DownloadFormatEnum format,
                                             String location, ProtocolEnum protocol, String asperaLocation,
-                                            String emailId, AuthenticationDetail authenticationDetail) {
+                                            String emailId, AuthenticationDetail authenticationDetail,
+                                            String searchQuery) {
         File file = new File(location);
         if (file.exists()) {
-            File file1 = new File(getScriptPath(downloadJob, format));
+            File file1 = new File(getScriptPath(downloadJob, format, searchQuery));
             try (FileOutputStream fileOut = new FileOutputStream(file1)) {
                 if (asperaLocation != null && asperaLocation.contains(" ")) {
                     asperaLocation = addDoubleQuotes(Paths.get(asperaLocation));
                 }
-                List<String> accessionList = downloadJob.getAccessionList();
-
-                String content =
-                        "java -jar " + getJarPath() + " --accessions=" + StringUtils.join(accessionList, ',') +
-                                " --format=" + format + " --location=" + location + " --protocol=" + protocol +
-                                " --asperaLocation=" + asperaLocation + " --email=" + emailId +
-                                (Objects.nonNull(authenticationDetail) ?
-                                        " --dataHubUsername=" + authenticationDetail.getUserName() +
-                                                " --dataHubPassword=" + authenticationDetail.getPassword()
-                                        : "");
+                String content;
+                if (StringUtils.isEmpty(searchQuery)) {
+                    List<String> accessionList = downloadJob.getAccessionList();
+                    content =
+                            "java -jar " + getJarPath() + " --accessions=" + StringUtils.join(accessionList, ',') +
+                                    " --format=" + format + " --location=" + location + " --protocol=" + protocol +
+                                    " --asperaLocation=" + asperaLocation + " --email=" + emailId +
+                                    (Objects.nonNull(authenticationDetail) ?
+                                            " --dataHubUsername=" + authenticationDetail.getUserName() +
+                                                    " --dataHubPassword=" + authenticationDetail.getPassword()
+                                            : "");
+                } else {
+                    //adding quotes around search query
+                    searchQuery = "\"" + searchQuery + "\"";
+                    content = "java -jar " + getJarPath() + " --searchQuery=" + searchQuery + " --location=" +
+                            location + " --email=" + emailId;
+                }
                 console.info("script content:{}", content);
                 fileOut.write(content.getBytes());
 

@@ -18,10 +18,13 @@
 
 package uk.ac.ebi.ena.backend.service;
 
+import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -33,9 +36,7 @@ import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.enums.FileDownloadStatus;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -51,13 +52,12 @@ import static uk.ac.ebi.ena.app.utils.CommonUtils.getProgressBarBuilder;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class FileDownloaderService {
 
     private final FileDownloaderClient fileDownloaderClient;
+    private final EnaPortalService enaPortalService;
 
-    public FileDownloaderService(FileDownloaderClient fileDownloaderClient) {
-        this.fileDownloaderClient = fileDownloaderClient;
-    }
 
     /**
      * API will check if the file is downloaded properly for FASTQ/SUBMITTED format by validating against md5 and size.
@@ -257,6 +257,36 @@ public class FileDownloaderService {
 
     public static String getShortThreadName() {
         return "T-" + StringUtils.substringAfter(Thread.currentThread().getName(), "hread-");
+    }
+
+    @SneakyThrows
+    public boolean doDownloadUsingQuery(String query, String downloadLocation) {
+        int retryCount = 0;
+        boolean isSuccess = false;
+
+        String path = downloadLocation + File.separator + Constants.DOWNLOAD_QUERY_FILE_NAME;
+        Path outputFile = Paths.get(path);
+        if (Files.exists(outputFile)) {
+            org.apache.commons.io.FileUtils.forceDelete(outputFile.toFile());
+        }
+        org.apache.commons.io.FileUtils.forceMkdirParent(outputFile.toFile());
+
+        while (retryCount <= Constants.TOTAL_RETRIES) {
+            try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(path))) {
+                try (InputStream inputStream = enaPortalService.getInputStream(query)) {
+                    IOUtils.copyLarge(inputStream, outputStream);
+                    //gives an assurance that contents are copied fully
+                    outputStream.flush();
+                    isSuccess = true;
+                    break;
+                } catch (Exception e) {
+                    log.error("Exception occurred while downloading file.", e);
+                    retryCount++;
+                }
+            }
+        }
+
+        return isSuccess;
     }
 
 }

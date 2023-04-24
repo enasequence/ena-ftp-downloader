@@ -32,13 +32,16 @@ public interface BackendService {
     /**
      * @param format                The format provided by the user
      * @param location              The download location
-     * @param downloadJob   The accessionDetails map
+     * @param downloadJob           The accessionDetails map
      * @param emailId               The recipient email Id
      * @param protocol              The protocol for download provided by the user
      * @param asperaConnectLocation The location of aspera connect folder if {@link ProtocolEnum} is ASPERA
      * @param emailId               The emailId at which mail will be sent once downloads are completed
+     * @param authenticationDetail  The username and password to download from private dcc datahub
+     * @param searchQuery           The search query for the downloads
      */
 
     void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
-                       ProtocolEnum protocol, String asperaConnectLocation, String emailId, AuthenticationDetail authenticationDetail);
+                       ProtocolEnum protocol, String asperaConnectLocation, String emailId, AuthenticationDetail authenticationDetail,
+                       String searchQuery);
 }

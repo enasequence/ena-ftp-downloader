@@ -56,13 +56,14 @@ public class BackendServiceImplTest {
         Mockito.doNothing().when(emailService).sendEmailForFastqSubmitted(Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong()
                 , Mockito.anyString(), Mockito.anyString(), Mockito.any(DownloadFormatEnum.class), Mockito.anyString());
         //ACT
-        backendService.startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId, null);
+        backendService.startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId, null
+                , null);
         //ASSERT
         verify(accessionDetailsService, times(1)).doDownload(format, location, accessionDetailsMap,
                 Collections.singletonList(fileDetailList), protocol, asperaConnectLocation, null);
 
         verify(emailService, times(1)).sendEmailForFastqSubmitted(emailId, 3, 0,
-                FileUtils.getScriptPath(accessionDetailsMap, format), accessionDetailsMap.getAccessionField(), format, location);
+                FileUtils.getScriptPath(accessionDetailsMap, format, null), accessionDetailsMap.getAccessionField(), format, location);
 
     }
 

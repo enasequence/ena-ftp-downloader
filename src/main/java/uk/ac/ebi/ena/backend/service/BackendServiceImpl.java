@@ -20,6 +20,7 @@ package uk.ac.ebi.ena.backend.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -46,72 +47,82 @@ public class BackendServiceImpl implements BackendService {
 
     private final EmailService emailService;
     private final AccessionDetailsService accessionDetailsService;
-
+    private final FileDownloaderService fileDownloaderService;
 
     @Override
     public void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
                               ProtocolEnum protocol, String asperaConnectLocation, String emailId,
-                              AuthenticationDetail authenticationDetail) {
+                              AuthenticationDetail authenticationDetail, String searchQuery) {
+        if (StringUtils.isEmpty(searchQuery)) {
+            console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}, data hub:{}",
+                    format, location, protocol, asperaConnectLocation, emailId,
+                    Objects.nonNull(authenticationDetail) ? authenticationDetail.getUserName() : null);
+            List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol, authenticationDetail);
+            final List<FileDetail> finallyFailedFiles = new ArrayList<>();
+            AtomicLong count = new AtomicLong();
+            fileDetailsList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> count.getAndIncrement()));
 
-        console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}, data hub:{}",
-                format, location, protocol, asperaConnectLocation, emailId,
-                Objects.nonNull(authenticationDetail) ? authenticationDetail.getUserName() : null);
-        List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol, authenticationDetail);
-        final List<FileDetail> finallyFailedFiles = new ArrayList<>();
-        AtomicLong count = new AtomicLong();
-        fileDetailsList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> count.getAndIncrement()));
-
-        do {
-            accessionDetailsService.doDownload(format, location, downloadJob, fileDetailsList, protocol,
-                    asperaConnectLocation, authenticationDetail);
-            List<List<FileDetail>> failedFileList = new ArrayList<>();
-            final List<FileDetail> failedFiles = new ArrayList<>();
-            fileDetailsList.forEach(fileDetails -> {
-                for (FileDetail fileDetail : fileDetails) {
-                    if (!fileDetail.isSuccess() && fileDetail.getRetryCount() < TOTAL_RETRIES) {
-                        failedFiles.add(fileDetail);
-                        fileDetail.incrementRetryCount();
-                    } else if (fileDetail.getRetryCount() >= TOTAL_RETRIES) {
-                        finallyFailedFiles.add(fileDetail);
+            do {
+                accessionDetailsService.doDownload(format, location, downloadJob, fileDetailsList, protocol,
+                        asperaConnectLocation, authenticationDetail);
+                List<List<FileDetail>> failedFileList = new ArrayList<>();
+                final List<FileDetail> failedFiles = new ArrayList<>();
+                fileDetailsList.forEach(fileDetails -> {
+                    for (FileDetail fileDetail : fileDetails) {
+                        if (!fileDetail.isSuccess() && fileDetail.getRetryCount() < TOTAL_RETRIES) {
+                            failedFiles.add(fileDetail);
+                            fileDetail.incrementRetryCount();
+                        } else if (fileDetail.getRetryCount() >= TOTAL_RETRIES) {
+                            finallyFailedFiles.add(fileDetail);
+                        }
                     }
-                }
-                if (failedFiles.size() > 0) {
-                    failedFileList.add(failedFiles);
-                }
-            });
+                    if (failedFiles.size() > 0) {
+                        failedFileList.add(failedFiles);
+                    }
+                });
 
-            AtomicLong newCount = new AtomicLong();
-            failedFileList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> newCount.getAndIncrement()));
+                AtomicLong newCount = new AtomicLong();
+                failedFileList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> newCount.getAndIncrement()));
 
-            if (failedFileList.size() > 0) {
-                log.warn("Number of files:{} successfully downloaded for accessionField:{}, format:{}",
-                        count.get() - newCount.get(), downloadJob.getAccessionField(), format);
-                log.warn("Number of files:{} failed downloaded for accessionField:{}, format:{}",
-                        newCount.get(), downloadJob.getAccessionField(), format);
-                if (newCount.get() > 0) {
-                    System.out.println("Some files failed to download due to possible network issues. Please re-run the " +
-                            "same script=" + FileUtils.getScriptPath(downloadJob, format) + " to re-attempt to download those files");
+                if (failedFileList.size() > 0) {
+                    log.warn("Number of files:{} successfully downloaded for accessionField:{}, format:{}",
+                            count.get() - newCount.get(), downloadJob.getAccessionField(), format);
+                    log.warn("Number of files:{} failed downloaded for accessionField:{}, format:{}",
+                            newCount.get(), downloadJob.getAccessionField(), format);
+                    if (newCount.get() > 0) {
+                        System.out.println("Some files failed to download due to possible network issues. Please re-run the " +
+                                "same script=" + FileUtils.getScriptPath(downloadJob, format, searchQuery) + " to re-attempt to download those files");
+                    }
+                    System.out.println("Automatically retrying failed downloads...");
                 }
-                System.out.println("Automatically retrying failed downloads...");
+                fileDetailsList = failedFileList;
+
+            } while (fileDetailsList.size() > 0);
+
+
+            console.info("{} files successfully downloaded for accessionField:{}, format:{} to {}",
+                    count.get(), downloadJob.getAccessionField(), format, location);
+
+            if (finallyFailedFiles.size() > 0) {
+                console.info("{} files failed to be downloaded for accessionField:{}, format:{}",
+                        finallyFailedFiles.size(), downloadJob.getAccessionField(), format);
+                for (FileDetail fileDetail : finallyFailedFiles) {
+                    console.info("{}", fileDetail.getFtpUrl());
+                }
             }
-            fileDetailsList = failedFileList;
 
-        } while (fileDetailsList.size() > 0);
-
-
-        console.info("{} files successfully downloaded for accessionField:{}, format:{} to {}",
-                count.get(), downloadJob.getAccessionField(), format, location);
-
-        if (finallyFailedFiles.size() > 0) {
-            console.info("{} files failed to be downloaded for accessionField:{}, format:{}",
-                    finallyFailedFiles.size(), downloadJob.getAccessionField(), format);
-            for (FileDetail fileDetail : finallyFailedFiles) {
-                console.info("{}", fileDetail.getFtpUrl());
+            emailService.sendEmailForFastqSubmitted(emailId, count.get(), 0,
+                    FileUtils.getScriptPath(downloadJob, format, searchQuery), downloadJob.getAccessionField(), format, location);
+        } else {
+            boolean isSuccess = fileDownloaderService.doDownloadUsingQuery(searchQuery, location);
+            if (isSuccess) {
+                console.info("files successfully downloaded to {}", location);
+            } else {
+                console.info("files failed to be downloaded to {}", location);
             }
+
+            emailService.sendEmailForQuery(emailId, location, isSuccess, searchQuery);
         }
-
-        emailService.sendEmailForFastqSubmitted(emailId, count.get(), 0,
-                FileUtils.getScriptPath(downloadJob, format), downloadJob.getAccessionField(), format, location);
 
     }
 

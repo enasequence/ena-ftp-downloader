@@ -45,5 +45,7 @@ public class Constants {
     public static final String URLENCODED = "application/x-www-form-urlencoded";
     public static final String APPLICATION_JSON = "application/json";
 
+    public static final String DOWNLOAD_QUERY_FILE_NAME = "search_results.txt";
+
 
 }
