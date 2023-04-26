@@ -255,6 +255,91 @@ public class FileDownloaderService {
         });
     }
 
+    public Future<FileDownloadStatus> startQueryDownload(ExecutorService executorService, List<FileDetail> fileDetails,
+                                                         String downloadLoc, int set) {
+        FileDownloadStatus fileDownloadStatus = new FileDownloadStatus(fileDetails.size(), 0, new ArrayList<>());
+
+        return executorService.submit(() -> {
+            System.out.println("\nStarting set " + (set + 1) + " with " + fileDetails.size() + " files.");
+            final ProgressBar fileProgressBar =
+                    getProgressBarBuilder("Downloading set " + (set + 1) + " with " + fileDetails.size() + " files",
+                            fileDetails.size()).build();
+
+            String remoteFileName = null;
+            log.debug("Starting {} files starting with {}", fileDetails.size(), fileDetails.get(0).getFtpUrl());
+            for (FileDetail fileDetail : fileDetails) {
+
+                try {
+                    String fileUrl = prepareFTPUrl(fileDetail, null);
+                    //TODO: remove hardcoding
+                    String fileDownloaderPath = getFileDownloadPath(downloadLoc, null, DownloadFormatEnum.READS_FASTQ, fileDetail);
+                    remoteFileName = StringUtils.substringAfterLast(fileUrl, "/");
+
+                    URL url;
+                    try {
+                        url = new URL(fileUrl);
+                    } catch (MalformedURLException e) {
+                        log.error("MalformedURLException encountered while starting download");
+                        throw new IllegalStateException("MalformedURLException encountered  while starting download",
+                                e);
+                    }
+                    Path directoryPath = Paths.get(fileDownloaderPath);
+                    Path remoteFilePath = Paths.get(fileDownloaderPath, remoteFileName);
+
+                    if (!Files.exists(directoryPath)) {
+                        Files.createDirectories(directoryPath);
+                    } else {
+                        if (Files.exists(remoteFilePath)) {
+                            if (fileDetail.getBytes() == Files.size(remoteFilePath)) {
+                                log.debug("File {} already exists and size matches {}. Skipping.", remoteFileName,
+                                        fileDetail.getBytes());
+                                fileProgressBar.stepBy(1);
+                                fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
+                                fileDetail.setSuccess(true);
+                                continue;
+                            }
+                            log.warn("File {} exists but size mismatch {}. Redownloading", remoteFileName,
+                                    fileDetail.getBytes());
+
+                        }
+                    }
+                    log.debug("Downloading {}, parentId:{}", remoteFileName, fileDetail.getParentId());
+                    Assert.notNull(url, "FTP Url cannot be null");
+                    long bytesCopied;
+                    if (url.toString().startsWith("http")) {
+                        bytesCopied = fileDownloaderClient.downloadHttpClient(url, remoteFilePath,
+                                fileDetail.getBytes(), fileDetail.getRetryCount());
+                    } else {
+                        bytesCopied = fileDownloaderClient.downloadFTPUrlConnection(url, remoteFilePath,
+                                fileDetail.getBytes(), fileDetail.getRetryCount());
+                    }
+                    log.debug("Completed download {}, parentId:{}, bytesCopied:{}",
+                            remoteFileName, fileDetail.getParentId(), bytesCopied);
+                    boolean isDownloaded = isDownloadSuccessful(fileDetail,
+                            fileDownloaderPath + File.separator + remoteFileName, bytesCopied);
+                    if (isDownloaded) {
+                        fileProgressBar.stepBy(1);
+                        log.debug("{} completed.", fileDownloaderPath + File.separator + remoteFileName);
+                        fileDownloadStatus.setSuccesssful(fileDownloadStatus.getSuccesssful() + 1);
+                    } else {
+                        log.error("Failed to download file:{}, experimentId:{}", remoteFileName,
+                                fileDetail.getParentId());
+                        System.out.println("Failed to download " + url);
+                        fileDownloadStatus.getFailedFiles().add(fileDetail);
+                    }
+
+                } catch (Exception exception) {
+                    log.error("Exception occurred while downloading file:{}, experimentId:{} ",
+                            remoteFileName,
+                            fileDetail.getParentId(), exception);
+                    fileDownloadStatus.getFailedFiles().add(fileDetail);
+                }
+            }
+            return fileDownloadStatus;
+
+        });
+    }
+
     public static String getShortThreadName() {
         return "T-" + StringUtils.substringAfter(Thread.currentThread().getName(), "hread-");
     }
