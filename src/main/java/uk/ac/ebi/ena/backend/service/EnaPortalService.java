@@ -100,6 +100,8 @@ public class EnaPortalService {
 
     private final RestTemplate restTemplate;
 
+    private static final List<String> VALID_URLS = Arrays.asList("submitted_ftp", "generated_ftp", "fastq_ftp");
+
     /**
      * This API will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED}
      * for the
@@ -371,7 +373,7 @@ public class EnaPortalService {
         }
         //replacing space and quotes using percent-encoding
         searchQuery = searchQuery.replace(" ", "%20").replace("\"", "%22");
-        ;
+
         log.info("search query = " + searchQuery);
         URI uri = URI.create(searchQuery);
         HttpClient httpClient = HttpClientBuilder.create().build();
@@ -381,6 +383,53 @@ public class EnaPortalService {
 
         return response.getEntity().getContent();
 
+    }
+
+    public List<EnaPortalResponse> getPortalResponseForQuery(String searchQuery) {
+        String[] queryParams = searchQuery.split("&");
+        //TODO : assume the url contains fields
+        String fields = Arrays.stream(queryParams).filter(s -> s.contains("fields")).findFirst().get().split("=")[1];
+        if (VALID_URLS.contains(fields)) {
+            log.debug("Valid request..");
+        } else {
+            log.debug("not a valid quest");
+        }
+        String accessions = Objects.requireNonNull(Arrays.stream(queryParams).filter(s -> s.contains("includeAccessions")).findFirst()
+                .orElse(null)).split("=")[1];
+        String result = Arrays.stream(queryParams).filter(s -> s.contains("result")).findFirst().get().split("=")[1];
+
+        int retryCount = 0;
+
+        URI uri = URI.create(Objects.requireNonNull(searchQuery));
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Content-Type", Constants.URLENCODED);
+        httpHeaders.add("Accept", Constants.APPLICATION_JSON);
+
+
+        while (retryCount <= BeanConfig.APP_RETRY) {
+            try {
+                EnaPortalResponse[] response = restTemplate.postForObject(uri, httpHeaders, EnaPortalResponse[].class);
+                if (ArrayUtils.isEmpty(response)) {
+                    System.out.println("No data files of requested type found.");
+                    return Collections.emptyList();
+                }
+                return Arrays.asList(Objects.requireNonNull(response));
+            } catch (RestClientResponseException rce) {
+                if (rce.getRawStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
+                    console.info("User name and password for given data hub is not correct");
+                    break;
+                } else {
+                    log.error("Exception encountered while getting portalResponse for searchQuery:{}  @@" + rce.getMessage(),
+                            searchQuery, rce);
+                    retryCount++;
+                }
+
+            }
+        }
+        log.error("Count not fetch get portalResponse for searchQuery:{} even after {} retries",
+                searchQuery, BeanConfig.APP_RETRY);
+        return Collections.emptyList();
     }
 
     public boolean authenticateUser(AuthenticationDetail authenticationDetail) {

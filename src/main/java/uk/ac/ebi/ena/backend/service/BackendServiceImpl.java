@@ -114,13 +114,60 @@ public class BackendServiceImpl implements BackendService {
             emailService.sendEmailForFastqSubmitted(emailId, count.get(), 0,
                     FileUtils.getScriptPath(downloadJob, format, searchQuery), downloadJob.getAccessionField(), format, location);
         } else {
-            boolean isSuccess = fileDownloaderService.doDownloadUsingQuery(searchQuery, location);
-            if (isSuccess) {
-                console.info("files successfully downloaded to {}", location);
-            } else {
-                console.info("files failed to be downloaded to {}", location);
+            List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetailsForQuery(searchQuery);
+            final List<FileDetail> finallyFailedFiles = new ArrayList<>();
+            AtomicLong count = new AtomicLong();
+            fileDetailsList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> count.getAndIncrement()));
+
+            do {
+                accessionDetailsService.doQueryDownload(location, fileDetailsList, searchQuery);
+                List<List<FileDetail>> failedFileList = new ArrayList<>();
+                final List<FileDetail> failedFiles = new ArrayList<>();
+                fileDetailsList.forEach(fileDetails -> {
+                    for (FileDetail fileDetail : fileDetails) {
+                        if (!fileDetail.isSuccess() && fileDetail.getRetryCount() < TOTAL_RETRIES) {
+                            failedFiles.add(fileDetail);
+                            fileDetail.incrementRetryCount();
+                        } else if (fileDetail.getRetryCount() >= TOTAL_RETRIES) {
+                            finallyFailedFiles.add(fileDetail);
+                        }
+                    }
+                    if (failedFiles.size() > 0) {
+                        failedFileList.add(failedFiles);
+                    }
+                });
+
+                AtomicLong newCount = new AtomicLong();
+                failedFileList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> newCount.getAndIncrement()));
+
+                if (failedFileList.size() > 0) {
+                    log.warn("Number of files:{} successfully downloaded for accessionField:{}, format:{}",
+                            count.get() - newCount.get(), downloadJob.getAccessionField(), format);
+                    log.warn("Number of files:{} failed downloaded for accessionField:{}, format:{}",
+                            newCount.get(), downloadJob.getAccessionField(), format);
+                    if (newCount.get() > 0) {
+                        System.out.println("Some files failed to download due to possible network issues. Please re-run the " +
+                                "same script=" + FileUtils.getScriptPath(downloadJob, format, searchQuery) + " to re-attempt to download those files");
+                    }
+                    System.out.println("Automatically retrying failed downloads...");
+                }
+                fileDetailsList = failedFileList;
+
+            } while (fileDetailsList.size() > 0);
+
+
+            console.info("{} files successfully downloaded for accessionField:{}, format:{} to {}",
+                    count.get(), downloadJob.getAccessionField(), format, location);
+
+            if (finallyFailedFiles.size() > 0) {
+                console.info("{} files failed to be downloaded for accessionField:{}, format:{}",
+                        finallyFailedFiles.size(), downloadJob.getAccessionField(), format);
+                for (FileDetail fileDetail : finallyFailedFiles) {
+                    console.info("{}", fileDetail.getFtpUrl());
+                }
             }
 
+            boolean isSuccess = finallyFailedFiles.size() == 0;
             emailService.sendEmailForQuery(emailId, location, isSuccess, searchQuery);
         }
 

@@ -155,6 +155,19 @@ public class AccessionDetailsService {
         return listList;
     }
 
+    @SneakyThrows
+    public List<List<FileDetail>> fetchFileDetailsForQuery(String searchQuery) {
+
+        final ProgressBarBuilder portalPB = getProgressBarBuilder("Getting file details from ENA Portal API", -1);
+
+        List<List<FileDetail>> listList = new ArrayList<>();
+        final List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponseForQuery(searchQuery);
+        final List<FileDetail> fileDetails = createFileDetails(portalResponses);
+        listList.add(fileDetails);
+        return listList;
+    }
+
+
     private Set<String> getMissingAccessionsFromDataHub(DownloadJob downloadJob, List<List<FileDetail>> list) {
 
         Set<String> userAccessions = new HashSet<>(downloadJob.getAccessionList());
@@ -201,6 +214,43 @@ public class AccessionDetailsService {
                                 asperaLocation, downloadLocation, accessionType, format, thisSet, authenticationDetail);
                 futures.add(listFuture);
             }
+        }
+
+        long successfulDownloadsCount = 0, failedDownloadsCount = 0;
+        for (Future<FileDownloadStatus> f : futures) {
+            final FileDownloadStatus fileDownloadStatus = f.get();
+            successfulDownloadsCount += fileDownloadStatus.getSuccesssful();
+            failedDownloadsCount += fileDownloadStatus.getFailedFiles().size();
+        }
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            log.error("Handling Interrupted exception received during await termination");
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+
+
+        return failedDownloadsCount;
+    }
+
+
+    @SneakyThrows
+    public long doQueryDownload(String downloadLocation, List<List<FileDetail>> partitions, String searchQuery) {
+        final ExecutorService executorService = Executors.newFixedThreadPool(Constants.EXECUTOR_THREAD_COUNT);
+
+        List<Future<FileDownloadStatus>> futures = new ArrayList<>();
+
+        for (int thisSet = 0; thisSet < partitions.size(); thisSet++) {
+            List<FileDetail> fileDetails = partitions.get(thisSet);
+            if (fileDetails.size() == 0) {
+                continue;
+            }
+
+            final Future<FileDownloadStatus> listFuture =
+                    fileDownloaderService.startQueryDownload(executorService, fileDetails, downloadLocation, thisSet);
+            futures.add(listFuture);
         }
 
         long successfulDownloadsCount = 0, failedDownloadsCount = 0;
