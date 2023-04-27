@@ -21,9 +21,7 @@ package uk.ac.ebi.ena.app.menu.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -31,11 +29,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public enum AccessionTypeEnum {
 
-    EXPERIMENT("experiment_accession", "^[ESDR]RX[0-9]{6,}$", "SRA Experiment (e.g. ERX6534960)"),
-    SAMPLE("sample_accession", "^SAM(E[A]?[0-9]{6,}|[ND][0-9]{8})$", "Biosample (e.g. SAMEA10254937)"),
-    STUDY("study_accession", "^PRJ(EB|DB|NA)[0-9]+$", "Project a.k.a. Bioproject/Study (e.g. PRJEB47823)"),
-    RUN("run_accession", "^[ESD]RR[0-9]{6,}$", "SRA Run (e.g. ERR6912696)"),
-    ANALYSIS("analysis_accession", "^[ESD]RZ[0-9]{6,}$", "SRA Analysis (e.g. ERZ3914048)");
+    EXPERIMENT("experiment_accession", "^[ESDR]RX[0-9]{6,}$", "SRA Experiment (e.g. ERX6534960)", Collections.singletonList("read_experiment")),
+    SAMPLE("sample_accession", "^SAM(E[A]?[0-9]{6,}|[ND][0-9]{8})$", "Biosample (e.g. SAMEA10254937)", Collections.singletonList("sample")),
+    STUDY("study_accession", "^PRJ(EB|DB|NA)[0-9]+$", "Project a.k.a. Bioproject/Study (e.g. PRJEB47823)", Arrays.asList("analysis_study", "read_study", "study")),
+    RUN("run_accession", "^[ESD]RR[0-9]{6,}$", "SRA Run (e.g. ERR6912696)", Collections.singletonList("read_run")),
+    ANALYSIS("analysis_accession", "^[ESD]RZ[0-9]{6,}$", "SRA Analysis (e.g. ERZ3914048)", Collections.singletonList("analysis"));
 
     private final static Map<String, AccessionTypeEnum> map = new HashMap<>();
 
@@ -46,6 +44,7 @@ public enum AccessionTypeEnum {
     private final String accessionField;
     private final String pattern;
     private final String display;
+    private final List<String> result;
 
     public static AccessionTypeEnum getAccessionType(String accessionField) {
         return map.get(accessionField);
@@ -62,5 +61,9 @@ public enum AccessionTypeEnum {
 
     public static String getDisplayTypes() {
         return Arrays.stream(values()).map(AccessionTypeEnum::getDisplay).collect(Collectors.joining(", "));
+    }
+
+    public static AccessionTypeEnum getAccessionTypeByResult(String result) {
+        return Arrays.stream(values()).filter(t -> t.result.contains(result)).findFirst().orElse(null);
     }
 }

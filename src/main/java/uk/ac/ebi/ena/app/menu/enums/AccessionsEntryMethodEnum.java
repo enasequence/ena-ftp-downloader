@@ -30,7 +30,8 @@ import java.util.Map;
 @AllArgsConstructor
 public enum AccessionsEntryMethodEnum {
     DOWNLOAD_FROM_FILE(1, "provide a file path"),
-    DOWNLOAD_FROM_LIST(2, "provide an accession or a list of accessions separated by commas");
+    DOWNLOAD_FROM_LIST(2, "provide an accession or a list of accessions separated by commas"),
+    DOWNLOAD_FROM_QUERY(3, "provide a search query");
 
     private final int value;
     private final String message;

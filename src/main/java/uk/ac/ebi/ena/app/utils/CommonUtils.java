@@ -28,6 +28,8 @@ import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -101,5 +103,30 @@ public class CommonUtils {
             }
         }
         return "ena";
+    }
+
+    @SneakyThrows
+    public static List<String> getAccessionFromQuery(String query) {
+        String[] queryParams = query.split("&");
+
+        String includeAccessions = Arrays.stream(queryParams).filter(s -> s.contains("includeAccessions")).findFirst().
+                orElse(null);
+
+        return includeAccessions != null ? Arrays.asList(includeAccessions.split("=")[1].split(",")) :
+                Collections.emptyList();
+    }
+
+    @SneakyThrows
+    public static DownloadJob processQuery(String query) {
+        String[] queryParams = query.split("&");
+
+        String result = Arrays.stream(queryParams).filter(s -> s.contains("result")).findFirst().orElse(null);
+
+        AccessionTypeEnum type = AccessionTypeEnum.getAccessionTypeByResult(result.split("=")[1]);
+        if (type == null) {
+            System.out.println("Unsupported result provided:" + result);
+            throw new Exception("Unsupported result provided:" + result);
+        }
+        return makeDownloadJob(type.getAccessionField(), null);
     }
 }

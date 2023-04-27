@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * This class will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED} for
@@ -91,6 +92,11 @@ public class EnaPortalService {
     private static final String MULTIPART_FORM_DATA = "multipart/form-data;boundary=%s";
 
     private final RestTemplate restTemplate;
+
+    private static final String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
+    private static final String PORTAL_API_COUNT_URL = "https://www.ebi.ac.uk/ena/portal/api/count?";
+    private static final String JSON_FORMAT = "&format=json";
+
 
     /**
      * This API will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED}
@@ -395,5 +401,58 @@ public class EnaPortalService {
         return sessionId;
     }
 
+    public List<String> getAccessions(String query) {
+        if (query != null) {
+            String url = getModifiedUrl(query);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add("Content-Type", Constants.URLENCODED);
+            httpHeaders.add("Accept", Constants.APPLICATION_JSON);
+            URI uri = URI.create(Objects.requireNonNull(url));
+            int retryCount = 0;
 
+            while (retryCount <= BeanConfig.APP_RETRY) {
+                try {
+                    EnaPortalResponse[] response = restTemplate.postForObject(uri, httpHeaders, EnaPortalResponse[].class);
+                    if (ArrayUtils.isEmpty(response)) {
+                        System.out.println("No accessions for the given query found.");
+                        return Collections.emptyList();
+                    }
+                    return Arrays.stream(response).map(resp -> resp.getRecordId() != null ? resp.getRecordId() :
+                            resp.getParentId()).collect(Collectors.toList());
+                } catch (RestClientResponseException rce) {
+                    log.error("Exception encountered while getting accessions for query:{}, @@" + rce.getMessage(), query,
+                            rce);
+                    retryCount++;
+                }
+
+            }
+
+            log.error("Count not fetch get accessions for query:{} even after {} retries", query, BeanConfig.APP_RETRY);
+            return null;
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    private String getModifiedUrl(String query) {
+        String searchURL = !query.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_SEARCH_URL + query : query;
+
+        String[] queryParams = searchURL.split("&");
+
+        //ignore the format if specified
+        String format = Arrays.stream(queryParams).filter(s -> s.contains("format")).findFirst().orElse(null);
+        if (format != null) {
+            String requestedFormat = format.split("=")[1];
+            if (requestedFormat != null && !requestedFormat.equalsIgnoreCase("json"))
+                searchURL = searchURL.replaceFirst(requestedFormat, "json");
+        } else {
+            searchURL = searchURL + JSON_FORMAT;
+        }
+
+        return searchURL;
+    }
 }
+
+
+
+

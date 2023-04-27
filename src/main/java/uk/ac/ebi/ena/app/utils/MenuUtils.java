@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.AccessionsEntryMethodEnum;
@@ -74,6 +75,9 @@ public class MenuUtils {
     public static final String accessionsSameTypeErrorMessage = "Please provide valid accessions of the same type! ";
 
     private static final String ACCESSION = "accession";
+
+    public static final String queryErrorMessage = "Please provide valid search query! ";
+
 
     public static void printBackMessage() {
         System.out.println(Constants.backMessage);
@@ -219,6 +223,24 @@ public class MenuUtils {
             return Pattern.matches(type.getPattern(), firstColumn);
         }
         return false;
+    }
+
+    public static boolean validateSearchRequest(String searchQuery) {
+        return (searchQuery.contains("portal/api/search") || searchQuery.contains("result="));
+    }
+
+    public static DownloadJob parseQuery(String query) {
+        List<String> accessions = CommonUtils.getAccessionFromQuery(query);
+        DownloadJob downloadJob;
+        if (!CollectionUtils.isEmpty(accessions)) {
+            downloadJob = CommonUtils.processAccessions(accessions);
+        } else {
+            downloadJob = CommonUtils.processQuery(query);
+        }
+        downloadJob.setQuery(query);
+        downloadJob.setAccessionEntryMethod(AccessionsEntryMethodEnum.DOWNLOAD_FROM_QUERY);
+
+        return downloadJob;
     }
 
 }

@@ -169,6 +169,40 @@ public class MenuService {
         return null;
     }
 
+    private DownloadJob a2GetAccessionListFromQuery(AccessionsEntryMethodEnum accessionsEntryMethodEnum, AuthenticationDetail authenticationDetail) {
+        System.out.println("*** Please provide the search query for downloads");
+        CommonUtils.printSeparatorLine();
+        MenuUtils.printBackMessage();
+        String inputValues = scannerUtils.getNextString();
+        MenuUtils.printEmptyline();
+
+        if ("0".equalsIgnoreCase(inputValues)) {
+            MainRunner.exit();
+        } else if (inputValues.equalsIgnoreCase("b")) { // back
+            aBuildAccessionEntryMenu(authenticationDetail);
+        } else {
+            boolean isValid = MenuUtils.validateSearchRequest(inputValues);
+            if (isValid) {
+                List<String> accessions = CommonUtils.getAccessionFromQuery(inputValues);
+                DownloadJob downloadJob;
+                if (!CollectionUtils.isEmpty(accessions)) {
+                    downloadJob = CommonUtils.processAccessions(accessions);
+                } else {
+                    downloadJob = CommonUtils.processQuery(inputValues);
+                }
+                downloadJob.setQuery(inputValues);
+                if (downloadJob != null) {
+                    downloadJob.setAccessionEntryMethod(accessionsEntryMethodEnum);
+                    return downloadJob;
+                }
+            }
+            System.out.println(MenuUtils.queryErrorMessage);
+            return a2GetAccessionListFromQuery(accessionsEntryMethodEnum, authenticationDetail);
+
+        }
+        return null;
+    }
+
     public void showTypeOfDataMenu() {
         AuthenticationDetail authenticationDetail = null;
         CommonUtils.printSeparatorLine();
@@ -251,8 +285,12 @@ public class MenuService {
                 case DOWNLOAD_FROM_LIST:
                     downloadJob = a2GetAccessionListFromCommaSeparated(accessionsEntryMethodEnum, authenticationDetail);
                     break;
+
+                case DOWNLOAD_FROM_QUERY:
+                    downloadJob = a2GetAccessionListFromQuery(accessionsEntryMethodEnum, authenticationDetail);
             }
-            if (!CollectionUtils.isEmpty(downloadJob.getAccessionList())) {
+            if (accessionsEntryMethodEnum == AccessionsEntryMethodEnum.DOWNLOAD_FROM_QUERY
+                    || !CollectionUtils.isEmpty(downloadJob.getAccessionList())) {
                 // proceed
                 bShowDownloadFormatMenu(downloadJob, authenticationDetail);
             }
