@@ -94,7 +94,6 @@ public class EnaPortalService {
     private final RestTemplate restTemplate;
 
     private static final String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
-    private static final String PORTAL_API_COUNT_URL = "https://www.ebi.ac.uk/ena/portal/api/count?";
     private static final String JSON_FORMAT = "&format=json";
 
 
