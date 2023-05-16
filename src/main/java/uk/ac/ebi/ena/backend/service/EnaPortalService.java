@@ -291,9 +291,8 @@ public class EnaPortalService {
                         }
                 }
         }
-        String dataPortal = Objects.nonNull(authenticationDetail) ? CommonUtils.getDataPortalId(authenticationDetail.getUserName()) : "ena";
-        portalAPIEndpoint = portalAPIEndpoint + "&dataPortal=" + dataPortal +
-                (!StringUtils.equals(dataPortal, "ena") ? "&dccDataOnly=" + true : "");
+        portalAPIEndpoint = portalAPIEndpoint + "&dataPortal=ena" +
+                (Objects.nonNull(authenticationDetail) ? "&dccDataOnly=" + true : "");
         Assert.notNull(accessionList, "Accessions cannot be null");
         String includeAccs = String.join(COMMA, accessionList);
         URI uri = URI.create(Objects.requireNonNull(portalAPIEndpoint));
