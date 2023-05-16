@@ -239,7 +239,7 @@ public class MenuService {
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
-        if (input == "0") { // Exit
+        if (input.equals("0")) { // Exit
             MainRunner.exit();
         } else if (input.equalsIgnoreCase("b")) { // back
             if (authenticationDetail != null) {
