@@ -236,12 +236,20 @@ public class MenuService {
         for (AccessionsEntryMethodEnum accessionsEntryMethodEnum : AccessionsEntryMethodEnum.values()) {
             System.out.println(Constants.toMessage + accessionsEntryMethodEnum.getMessage() + Constants.enterMessage + accessionsEntryMethodEnum.getValue());
         }
-        int input = scannerUtils.getNextInt();
+        MenuUtils.printBackMessage();
+        String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
-        if (input == 0) { // Exit
+        if (input == "0") { // Exit
             MainRunner.exit();
+        } else if (input.equalsIgnoreCase("b")) { // back
+            if (authenticationDetail != null) {
+                requestForDataHubCredentials(authenticationDetail);
+            } else {
+                aBuildAccessionEntryMenu(authenticationDetail);
+            }
         }
-        AccessionsEntryMethodEnum accessionsEntryMethodEnum = AccessionsEntryMethodEnum.valueOf(input);
+
+        AccessionsEntryMethodEnum accessionsEntryMethodEnum = AccessionsEntryMethodEnum.valueOf(Integer.parseInt(input));
         if (accessionsEntryMethodEnum != null) {
             DownloadJob downloadJob = new DownloadJob();
             switch (accessionsEntryMethodEnum) {
