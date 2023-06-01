@@ -76,14 +76,12 @@ directly, and download will also be started. If the user selects 2, then only th
 2. Command to run jar file from Console by providing inputs with accessions
    `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com`
    OR with query
-   `java -jar ena-file-downloader.jar --query=https://www.ebi.ac.uk/ena/portal/api/search?result=read_run&query=country=%22Japan%22AND%20depth=168 --format=READS_FASTQ --location="C:\Users\Documents\ena ebi" --protocol=FTP --asperaLocation=null --email=email@youremail.com`
+   `java -jar ena-file-downloader.jar --query=result=read_run&query=country=%22Japan%22AND%20depth=168 --format=READS_FASTQ --location="C:\Users\Documents\ena ebi" --protocol=FTP --asperaLocation=null --email=email@youremail.com`
 3. Command to run jar file from Console to download files from data hub
    `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com --dataHubUsername=dcc_abc --dataHubPassword=*****`
 
-* `--query` The search query for the download. It can start with the portal API search URL or the part after the search
-  question mark.
-  (`eg : https://www.ebi.ac.uk/ena/portal/api/search?result=read_run&query=country=%22Japan%22AND%20depth=168
-  OR result=read_run&query=country=%22Japan%22AND%20depth=168`)
+* `--query` The search query for the download. It contains the result and the query string.
+  (`eg : result=read_run&query=country=%22Japan%22AND%20depth=168`)
 * `--accessions` Comma separated list of accessions or file path to the accession list. If providing a list, it should
   be a plain text file in TSV (tab separated values) format. If there are more than one column, the first column must be
   the accessions. Header row is optional and will be ignored. Values can be enclosed in double quotes or not.

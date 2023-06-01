@@ -24,6 +24,8 @@ import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
@@ -106,27 +108,33 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static List<String> getAccessionFromQuery(String query) {
-        String[] queryParams = query.split("&");
+    public static List<String> getAccessionFromQuery(String searchQuery) {
+        String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
+        String searchURL = !searchQuery.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_SEARCH_URL + searchQuery :
+                searchQuery;
+        MultiValueMap<String, String> mvm = CommonUtils.getParameters(searchURL);
+        List<String> includeAcc = mvm.get("includeAccessions");
 
-        String includeAccessions = Arrays.stream(queryParams).filter(s -> s.contains("includeAccessions")).findFirst().
-                orElse(null);
-
-        return includeAccessions != null ? Arrays.asList(includeAccessions.split("=")[1].split(",")) :
-                Collections.emptyList();
+        return includeAcc != null && includeAcc.size() > 0 ? includeAcc : Collections.emptyList();
     }
 
     @SneakyThrows
-    public static DownloadJob processQuery(String query) {
-        String[] queryParams = query.split("&");
+    public static DownloadJob processQuery(String searchQuery) {
+        String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
+        String searchURL = !searchQuery.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_SEARCH_URL + searchQuery :
+                searchQuery;
+        MultiValueMap<String, String> mvm = CommonUtils.getParameters(searchURL);
 
-        String result = Arrays.stream(queryParams).filter(s -> s.contains("result")).findFirst().orElse(null);
-
-        AccessionTypeEnum type = AccessionTypeEnum.getAccessionTypeByResult(result.split("=")[1]);
+        String result = mvm.get("result").get(0);
+        AccessionTypeEnum type = AccessionTypeEnum.getAccessionTypeByResult(result);
         if (type == null) {
             System.out.println("Unsupported result provided:" + result);
             throw new Exception("Unsupported result provided:" + result);
         }
         return makeDownloadJob(type.getAccessionField(), null);
+    }
+
+    public static MultiValueMap<String, String> getParameters(String query) {
+        return UriComponentsBuilder.fromUriString(query).build().getQueryParams();
     }
 }

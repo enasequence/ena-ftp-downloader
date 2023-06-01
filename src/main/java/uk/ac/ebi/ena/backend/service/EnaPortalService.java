@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -74,12 +75,12 @@ public class EnaPortalService {
 
     private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
             "=read_run" +
-            "&includeAccessionType=%s&fields=%s&format=json&limit=0";
+            "&includeAccessionType=%s&fields=%s&format=json&limit=0" + Constants.CLIENT_PARAM;
     private static final String PORTAL_API_ANALYSIS_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
             "=analysis" +
-            "&includeAccessionType=%s&fields=%s&format=json&limit=0";
+            "&includeAccessionType=%s&fields=%s&format=json&limit=0" + Constants.CLIENT_PARAM;
     private static final String PORTAL_API_SUPPORT_URL = "https://www.ebi.ac.uk/ena/portal/api/support?email=datasubs" +
-            "@ebi.ac.uk&message=%s&to=%s&subject=%s&name=%s";
+            "@ebi.ac.uk&message=%s&to=%s&subject=%s&name=%s" + Constants.CLIENT_PARAM;
 
     private static final String EXPERIMENT = "experiment";
     private static final String SAMPLE = "sample";
@@ -95,7 +96,7 @@ public class EnaPortalService {
 
     private static final String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
     private static final String JSON_FORMAT = "&format=json";
-
+    private static final String PORTAL_API_COUNT_URL = "https://www.ebi.ac.uk/ena/portal/api/count?";
 
     /**
      * This API will invoke the Portal API and fetch the {@value SEARCH_FIELDS_READ_FASTQ /SEARCH_FIELDS_SUBMITTED}
@@ -366,7 +367,8 @@ public class EnaPortalService {
         authenticationDetail.setAuthenticated(false);
         if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
 
-            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth?dataPortal=" + CommonUtils.getDataPortalId(userName);
+            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth?dataPortal=" + CommonUtils.getDataPortalId(userName)
+                    + Constants.CLIENT_PARAM;
             log.info("portalAPIAuthEndpoint: " + portalAPIAuthEndpoint);
 
             HttpHeaders httpHeaders = new HttpHeaders();
@@ -419,14 +421,14 @@ public class EnaPortalService {
                     return Arrays.stream(response).map(resp -> resp.getRecordId() != null ? resp.getRecordId() :
                             resp.getParentId()).collect(Collectors.toList());
                 } catch (RestClientResponseException rce) {
-                    log.error("Exception encountered while getting accessions for query:{}, @@" + rce.getMessage(), query,
-                            rce);
+                    log.error("Exception encountered while getting accessions for query:{}, @@" + rce.getMessage(),
+                            query, rce);
                     retryCount++;
                 }
 
             }
 
-            log.error("Count not fetch get accessions for query:{} even after {} retries", query, BeanConfig.APP_RETRY);
+            log.error("Could not fetch get accessions for query:{} even after {} retries", query, BeanConfig.APP_RETRY);
             return null;
         } else {
             return Collections.emptyList();
@@ -436,19 +438,46 @@ public class EnaPortalService {
     private String getModifiedUrl(String query) {
         String searchURL = !query.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_SEARCH_URL + query : query;
 
-        String[] queryParams = searchURL.split("&");
+        MultiValueMap<String, String> parameters = CommonUtils.getParameters(query);
 
         //ignore the format if specified
-        String format = Arrays.stream(queryParams).filter(s -> s.contains("format")).findFirst().orElse(null);
-        if (format != null) {
-            String requestedFormat = format.split("=")[1];
-            if (requestedFormat != null && !requestedFormat.equalsIgnoreCase("json"))
-                searchURL = searchURL.replaceFirst(requestedFormat, "json");
+        String format = parameters.get("format").get(0);
+
+        if (format != null && !format.equals("json")) {
+            searchURL = searchURL.replaceFirst(format,"json");
         } else {
             searchURL = searchURL + JSON_FORMAT;
         }
 
         return searchURL;
+    }
+
+    public Long getCount(String searchQuery) {
+        String searchURL = !searchQuery.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_COUNT_URL + searchQuery :
+                StringUtils.replace(searchQuery, PORTAL_API_SEARCH_URL, PORTAL_API_COUNT_URL);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Content-Type", Constants.URLENCODED);
+        httpHeaders.add("Accept", Constants.APPLICATION_JSON);
+        URI uri = URI.create(Objects.requireNonNull(searchURL));
+        int retryCount = 0;
+
+        while (retryCount <= BeanConfig.APP_RETRY) {
+            try {
+                String count = restTemplate.postForObject(uri, httpHeaders, String.class);
+                if (count != null) {
+                    return Long.valueOf(count);
+                }
+            } catch (RestClientResponseException rce) {
+                log.error("Exception encountered while getting count for query:{}, @@" + rce.getMessage(), searchQuery,
+                        rce);
+                retryCount++;
+            }
+
+        }
+
+        log.error("Could not fetch get count for query:{} even after {} retries", searchQuery, BeanConfig.APP_RETRY);
+        return null;
     }
 }
 

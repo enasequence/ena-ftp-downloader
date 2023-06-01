@@ -169,7 +169,7 @@ public class MenuService {
         return null;
     }
 
-    private DownloadJob a2GetAccessionListFromQuery(AccessionsEntryMethodEnum accessionsEntryMethodEnum, AuthenticationDetail authenticationDetail) {
+    private DownloadJob a2GetAccessionListFromQuery(AccessionsEntryMethodEnum accessionsEntryMethodEnum, AuthenticationDetail authenticationDetail){
         System.out.println("*** Please provide the search query for downloads");
         CommonUtils.printSeparatorLine();
         MenuUtils.printBackMessage();
@@ -182,18 +182,29 @@ public class MenuService {
             aBuildAccessionEntryMenu(authenticationDetail);
         } else {
             boolean isValid = MenuUtils.validateSearchRequest(inputValues);
+
             if (isValid) {
-                List<String> accessions = CommonUtils.getAccessionFromQuery(inputValues);
-                DownloadJob downloadJob;
-                if (!CollectionUtils.isEmpty(accessions)) {
-                    downloadJob = CommonUtils.processAccessions(accessions);
-                } else {
-                    downloadJob = CommonUtils.processQuery(inputValues);
-                }
-                downloadJob.setQuery(inputValues);
-                if (downloadJob != null) {
-                    downloadJob.setAccessionEntryMethod(accessionsEntryMethodEnum);
-                    return downloadJob;
+                Long count = portalService.getCount(inputValues);
+                if (count != null) {
+                    if (count > 0) {
+                        System.out.println("This query matches " + count + " records.");
+                    } else if (count == 0) {
+                        System.out.println("No records matching the query could be found.");
+                        System.exit(0);
+                    }
+
+                    List<String> accessions = CommonUtils.getAccessionFromQuery(inputValues);
+                    DownloadJob downloadJob;
+                    if (!CollectionUtils.isEmpty(accessions)) {
+                        downloadJob = CommonUtils.processAccessions(accessions);
+                    } else {
+                        downloadJob = CommonUtils.processQuery(inputValues);
+                    }
+                    downloadJob.setQuery(inputValues);
+                    if (downloadJob != null) {
+                        downloadJob.setAccessionEntryMethod(accessionsEntryMethodEnum);
+                        return downloadJob;
+                    }
                 }
             }
             System.out.println(MenuUtils.queryErrorMessage);

@@ -45,5 +45,7 @@ public class Constants {
     public static final String URLENCODED = "application/x-www-form-urlencoded";
     public static final String APPLICATION_JSON = "application/json";
 
+    public static final String CLIENT_PARAM = "&client=file_downloader";
+
 
 }
