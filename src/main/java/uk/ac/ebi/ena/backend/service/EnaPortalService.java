@@ -436,7 +436,7 @@ public class EnaPortalService {
     }
 
     private String getModifiedUrl(String query) {
-        String searchURL = !query.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_SEARCH_URL + query : query;
+        String searchURL = PORTAL_API_SEARCH_URL + query;
 
         MultiValueMap<String, String> parameters = CommonUtils.getParameters(query);
 
@@ -453,8 +453,7 @@ public class EnaPortalService {
     }
 
     public Long getCount(String searchQuery) {
-        String searchURL = !searchQuery.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_COUNT_URL + searchQuery :
-                StringUtils.replace(searchQuery, PORTAL_API_SEARCH_URL, PORTAL_API_COUNT_URL);
+        String searchURL =  PORTAL_API_COUNT_URL + searchQuery;
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Content-Type", Constants.URLENCODED);

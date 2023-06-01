@@ -110,8 +110,7 @@ public class CommonUtils {
     @SneakyThrows
     public static List<String> getAccessionFromQuery(String searchQuery) {
         String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
-        String searchURL = !searchQuery.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_SEARCH_URL + searchQuery :
-                searchQuery;
+        String searchURL = PORTAL_API_SEARCH_URL + searchQuery;
         MultiValueMap<String, String> mvm = CommonUtils.getParameters(searchURL);
         List<String> includeAcc = mvm.get("includeAccessions");
 
@@ -121,8 +120,7 @@ public class CommonUtils {
     @SneakyThrows
     public static DownloadJob processQuery(String searchQuery) {
         String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
-        String searchURL = !searchQuery.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_SEARCH_URL + searchQuery :
-                searchQuery;
+        String searchURL =  PORTAL_API_SEARCH_URL + searchQuery;
         MultiValueMap<String, String> mvm = CommonUtils.getParameters(searchURL);
 
         String result = mvm.get("result").get(0);

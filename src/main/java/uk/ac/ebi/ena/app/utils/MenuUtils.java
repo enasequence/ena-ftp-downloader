@@ -231,8 +231,7 @@ public class MenuUtils {
 
     public static boolean validateSearchRequest(String searchQuery) {
         //use utils to validate the whole http request and parse it
-        String searchURL = !searchQuery.startsWith(PORTAL_API_SEARCH_URL) ? PORTAL_API_SEARCH_URL + searchQuery :
-                searchQuery;
+        String searchURL =  PORTAL_API_SEARCH_URL + searchQuery;
         try {
             new URI(searchURL).toURL();
         }catch (MalformedURLException | URISyntaxException e) {
