@@ -34,7 +34,6 @@ import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
-import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.backend.config.BeanConfig;
 import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
@@ -291,8 +290,7 @@ public class EnaPortalService {
                         }
                 }
         }
-        portalAPIEndpoint = portalAPIEndpoint + "&dataPortal=ena" +
-                (Objects.nonNull(authenticationDetail) ? "&dccDataOnly=" + true : "");
+        portalAPIEndpoint = portalAPIEndpoint + (Objects.nonNull(authenticationDetail) ? "&dccDataOnly=" + true : "");
         Assert.notNull(accessionList, "Accessions cannot be null");
         String includeAccs = String.join(COMMA, accessionList);
         URI uri = URI.create(Objects.requireNonNull(portalAPIEndpoint));
@@ -360,7 +358,7 @@ public class EnaPortalService {
         authenticationDetail.setAuthenticated(false);
         if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
 
-            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth?dataPortal=ena";
+            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth";
             log.info("portalAPIAuthEndpoint: " + portalAPIAuthEndpoint);
 
             HttpHeaders httpHeaders = new HttpHeaders();
