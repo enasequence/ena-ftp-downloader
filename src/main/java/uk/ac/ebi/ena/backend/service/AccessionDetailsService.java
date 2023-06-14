@@ -112,7 +112,10 @@ public class AccessionDetailsService {
                                                    AuthenticationDetail authenticationDetail) {
 
         AccessionTypeEnum accessionType = AccessionTypeEnum.getAccessionType(downloadJob.getAccessionField());
-        List<List<String>> accLists = Collections.synchronizedList(Lists.partition(downloadJob.getAccessionList(), 10000));
+        List<List<String>> accLists = downloadJob.getAccessionList() != null ?
+                Collections.synchronizedList(Lists.partition(downloadJob.getAccessionList(), 10000)) :
+                Collections.synchronizedList(Lists.partition(enaPortalService.getAccessions(downloadJob.getQuery()),
+                        10000));
         long total = 0;
         long totalFiles = 0;
         for (List<String> accs : accLists) {
@@ -123,17 +126,20 @@ public class AccessionDetailsService {
         final ProgressBarBuilder portalPB = getProgressBarBuilder("Getting file details from ENA Portal API", -1);
 
         List<List<FileDetail>> listList = new ArrayList<>();
-        for (List<String> accList : ProgressBar.wrap(accLists, portalPB)) {
-            final List<List<String>> partitions = Lists.partition(accList,
-                    accList.size() > CHUNK_SIZE * 5 ? CHUNK_SIZE : (int) Math.ceil(new Double(accList.size()) / 5));
-            for (List<String> partition : partitions) {
-                final List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(partition, format,
-                        protocol, downloadJob, authenticationDetail);
-                final List<FileDetail> fileDetails = createFileDetails(portalResponses);
-                totalFiles += fileDetails.size();
-                listList.add(fileDetails);
+        if (accLists != null) {
+            for (List<String> accList : ProgressBar.wrap(accLists, portalPB)) {
+                final List<List<String>> partitions = Lists.partition(accList,
+                        accList.size() > CHUNK_SIZE * 5 ? CHUNK_SIZE : (int) Math.ceil(new Double(accList.size()) / 5));
+                for (List<String> partition : partitions) {
+                    final List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(partition, format,
+                            protocol, downloadJob, authenticationDetail);
+                    final List<FileDetail> fileDetails = createFileDetails(portalResponses);
+                    totalFiles += fileDetails.size();
+                    listList.add(fileDetails);
+                }
             }
         }
+
         if (totalFiles == 0) {
             System.out.println("No records found for the accessions submitted under type=" + accessionType + " format=" + format);
         }
@@ -221,6 +227,5 @@ public class AccessionDetailsService {
 
         return failedDownloadsCount;
     }
-
 
 }

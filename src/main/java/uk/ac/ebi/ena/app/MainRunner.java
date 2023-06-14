@@ -35,6 +35,7 @@ import uk.ac.ebi.ena.app.menu.services.MenuService;
 import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.app.utils.MenuUtils;
 import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
+import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.service.BackendService;
 import uk.ac.ebi.ena.backend.service.EnaPortalService;
 
@@ -75,6 +76,9 @@ public class MainRunner implements CommandLineRunner {
     @Value("${dataHubPassword:#{null}}")
     public String password;
 
+    @Value("${query:#{null}}")
+    public String query;
+
     MenuService menuBuilder;
     private BackendService backendService;
 
@@ -103,15 +107,20 @@ public class MainRunner implements CommandLineRunner {
             if (args.length >= 4) {
                 System.out.println("Provided parameters:\n" + StringUtils.join(args, "\n"));
                 try {
-                    validateInputs(accessions, formatStr, downloadLocation, protocolStr, asperaLocation, userName, password);
+                    validateInputs(accessions, query, formatStr, downloadLocation, protocolStr, asperaLocation, userName, password);
                     trimInputs(downloadLocation, asperaLocation, accessions, userName);
                     DownloadFormatEnum format = DownloadFormatEnum.valueOf(formatStr);
                     protocolStr = StringUtils.trim(protocolStr);
                     ProtocolEnum protocol = ProtocolEnum.valueOf(protocolStr.toUpperCase());
-
+                    DownloadJob downloadJob = null;
+                    if (accessions != null) {
+                        downloadJob = MenuUtils.parseAccessions(accessions);
+                    } else if (query != null) {
+                        downloadJob = MenuUtils.parseQuery(query);
+                    }
                     emailId = StringUtils.trim(emailId);
                     backendService.startDownload(format, downloadLocation,
-                            MenuUtils.parseAccessions(accessions), protocol, asperaLocation,
+                            downloadJob, protocol, asperaLocation,
                             emailId, authenticationDetail);
                     console.info("Downloads Completed");
 
@@ -145,10 +154,12 @@ public class MainRunner implements CommandLineRunner {
         this.userName = StringUtils.trim(userName);
     }
 
-    private void validateInputs(String accessions, String formatStr, String downloadLocation, String protocolStr,
+    private void validateInputs(String accessions, String query, String formatStr, String downloadLocation, String protocolStr,
                                 String asperaLocation, String userName, String password) throws AuthException {
-        if (StringUtils.isEmpty(accessions)) {
-            throw new IllegalArgumentException("Please provide comma separated list of accessions or file path to the accession list");
+        if (StringUtils.isEmpty(accessions) && StringUtils.isEmpty(query)) {
+            throw new IllegalArgumentException("Please provide comma separated list of accessions or file path to the accession list or search query");
+        } else if (StringUtils.isNotBlank(query) && !MenuUtils.validateSearchRequest(query)) {
+            throw new IllegalArgumentException("Please provide a valid search query for the download (`eg : https://www.ebi.ac.uk/ena/portal/api/search?result=read_run&query=country=%22Bangladesh%22`)");
         } else if (!EnumUtils.isValidEnum(DownloadFormatEnum.class, formatStr)) {
             throw new IllegalArgumentException("Please provide a valid format for the download (`eg : READS_FASTQ,READS_SUBMITTED,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)");
         } else if (StringUtils.isEmpty(downloadLocation)) {
