@@ -35,7 +35,6 @@ import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
-import uk.ac.ebi.ena.app.utils.CommonUtils;
 import uk.ac.ebi.ena.backend.config.BeanConfig;
 import uk.ac.ebi.ena.backend.dto.AuthenticationDetail;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
@@ -297,9 +296,7 @@ public class EnaPortalService {
                         }
                 }
         }
-        String dataPortal = Objects.nonNull(authenticationDetail) ? CommonUtils.getDataPortalId(authenticationDetail.getUserName()) : "ena";
-        portalAPIEndpoint = portalAPIEndpoint + "&dataPortal=" + dataPortal +
-                (Objects.nonNull(authenticationDetail) ? "&dccDataOnly=" + true : "");
+        portalAPIEndpoint = portalAPIEndpoint + (Objects.nonNull(authenticationDetail) ? "&dccDataOnly=" + true : "");
         Assert.notNull(accessionList, "Accessions cannot be null");
         String includeAccs = String.join(COMMA, accessionList);
         URI uri = URI.create(Objects.requireNonNull(portalAPIEndpoint));
@@ -367,8 +364,7 @@ public class EnaPortalService {
         authenticationDetail.setAuthenticated(false);
         if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
 
-            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth?dataPortal=" + CommonUtils.getDataPortalId(userName)
-                    + Constants.CLIENT_PARAM;
+            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth? "+ Constants.CLIENT_PARAM;
             log.info("portalAPIAuthEndpoint: " + portalAPIAuthEndpoint);
 
             HttpHeaders httpHeaders = new HttpHeaders();
@@ -448,38 +444,3 @@ public class EnaPortalService {
         } else {
             searchURL = searchURL + JSON_FORMAT;
         }
-
-        return searchURL;
-    }
-
-    public Long getCount(String searchQuery) {
-        String searchURL = PORTAL_API_COUNT_URL + searchQuery;
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Content-Type", Constants.URLENCODED);
-        httpHeaders.add("Accept", Constants.APPLICATION_JSON);
-        URI uri = URI.create(Objects.requireNonNull(searchURL));
-        int retryCount = 0;
-
-        while (retryCount <= BeanConfig.APP_RETRY) {
-            try {
-                String count = restTemplate.postForObject(uri, httpHeaders, String.class);
-                if (count != null) {
-                    return Long.valueOf(count);
-                }
-            } catch (RestClientResponseException rce) {
-                log.error("Exception encountered while getting count for query:{}, @@" + rce.getMessage(), searchQuery,
-                        rce);
-                retryCount++;
-            }
-
-        }
-
-        log.error("Could not fetch get count for query:{} even after {} retries", searchQuery, BeanConfig.APP_RETRY);
-        return null;
-    }
-}
-
-
-
-

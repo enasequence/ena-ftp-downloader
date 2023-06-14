@@ -98,7 +98,7 @@ public class MenuService {
         MenuUtils.printEmptyline();
         if ("0".equalsIgnoreCase(inputValues)) {
             MainRunner.exit();
-        } else if (inputValues.equalsIgnoreCase("b")) { // back
+        } else if ("b".equalsIgnoreCase(inputValues)) { // back
             aBuildAccessionEntryMenu(authenticationDetail);
         } else {
             try {
@@ -147,7 +147,7 @@ public class MenuService {
 
         if ("0".equalsIgnoreCase(inputValues)) {
             MainRunner.exit();
-        } else if (inputValues.equalsIgnoreCase("b")) { // back
+        } else if ("b".equalsIgnoreCase(inputValues)) { // back
             aBuildAccessionEntryMenu(authenticationDetail);
         } else {
             String[] accessions = inputValues.split(",");
@@ -227,11 +227,11 @@ public class MenuService {
         MenuUtils.printEmptyline();
         if (StringUtils.isEmpty(input)) {
             aBuildAccessionEntryMenu(authenticationDetail);
-        } else if (input.equals("0")) {
+        } else if ("0".equals(input)) {
             MainRunner.exit();
-        } else if (input.equals("1")) {
+        } else if ("1".equals(input)) {
             aBuildAccessionEntryMenu(authenticationDetail);
-        } else if (input.equals("2")) { // Flow to download the files from datahub
+        } else if ("2".equals(input)) { // Flow to download the files from datahub
             requestForDataHubCredentials(authenticationDetail);
         }
     }
@@ -281,12 +281,20 @@ public class MenuService {
         for (AccessionsEntryMethodEnum accessionsEntryMethodEnum : AccessionsEntryMethodEnum.values()) {
             System.out.println(Constants.toMessage + accessionsEntryMethodEnum.getMessage() + Constants.enterMessage + accessionsEntryMethodEnum.getValue());
         }
-        int input = scannerUtils.getNextInt();
+        MenuUtils.printBackMessage();
+        String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
-        if (input == 0) { // Exit
+        if ("0".equals(input)) { // Exit
             MainRunner.exit();
+        } else if ("b".equalsIgnoreCase(input)) { // back
+            if (authenticationDetail != null) {
+                requestForDataHubCredentials(authenticationDetail);
+            } else {
+                aBuildAccessionEntryMenu(authenticationDetail);
+            }
         }
-        AccessionsEntryMethodEnum accessionsEntryMethodEnum = AccessionsEntryMethodEnum.valueOf(input);
+
+        AccessionsEntryMethodEnum accessionsEntryMethodEnum = AccessionsEntryMethodEnum.valueOf(Integer.parseInt(input));
         if (accessionsEntryMethodEnum != null) {
             DownloadJob downloadJob = new DownloadJob();
             switch (accessionsEntryMethodEnum) {
@@ -358,9 +366,9 @@ public class MenuService {
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
-        if (input.equalsIgnoreCase("b")) { // back
+        if ("b".equalsIgnoreCase(input)) { // back
             bShowDownloadFormatMenu(downloadJob, authenticationDetail);
-        } else if (input.equalsIgnoreCase("0")) {
+        } else if ("0".equalsIgnoreCase(input)) {
             MainRunner.exit();
         } else if (StringUtils.isNotEmpty(input)) {
             if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
@@ -412,7 +420,7 @@ public class MenuService {
 
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
-        if (input.equalsIgnoreCase("b")) { // back
+        if ("b".equalsIgnoreCase(input)) { // back
             dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
         } else if (StringUtils.isNotEmpty(input)) {
             boolean isValidId = MenuUtils.isValidEmailAddress(input);
@@ -506,9 +514,9 @@ public class MenuService {
         MenuUtils.printBackMessage();
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
-        if (input.equalsIgnoreCase("b")) { // back
+        if ("b".equalsIgnoreCase(input)) { // back
             return dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
-        } else if (input.equalsIgnoreCase("0")) {
+        } else if ("0".equalsIgnoreCase(input)) {
             MainRunner.exit();
         } else if (StringUtils.isNotEmpty(input)) {
             boolean isValidLocation = MenuUtils.isValidAsperaConnectLoc(input);

@@ -93,19 +93,6 @@ public class CommonUtils {
         return Constants.ascpFileName + CommonUtils.getAscpExtension();
     }
 
-    public static String getDataPortalId(String userName) {
-        if (StringUtils.isNotEmpty(userName) && StringUtils.startsWith(userName, "dcc_")) {
-            if ("metagenome".equalsIgnoreCase(StringUtils.substringAfter(userName, "dcc_"))) {
-                return "metagenome";
-            } else if ("compare".equalsIgnoreCase(StringUtils.substringAfter(userName, "dcc_"))) {
-                return "pathogen";
-            } else if ("faang".equalsIgnoreCase(StringUtils.substringAfter(userName, "dcc_"))) {
-                return "faang";
-            }
-        }
-        return "ena";
-    }
-
     @SneakyThrows
     public static List<String> getAccessionFromQuery(String searchQuery) {
         String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
@@ -134,4 +121,5 @@ public class CommonUtils {
     public static MultiValueMap<String, String> getParameters(String query) {
         return UriComponentsBuilder.fromUriString(query).build().getQueryParams();
     }
+
 }
