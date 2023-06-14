@@ -441,10 +441,10 @@ public class EnaPortalService {
         MultiValueMap<String, String> parameters = CommonUtils.getParameters(query);
 
         //ignore the format if specified
-        String format = parameters.get("format").get(0);
+        String format = parameters.get("format") != null ? parameters.get("format").get(0) : null;
 
         if (format != null && !format.equals("json")) {
-            searchURL = searchURL.replaceFirst(format,"json");
+            searchURL = searchURL.replaceFirst(format, "json");
         } else {
             searchURL = searchURL + JSON_FORMAT;
         }
@@ -453,7 +453,7 @@ public class EnaPortalService {
     }
 
     public Long getCount(String searchQuery) {
-        String searchURL =  PORTAL_API_COUNT_URL + searchQuery;
+        String searchURL = PORTAL_API_COUNT_URL + searchQuery;
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Content-Type", Constants.URLENCODED);

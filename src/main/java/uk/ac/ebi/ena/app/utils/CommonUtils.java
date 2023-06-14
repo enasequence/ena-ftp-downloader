@@ -30,7 +30,6 @@ import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -120,10 +119,10 @@ public class CommonUtils {
     @SneakyThrows
     public static DownloadJob processQuery(String searchQuery) {
         String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
-        String searchURL =  PORTAL_API_SEARCH_URL + searchQuery;
+        String searchURL = PORTAL_API_SEARCH_URL + searchQuery;
         MultiValueMap<String, String> mvm = CommonUtils.getParameters(searchURL);
 
-        String result = mvm.get("result").get(0);
+        String result = mvm.get("result") != null ? mvm.get("result").get(0) : null;
         AccessionTypeEnum type = AccessionTypeEnum.getAccessionTypeByResult(result);
         if (type == null) {
             System.out.println("Unsupported result provided:" + result);
