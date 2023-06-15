@@ -75,12 +75,12 @@ public class EnaPortalService {
 
     private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
             "=read_run" +
-            "&includeAccessionType=%s&fields=%s&format=json&limit=0";
+            "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
     private static final String PORTAL_API_ANALYSIS_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
             "=analysis" +
-            "&includeAccessionType=%s&fields=%s&format=json&limit=0";
+            "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
     private static final String PORTAL_API_SUPPORT_URL = "https://www.ebi.ac.uk/ena/portal/api/support?email=datasubs" +
-            "@ebi.ac.uk&message=%s&to=%s&subject=%s&name=%s";
+            "@ebi.ac.uk&message=%s&to=%s&subject=%s&name=%s"+Constants.CLIENT_PARAM;
 
     private static final String EXPERIMENT = "experiment";
     private static final String SAMPLE = "sample";
@@ -365,7 +365,8 @@ public class EnaPortalService {
         authenticationDetail.setAuthenticated(false);
         if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
 
-            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth"+ Constants.CLIENT_PARAM;
+            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth"+
+                    StringUtils.replace(Constants.CLIENT_PARAM, "&","?");
             log.info("portalAPIAuthEndpoint: " + portalAPIAuthEndpoint);
 
             HttpHeaders httpHeaders = new HttpHeaders();
@@ -435,7 +436,7 @@ public class EnaPortalService {
     private String getModifiedUrl(String query) {
         String searchURL = PORTAL_API_SEARCH_URL + query;
 
-        MultiValueMap<String, String> parameters = CommonUtils.getParameters(query);
+        MultiValueMap<String, String> parameters = CommonUtils.getParameters(searchURL);
 
         //ignore the format if specified
         String format = parameters.get("format") != null ? parameters.get("format").get(0) : null;
