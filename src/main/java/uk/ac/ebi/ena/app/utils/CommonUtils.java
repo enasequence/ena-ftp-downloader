@@ -24,10 +24,13 @@ import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -88,5 +91,34 @@ public class CommonUtils {
 
     public static String getAscpFileName() {
         return Constants.ascpFileName + CommonUtils.getAscpExtension();
+    }
+
+    @SneakyThrows
+    public static List<String> getAccessionFromQuery(String searchQuery) {
+        String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
+        String searchURL = PORTAL_API_SEARCH_URL + searchQuery;
+        MultiValueMap<String, String> mvm = CommonUtils.getParameters(searchURL);
+        List<String> includeAcc = mvm.get("includeAccessions");
+
+        return includeAcc != null && includeAcc.size() > 0 ? includeAcc : Collections.emptyList();
+    }
+
+    @SneakyThrows
+    public static DownloadJob processQuery(String searchQuery) {
+        String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
+        String searchURL = PORTAL_API_SEARCH_URL + searchQuery;
+        MultiValueMap<String, String> mvm = CommonUtils.getParameters(searchURL);
+
+        String result = mvm.get("result") != null ? mvm.get("result").get(0) : null;
+        AccessionTypeEnum type = AccessionTypeEnum.getAccessionTypeByResult(result);
+        if (type == null) {
+            System.out.println("Unsupported result provided:" + result);
+            throw new Exception("Unsupported result provided:" + result);
+        }
+        return makeDownloadJob(type.getAccessionField(), null);
+    }
+
+    public static MultiValueMap<String, String> getParameters(String query) {
+        return UriComponentsBuilder.fromUriString(query).build().getQueryParams();
     }
 }

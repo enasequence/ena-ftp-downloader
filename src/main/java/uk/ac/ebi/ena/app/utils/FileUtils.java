@@ -114,9 +114,12 @@ public class FileUtils {
                     asperaLocation = addDoubleQuotes(Paths.get(asperaLocation));
                 }
                 List<String> accessionList = downloadJob.getAccessionList();
+                String query = downloadJob.getQuery();
 
                 String content =
-                        "java -jar " + getJarPath() + " --accessions=" + StringUtils.join(accessionList, ',') +
+                        "java -jar " + getJarPath() + (Objects.nonNull(accessionList) ?
+                                " --accessions=" + StringUtils.join(accessionList, ',') : " --query=" + "\""
+                                + query + "\"") +
                                 " --format=" + format + " --location=" + location + " --protocol=" + protocol +
                                 " --asperaLocation=" + asperaLocation + " --email=" + emailId +
                                 (Objects.nonNull(authenticationDetail) ?

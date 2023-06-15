@@ -11,5 +11,6 @@ public class DownloadJob {
     private String accessionField = null;
     private List<String> accessionList = new ArrayList<>();
     private AccessionsEntryMethodEnum accessionEntryMethod;
+    private String query;
 
 }
