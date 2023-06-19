@@ -24,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.ena.app.constants.Constants;
 import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.AccessionsEntryMethodEnum;
@@ -33,6 +35,9 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -74,6 +79,9 @@ public class MenuUtils {
     public static final String accessionsSameTypeErrorMessage = "Please provide valid accessions of the same type! ";
 
     private static final String ACCESSION = "accession";
+
+    public static final String queryErrorMessage = "Please provide valid search query! ";
+    private static final String PORTAL_API_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?";
 
     public static void printBackMessage() {
         System.out.println(Constants.backMessage);
@@ -219,6 +227,34 @@ public class MenuUtils {
             return Pattern.matches(type.getPattern(), firstColumn);
         }
         return false;
+    }
+
+    public static boolean validateSearchRequest(String searchQuery) {
+        //use utils to validate the whole http request and parse it
+        String searchURL =  PORTAL_API_SEARCH_URL + searchQuery;
+        try {
+            new URI(searchURL).toURL();
+        }catch (MalformedURLException | URISyntaxException e) {
+            log.error("Search query is not valid "+e);
+            return false;
+        }
+        MultiValueMap<String, String> parameters = CommonUtils.getParameters(searchURL);
+
+        return parameters.get("result") != null;
+    }
+
+    public static DownloadJob parseQuery(String query) {
+        List<String> accessions = CommonUtils.getAccessionFromQuery(query);
+        DownloadJob downloadJob;
+        if (!CollectionUtils.isEmpty(accessions)) {
+            downloadJob = CommonUtils.processAccessions(accessions);
+        } else {
+            downloadJob = CommonUtils.processQuery(query);
+        }
+        downloadJob.setQuery(query);
+        downloadJob.setAccessionEntryMethod(AccessionsEntryMethodEnum.DOWNLOAD_FROM_QUERY);
+
+        return downloadJob;
     }
 
 }
