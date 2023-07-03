@@ -270,12 +270,12 @@ public class MenuService {
         CommonUtils.printSeparatorLine();
         MenuUtils.printEmptyline();
         MenuUtils.printPasswordMessage();
-        MenuUtils.printEmptyline();
 
         return scannerUtils.getNextString();
     }
 
     public void aBuildAccessionEntryMenu(AuthenticationDetail authenticationDetail) {
+        MenuUtils.printEmptyline();
         System.out.println("*** How would you like to enter accessions?");
         CommonUtils.printSeparatorLine();
         for (AccessionsEntryMethodEnum accessionsEntryMethodEnum : AccessionsEntryMethodEnum.values()) {

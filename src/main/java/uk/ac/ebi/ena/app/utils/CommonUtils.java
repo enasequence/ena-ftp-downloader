@@ -121,5 +121,4 @@ public class CommonUtils {
     public static MultiValueMap<String, String> getParameters(String query) {
         return UriComponentsBuilder.fromUriString(query).build().getQueryParams();
     }
-
 }
