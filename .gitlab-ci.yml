@@ -47,8 +47,9 @@ deploy_prod:
     # Setup SSH deploy keys
     - 'which ssh-agent || ( apt-get install -qq openssh-client )'
     - eval $(ssh-agent -s)
-    - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - ssh-add <(echo "$CODON_DATALIB_SSH_PVT_KEY")
     - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
   script:
     - chmod u+x build/dist/${APP_NAME_VERSION}
     - scp -o StrictHostKeyChecking=no build/dist/${APP_NAME_VERSION} datalib@codon-login-01.ebi.ac.uk:${FTP_STG_DIR}
