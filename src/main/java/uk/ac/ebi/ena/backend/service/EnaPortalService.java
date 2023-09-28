@@ -455,7 +455,7 @@ public class EnaPortalService {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Content-Type", Constants.URLENCODED);
-        httpHeaders.add("Accept", Constants.APPLICATION_JSON);
+        httpHeaders.add("Accept", Constants.TEXT_PLAIN);
         URI uri = URI.create(Objects.requireNonNull(searchURL));
         int retryCount = 0;
 
