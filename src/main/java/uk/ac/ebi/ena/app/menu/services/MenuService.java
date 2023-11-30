@@ -129,7 +129,7 @@ public class MenuService {
                 } else {
                     System.out.println(MenuUtils.accessionsFileErrorMessage);
                     MenuUtils.printEmptyline();
-                    a1GetAccessionListFromFilePath(accessionsEntry, authenticationDetail);
+                    return a1GetAccessionListFromFilePath(accessionsEntry, authenticationDetail);
                 }
             } catch (Exception e) {
                 log.error("Exception occurred while reading accessions from file.", e);
@@ -370,14 +370,12 @@ public class MenuService {
             bShowDownloadFormatMenu(downloadJob, authenticationDetail);
         } else if ("0".equalsIgnoreCase(input)) {
             MainRunner.exit();
-        } else if (StringUtils.isNotEmpty(input)) {
-            if (FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
-                if (Objects.nonNull(authenticationDetail)) {
-                    //Set FTP protocol selection and skip protocol selection menu
-                    eRequestEmailId(format, input, downloadJob, ProtocolEnum.FTP, null, authenticationDetail);
-                } else {
-                    dRequestProtocolSelection(format, input, downloadJob, null);
-                }
+        } else if (StringUtils.isNotEmpty(input) && FileUtils.isDirectoryExists(input) && new File(input).canWrite()) {
+            if (Objects.nonNull(authenticationDetail)) {
+                //Set FTP protocol selection and skip protocol selection menu
+                eRequestEmailId(format, input, downloadJob, ProtocolEnum.FTP, null, authenticationDetail);
+            } else {
+                dRequestProtocolSelection(format, input, downloadJob, null);
             }
         } else {
             // replay
@@ -403,11 +401,11 @@ public class MenuService {
         switch (protocolEnum) {
             case ASPERA:
                 String asperaConnectLocation = d1RequestAsperaConnectOption(format, location, downloadJob, null);
-                return eRequestEmailId(format, location, downloadJob, protocolEnum, asperaConnectLocation, null);
+                eRequestEmailId(format, location, downloadJob, protocolEnum, asperaConnectLocation, null);
             case FTP:
-                return eRequestEmailId(format, location, downloadJob, protocolEnum, null, authenticationDetail);
+                eRequestEmailId(format, location, downloadJob, protocolEnum, null, authenticationDetail);
         }
-        return null;
+        return protocolEnum.name();
 
     }
 
@@ -433,7 +431,7 @@ public class MenuService {
         } else {
             fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, NONE, authenticationDetail);
         }
-        return null;
+        return input;
     }
 
     private void fShowConfirmationAndPerformAction(DownloadFormatEnum format, String location,
