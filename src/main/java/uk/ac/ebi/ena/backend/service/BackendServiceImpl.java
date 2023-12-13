@@ -100,7 +100,7 @@ public class BackendServiceImpl implements BackendService {
 
 
         console.info("{} files successfully downloaded for accessionField:{}, format:{} to {}",
-                count.get(), downloadJob.getAccessionField(), format, location);
+                count.get() - finallyFailedFiles.size(), downloadJob.getAccessionField(), format, location);
 
         if (finallyFailedFiles.size() > 0) {
             console.info("{} files failed to be downloaded for accessionField:{}, format:{}",
