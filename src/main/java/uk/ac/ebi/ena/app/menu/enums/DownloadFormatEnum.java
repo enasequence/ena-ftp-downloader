@@ -32,8 +32,9 @@ import java.util.List;
 public enum DownloadFormatEnum {
     READS_FASTQ(1, "Read files Fastq", Arrays.asList(AccessionTypeEnum.RUN.getAccessionField(), AccessionTypeEnum.STUDY.getAccessionField(), AccessionTypeEnum.SAMPLE.getAccessionField(), AccessionTypeEnum.EXPERIMENT.getAccessionField())),
     READS_SUBMITTED(2, "Read files Submitted", Arrays.asList(AccessionTypeEnum.RUN.getAccessionField(), AccessionTypeEnum.STUDY.getAccessionField(), AccessionTypeEnum.SAMPLE.getAccessionField(), AccessionTypeEnum.EXPERIMENT.getAccessionField())),
-    ANALYSIS_SUBMITTED(3, "Analysis files Submitted", Arrays.asList(AccessionTypeEnum.STUDY.getAccessionField(), AccessionTypeEnum.ANALYSIS.getAccessionField())),
-    ANALYSIS_GENERATED(4, "Analysis files Generated", Arrays.asList(AccessionTypeEnum.STUDY.getAccessionField(), AccessionTypeEnum.ANALYSIS.getAccessionField()));
+    READS_BAM(3, "Read files Bam", Arrays.asList(AccessionTypeEnum.RUN.getAccessionField(), AccessionTypeEnum.STUDY.getAccessionField(), AccessionTypeEnum.SAMPLE.getAccessionField(), AccessionTypeEnum.EXPERIMENT.getAccessionField())),
+    ANALYSIS_SUBMITTED(4, "Analysis files Submitted", Arrays.asList(AccessionTypeEnum.STUDY.getAccessionField(), AccessionTypeEnum.ANALYSIS.getAccessionField())),
+    ANALYSIS_GENERATED(5, "Analysis files Generated", Arrays.asList(AccessionTypeEnum.STUDY.getAccessionField(), AccessionTypeEnum.ANALYSIS.getAccessionField()));
 
     private int value;
     private String message;
