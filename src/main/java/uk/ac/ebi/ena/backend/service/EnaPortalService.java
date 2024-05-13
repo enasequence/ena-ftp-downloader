@@ -64,14 +64,17 @@ public class EnaPortalService {
     public static final String SEARCH_FIELDS_READ_FASTQ = ",fastq_bytes,fastq_md5";
     public static final String SEARCH_FIELDS_SUBMITTED = ",submitted_bytes,submitted_md5";
     public static final String SEARCH_FIELDS_GENERATED = ",generated_bytes,generated_md5";
+    public static final String SEARCH_FIELDS_READ_BAM = ",bam_bytes,bam_md5";
 
     public static final String FASTQ_FTP_FIELD = ",fastq_ftp";
     public static final String SUBMITTED_FTP_FIELD = ",submitted_ftp";
     public static final String GENERATED_FTP_FIELD = ",generated_ftp";
+    public static final String FASTQ_BAM_FIELD = ",bam_ftp";
 
     public static final String GENERATED_ASPERA_FIELD = ",generated_aspera";
     public static final String FASTQ_ASPERA_FIELD = ",fastq_aspera";
     public static final String SUBMITTED_ASPERA_FIELD = ",submitted_aspera";
+    public static final String BAM_ASPERA_FIELD = ",bam_aspera";
 
     private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
             "=read_run" +
@@ -134,6 +137,11 @@ public class EnaPortalService {
                                         AccessionTypeEnum.SAMPLE.name().toLowerCase(),
                                         AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
                                 break outer;
+                            case READS_BAM:
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.SAMPLE.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_READ_BAM + FASTQ_BAM_FIELD);
+                                break outer;
                             case ANALYSIS_SUBMITTED:
                                 portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
                                         AccessionTypeEnum.ANALYSIS.name().toLowerCase(),
@@ -156,6 +164,11 @@ public class EnaPortalService {
                                 portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
                                         AccessionTypeEnum.STUDY.name().toLowerCase(),
                                         AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
+                                break outer;
+                            case READS_BAM:
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_READ_BAM + FASTQ_BAM_FIELD);
                                 break outer;
                             case ANALYSIS_SUBMITTED:
                                 portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
@@ -180,6 +193,11 @@ public class EnaPortalService {
                                         AccessionTypeEnum.EXPERIMENT.name().toLowerCase(),
                                         AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
                                 break outer;
+                            case READS_BAM:
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.EXPERIMENT.name().toLowerCase(),
+                                        AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_READ_BAM + FASTQ_BAM_FIELD);
+                                break outer;
                         }
                     case RUN:
                         switch (format) {
@@ -192,6 +210,11 @@ public class EnaPortalService {
                                 portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
                                         AccessionTypeEnum.RUN.name().toLowerCase(),
                                         AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_FTP_FIELD);
+                                break outer;
+                            case READS_BAM:
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.RUN.name().toLowerCase(),
+                                        AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_READ_BAM + FASTQ_BAM_FIELD);
                                 break outer;
                         }
                     case ANALYSIS:
@@ -222,6 +245,11 @@ public class EnaPortalService {
                                         AccessionTypeEnum.SAMPLE.name().toLowerCase(),
                                         AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
                                 break outer;
+                            case READS_BAM:
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.SAMPLE.name().toLowerCase(),
+                                        AccessionTypeEnum.SAMPLE.getAccessionField() + SEARCH_FIELDS_READ_BAM + BAM_ASPERA_FIELD);
+                                break outer;
                             case ANALYSIS_SUBMITTED:
                                 portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
                                         AccessionTypeEnum.SAMPLE.name().toLowerCase(),
@@ -244,6 +272,11 @@ public class EnaPortalService {
                                 portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
                                         AccessionTypeEnum.STUDY.name().toLowerCase(),
                                         AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
+                                break outer;
+                            case READS_BAM:
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.STUDY.name().toLowerCase(),
+                                        AccessionTypeEnum.STUDY.getAccessionField() + SEARCH_FIELDS_READ_BAM + BAM_ASPERA_FIELD);
                                 break outer;
                             case ANALYSIS_SUBMITTED:
                                 portalAPIEndpoint = String.format(PORTAL_API_ANALYSIS_SEARCH_URL,
@@ -268,6 +301,11 @@ public class EnaPortalService {
                                         AccessionTypeEnum.EXPERIMENT.name().toLowerCase(),
                                         AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
                                 break outer;
+                            case READS_BAM:
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.EXPERIMENT.name().toLowerCase(),
+                                        AccessionTypeEnum.EXPERIMENT.getAccessionField() + SEARCH_FIELDS_READ_BAM + BAM_ASPERA_FIELD);
+                                break outer;
                         }
                     case RUN:
                         switch (format) {
@@ -280,6 +318,11 @@ public class EnaPortalService {
                                 portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
                                         AccessionTypeEnum.RUN.name().toLowerCase(),
                                         AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_SUBMITTED + SUBMITTED_ASPERA_FIELD);
+                                break outer;
+                            case READS_BAM:
+                                portalAPIEndpoint = String.format(PORTAL_API_READ_RUN_SEARCH_URL,
+                                        AccessionTypeEnum.RUN.name().toLowerCase(),
+                                        AccessionTypeEnum.RUN.getAccessionField() + SEARCH_FIELDS_READ_BAM + BAM_ASPERA_FIELD);
                                 break outer;
                         }
                     case ANALYSIS:

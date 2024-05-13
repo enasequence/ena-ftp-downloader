@@ -161,7 +161,7 @@ public class MainRunner implements CommandLineRunner {
         } else if (StringUtils.isNotBlank(query) && !MenuUtils.validateSearchRequest(query)) {
             throw new IllegalArgumentException("Please provide a valid search query for the download (`eg : https://www.ebi.ac.uk/ena/portal/api/search?result=read_run&query=country=%22Bangladesh%22`)");
         } else if (!EnumUtils.isValidEnum(DownloadFormatEnum.class, formatStr)) {
-            throw new IllegalArgumentException("Please provide a valid format for the download (`eg : READS_FASTQ,READS_SUBMITTED,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)");
+            throw new IllegalArgumentException("Please provide a valid format for the download (`eg : READS_FASTQ,READS_SUBMITTED,READS_BAM,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)");
         } else if (StringUtils.isEmpty(downloadLocation)) {
             throw new IllegalArgumentException("Please provide a valid location for the download");
         } else if (!StringUtils.isEmpty(downloadLocation)) {

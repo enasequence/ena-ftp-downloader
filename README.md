@@ -85,7 +85,8 @@ directly, and download will also be started. If the user selects 2, then only th
 * `--accessions` Comma separated list of accessions or file path to the accession list. If providing a list, it should
   be a plain text file in TSV (tab separated values) format. If there are more than one column, the first column must be
   the accessions. Header row is optional and will be ignored. Values can be enclosed in double quotes or not.
-* `--format` The format for the download (`eg : READS_FASTQ,READS_SUBMITTED,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)
+* `--format` The format for the
+  download (`eg : READS_FASTQ,READS_SUBMITTED,READS_BAM,ANALYSIS_SUBMITTED,ANALYSIS_GENERATED`)
 * `--location` The location for the download
 * `--protocol` The protocol to be used for download.(`eg : FTP, ASPERA`). Default is FTP.
 * `--asperaLocation` The location of local Aspera Connect/CLI folder. Required if Protocol is Aspera.

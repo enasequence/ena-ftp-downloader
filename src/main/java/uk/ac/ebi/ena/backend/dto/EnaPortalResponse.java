@@ -32,12 +32,12 @@ public class EnaPortalResponse {
     @JsonAlias({"sample_accession", "study_accession", "analysis_accession", "run_accession"})
     private String parentId;
     @JsonProperty("fastq_bytes")
-    @JsonAlias({"submitted_bytes", "generated_bytes"})
+    @JsonAlias({"submitted_bytes", "generated_bytes", "bam_bytes"})
     private String bytes;
     @JsonProperty("fastq_ftp")
-    @JsonAlias({"submitted_ftp", "fastq_aspera", "submitted_aspera", "generated_ftp", "generated_aspera"})
+    @JsonAlias({"submitted_ftp", "fastq_aspera", "submitted_aspera", "generated_ftp", "generated_aspera", "bam_ftp"})
     private String url;
     @JsonProperty("fastq_md5")
-    @JsonAlias({"submitted_md5", "generated_md5"})
+    @JsonAlias({"submitted_md5", "generated_md5", "bam_md5"})
     private String md5;
 }
