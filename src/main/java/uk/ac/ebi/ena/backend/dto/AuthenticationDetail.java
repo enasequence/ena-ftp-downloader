@@ -6,6 +6,5 @@ import lombok.Data;
 public class AuthenticationDetail {
     String userName;
     String password;
-    String sessionId;
     boolean isAuthenticated;
 }

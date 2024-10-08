@@ -408,9 +408,7 @@ public class EnaPortalService {
         authenticationDetail.setAuthenticated(false);
         if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
 
-            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP + "/auth"+
-                    StringUtils.replace(Constants.CLIENT_PARAM, "&","?");
-            log.info("portalAPIAuthEndpoint: " + portalAPIAuthEndpoint);
+            String portalAPIAuthEndpoint = Constants.PORTAL_API_EP;
 
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add("Accept", Constants.APPLICATION_JSON);
@@ -421,7 +419,6 @@ public class EnaPortalService {
             try {
                 ResponseEntity<String> resp = restTemplate.exchange(portalAPIAuthEndpoint, HttpMethod.GET, requestEntity, String.class);
                 if (resp.getStatusCode() == HttpStatus.OK) {
-                    authenticationDetail.setSessionId(parseSessionID(resp.getBody()));
                     authenticationDetail.setAuthenticated(true);
                     return true;
                 }
@@ -431,16 +428,6 @@ public class EnaPortalService {
             }
         }
         return false;
-    }
-
-    private String parseSessionID(String rawSessionId) {
-        String sessionId = "";
-        if (StringUtils.isNotBlank(rawSessionId)) {
-            rawSessionId = StringUtils.split(rawSessionId, ":")[1];
-            sessionId = rawSessionId.replaceAll("\"}", "");
-        }
-        sessionId = sessionId.replace("\"", "");
-        return sessionId;
     }
 
     public List<String> getAccessions(String query) {
