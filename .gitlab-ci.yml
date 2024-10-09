@@ -52,10 +52,10 @@ deploy_prod:
     - chmod 700 ~/.ssh
   script:
     - chmod u+x build/dist/${APP_NAME_VERSION}
-    - scp -o StrictHostKeyChecking=no build/dist/${APP_NAME_VERSION} datalib@codon-login-01.ebi.ac.uk:${FTP_STG_DIR}
-    - ssh datalib@codon-login-01.ebi.ac.uk "sbatch --mem 1G -t 3:00:00 -p datamover -W --wrap=\"cd ${FTP_STG_DIR} && find . -type f -name 'ena-file-downloader-*' -not -name ${APP_NAME_VERSION} -delete""
-    - ssh datalib@codon-login-01.ebi.ac.uk "sbatch --mem 1G -t 3:00:00 -p datamover -W --wrap=\"rsync -avt --include=${APP_NAME_VERSION} --exclude=\"*\" --exclude=\"ena-file-downloader-*\" --delete-excluded ${FTP_STG_DIR}/ ${FTP_DIR}/\""
-    - ssh datalib@codon-login-01.ebi.ac.uk "sbatch --mem 1G -t 3:00:00 -p datamover -W --wrap=\"cd ${FTP_DIR} && ln -sf ${APP_NAME_VERSION} ${APP_NAME}.zip\""
+    - scp -o StrictHostKeyChecking=no build/dist/${APP_NAME_VERSION} datalib@codon-slurm-login.ebi.ac.uk:${FTP_STG_DIR}
+    - ssh datalib@codon-slurm-login.ebi.ac.uk "sbatch --mem 1G -t 3:00:00 -p datamover -W --wrap=\"cd ${FTP_STG_DIR} && find . -type f -name 'ena-file-downloader-*' -not -name ${APP_NAME_VERSION} -delete\""
+    - ssh datalib@codon-slurm-login.ebi.ac.uk "sbatch --mem 1G -t 3:00:00 -p datamover -W --wrap=\"rsync -avt --include=${APP_NAME_VERSION} --exclude=\"*\" --exclude=\"ena-file-downloader-*\" --delete-excluded ${FTP_STG_DIR}/ ${FTP_DIR}/\""
+    - ssh datalib@codon-slurm-login.ebi.ac.uk "sbatch --mem 1G -t 3:00:00 -p datamover -W --wrap=\"cd ${FTP_DIR} && ln -sf ${APP_NAME_VERSION} ${APP_NAME}.zip\""
   dependencies:
     - build_prod
   when: manual
