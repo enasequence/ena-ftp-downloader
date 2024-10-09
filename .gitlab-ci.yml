@@ -38,8 +38,8 @@ build_prod:
       - build/dist/${APP_NAME_VERSION}
   tags:
     - dcap-gitlab-runner
-  #only:
-  #  - master
+  only:
+    - master
 
 deploy_prod:
   stage: deploy
@@ -61,5 +61,5 @@ deploy_prod:
   when: manual
   tags:
     - dcap-gitlab-runner
-  #only:
-  #  - master
+  only:
+    - master
