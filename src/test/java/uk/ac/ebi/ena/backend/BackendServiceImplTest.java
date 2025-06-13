@@ -45,7 +45,6 @@ public class BackendServiceImplTest {
         DownloadJob accessionDetailsMap = CommonUtils.processAccessions(Arrays.asList(accessionList.split(",")));
         ProtocolEnum protocol = ProtocolEnum.FTP;
         String asperaConnectLocation = null;
-        String emailId = "datasubs@ebi.ac.uk";
         Mockito.when(accessionDetailsService.fetchFileDetails(format, accessionDetailsMap, protocol, null))
                 .thenReturn(Collections.singletonList(fileDetailList));
         //ACT

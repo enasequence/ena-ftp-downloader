@@ -51,7 +51,6 @@ public class MenuUtils {
     static final Logger console = LoggerFactory.getLogger("console");
 
     public static final String exitMessage = "To exit enter 0 (zero)";
-    public static final String validEmailMessage = "The provided email is invalid. Please enter a valid email address.";
 
     public static final String dataHubDownloadMessage = "Do you want to download the files from datahub. Or just press Enter to skip";
 

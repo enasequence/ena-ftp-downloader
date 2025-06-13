@@ -192,9 +192,7 @@ public class MainRunner implements CommandLineRunner {
                 log.error("Data hub username and/or password is incorrect.");
                 throw new AuthException("Data hub authentication failed");
             }
-
         }
     }
-
 
 }

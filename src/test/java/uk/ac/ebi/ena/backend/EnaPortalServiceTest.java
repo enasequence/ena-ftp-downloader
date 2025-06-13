@@ -18,15 +18,10 @@ import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.EnaPortalResponse;
 import uk.ac.ebi.ena.backend.service.EnaPortalService;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(MockitoJUnitRunner.class)
@@ -53,19 +48,6 @@ public class EnaPortalServiceTest {
         //ASSERT
         Assertions.assertEquals(getPortalResponses().length, portalResponses.size());
 
-    }
-
-    @Test
-    public void testSendEmail() throws UnsupportedEncodingException {
-        //ARRANGE
-        String recipientEmail = "yourmail@ebi.ac.uk";
-        String message = URLEncoder.encode("Test email message", "UTF-8");
-        String subject = URLEncoder.encode("Ena ANALYSIS ANALYSIS_SUBMITTED file download completed", "UTF-8");
-        String name = URLEncoder.encode("For any issues please contact raise a support ticket to ENA", "UTF-8");
-        //ACT
-        enaPortalService.sendEmail(recipientEmail, message, subject, name);
-        //ASSERT
-        verify(restTemplate, times(1)).postForObject(Mockito.any(URI.class), Mockito.any(HttpEntity.class), Mockito.eq(String.class));
     }
 
     private EnaPortalResponse[] getPortalResponses() {
