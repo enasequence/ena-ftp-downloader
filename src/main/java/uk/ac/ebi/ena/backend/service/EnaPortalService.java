@@ -77,11 +77,9 @@ public class EnaPortalService {
     public static final String BAM_ASPERA_FIELD = ",bam_aspera";
 
     private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
-            "=read_run" +
-            "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
+            "=read_run" + "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
     private static final String PORTAL_API_ANALYSIS_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
-            "=analysis" +
-            "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
+            "=analysis" + "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
     private static final String PORTAL_API_SUPPORT_URL = "https://www.ebi.ac.uk/ena/portal/api/support?email=datasubs" +
             "@ebi.ac.uk&message=%s&to=%s&subject=%s&name=%s"+Constants.CLIENT_PARAM;
 

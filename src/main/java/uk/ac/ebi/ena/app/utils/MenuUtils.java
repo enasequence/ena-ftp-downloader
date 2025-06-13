@@ -31,8 +31,6 @@ import uk.ac.ebi.ena.app.menu.enums.AccessionTypeEnum;
 import uk.ac.ebi.ena.app.menu.enums.AccessionsEntryMethodEnum;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -54,8 +52,6 @@ public class MenuUtils {
 
     public static final String exitMessage = "To exit enter 0 (zero)";
     public static final String validEmailMessage = "The provided email is invalid. Please enter a valid email address.";
-    public static final String emailMessage = "If you would like to receive an email when the downloads are complete," +
-            " type your email address here and press Enter. Or just press Enter to skip";
 
     public static final String dataHubDownloadMessage = "Do you want to download the files from datahub. Or just press Enter to skip";
 
@@ -86,11 +82,6 @@ public class MenuUtils {
     public static void printBackMessage() {
         System.out.println(Constants.backMessage);
         printExitMessage();
-    }
-
-
-    public static void printEmailMessage() {
-        System.out.println(MenuUtils.emailMessage);
     }
 
     public static void printUserNameMessage() {
@@ -137,25 +128,9 @@ public class MenuUtils {
         return isValidLocation;
     }
 
-
-    public static void printValidEmailMessage() {
-        System.out.println(MenuUtils.validEmailMessage);
-    }
-
     public static void printExitMessage() {
         System.out.println(MenuUtils.exitMessage);
         printSeparatorLine();
-    }
-
-    public static boolean isValidEmailAddress(String email) {
-        boolean result = true;
-        try {
-            InternetAddress emailAddr = new InternetAddress(email);
-            emailAddr.validate();
-        } catch (AddressException ex) {
-            result = false;
-        }
-        return result;
     }
 
     public static DownloadJob parseAccessions(String accessions) {

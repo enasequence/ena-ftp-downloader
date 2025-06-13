@@ -55,12 +55,9 @@ import static uk.ac.ebi.ena.app.MainRunner.ASPERA_PATH_MSG;
 @Slf4j
 public class MenuService {
 
-    final Logger console = LoggerFactory.getLogger("console");
-
-    public static final String NONE = "NONE";
+    private final Logger console = LoggerFactory.getLogger("console");
     private ScannerUtils scannerUtils;
     private BackendService backendService;
-
     private EnaPortalService portalService;
 
 
@@ -69,24 +66,6 @@ public class MenuService {
         this.scannerUtils = scannerUtils;
         this.backendService = backendService;
         this.portalService = portalService;
-    }
-
-    private String showEmailOption() {
-        CommonUtils.printSeparatorLine();
-        MenuUtils.printEmptyline();
-        MenuUtils.printEmailMessage();
-        CommonUtils.printSeparatorLine();
-        String emailId = scannerUtils.getNextString();
-        if (StringUtils.isNotEmpty(emailId)) {
-            boolean isValidId = MenuUtils.isValidEmailAddress(emailId);
-            if (!isValidId) {
-                MenuUtils.printValidEmailMessage();
-                return showEmailOption();
-            }
-            return emailId;
-        } else {
-            return NONE;
-        }
     }
 
     private DownloadJob a1GetAccessionListFromFilePath(AccessionsEntryMethodEnum accessionsEntry, AuthenticationDetail authenticationDetail) {
@@ -356,8 +335,6 @@ public class MenuService {
                 bShowDownloadFormatMenu(downloadJob, authenticationDetail);
             }
         }
-
-
     }
 
     private String cRequestDownloadLocation(DownloadFormatEnum format, DownloadJob downloadJob, AuthenticationDetail authenticationDetail) {
@@ -413,31 +390,21 @@ public class MenuService {
                                    ProtocolEnum protocolEnum, String asperaConnectLocation, AuthenticationDetail authenticationDetail) {
         CommonUtils.printSeparatorLine();
         MenuUtils.printEmptyline();
-        MenuUtils.printEmailMessage();
         MenuUtils.printBackMessage();
 
         String input = scannerUtils.getNextString();
         MenuUtils.printEmptyline();
         if ("b".equalsIgnoreCase(input)) { // back
             dRequestProtocolSelection(format, location, downloadJob, authenticationDetail);
-        } else if (StringUtils.isNotEmpty(input)) {
-            boolean isValidId = MenuUtils.isValidEmailAddress(input);
-            if (!isValidId) {
-                MenuUtils.printValidEmailMessage();
-                return showEmailOption();
-            } else {
-                fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, input, authenticationDetail);
-            }
         } else {
-            fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, NONE, authenticationDetail);
+            fShowConfirmationAndPerformAction(format, location, downloadJob, protocolEnum, asperaConnectLocation, authenticationDetail);
         }
         return input;
     }
 
-    private void fShowConfirmationAndPerformAction(DownloadFormatEnum format, String location,
-                                                   DownloadJob downloadJob,
+    private void fShowConfirmationAndPerformAction(DownloadFormatEnum format, String location, DownloadJob downloadJob,
                                                    ProtocolEnum protocol, String asperaConnectLocation,
-                                                   String emailId, AuthenticationDetail authenticationDetail) {
+                                                   AuthenticationDetail authenticationDetail) {
         String msg = "You are ready to download " + format.getMessage()
                 + " to " + location + " using " + protocol + ".";
         if (protocol == ProtocolEnum.ASPERA) {
@@ -466,7 +433,7 @@ public class MenuService {
                     switch (actionEnumInput) {
                         case CREATE_SCRIPT:
                             FileUtils.createDownloadScript(downloadJob, format, location, protocol,
-                                    asperaConnectLocation, emailId, authenticationDetail);
+                                    asperaConnectLocation, authenticationDetail);
                             CommonUtils.printSeparatorLine();
                             System.out.println("Script created=" + FileUtils.getScriptPath(downloadJob, format));
                             CommonUtils.printSeparatorLine();
@@ -474,31 +441,32 @@ public class MenuService {
                         case CREATE_AND_DOWNLOAD:
                             CommonUtils.printSeparatorLine();
                             FileUtils.createDownloadScript(downloadJob, format, location, protocol,
-                                    asperaConnectLocation, emailId, authenticationDetail);
+                                    asperaConnectLocation, authenticationDetail);
                             CommonUtils.printSeparatorLine();
                             System.out.println("Script created at " + FileUtils.getScriptPath(downloadJob, format)
                                     + ". Download started.");
                             CommonUtils.printSeparatorLine();
-                            startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId, authenticationDetail);
+                            startDownload(format, location, downloadJob, protocol, asperaConnectLocation,
+                                    authenticationDetail);
                             break;
                     }
                 } else {
                     // replay
-                    fShowConfirmationAndPerformAction(format, location, downloadJob, protocol,
-                            asperaConnectLocation, emailId, authenticationDetail);
+                    fShowConfirmationAndPerformAction(format, location, downloadJob, protocol, asperaConnectLocation,
+                            authenticationDetail);
                 }
             }
         }
 
     }
 
-    private void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob
-            , ProtocolEnum protocol, String asperaConnectLocation, String emailId,
+    private void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
+                               ProtocolEnum protocol, String asperaConnectLocation,
                                AuthenticationDetail authenticationDetail) {
         try {
             console.info("Starting download at location {}", location);
-            backendService.startDownload(format, location, downloadJob, protocol, asperaConnectLocation, emailId
-                    , authenticationDetail);
+            backendService.startDownload(format, location, downloadJob, protocol, asperaConnectLocation,
+                    authenticationDetail);
         } catch (Exception exception) {
             log.error("Exception encountered while starting download");
             exception.printStackTrace();

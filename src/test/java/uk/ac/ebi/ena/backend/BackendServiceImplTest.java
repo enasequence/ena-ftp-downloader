@@ -11,12 +11,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.ac.ebi.ena.app.menu.enums.DownloadFormatEnum;
 import uk.ac.ebi.ena.app.menu.enums.ProtocolEnum;
 import uk.ac.ebi.ena.app.utils.CommonUtils;
-import uk.ac.ebi.ena.app.utils.FileUtils;
 import uk.ac.ebi.ena.backend.dto.DownloadJob;
 import uk.ac.ebi.ena.backend.dto.FileDetail;
 import uk.ac.ebi.ena.backend.service.AccessionDetailsService;
 import uk.ac.ebi.ena.backend.service.BackendServiceImpl;
-import uk.ac.ebi.ena.backend.service.EmailService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,9 +27,6 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 @RunWith(MockitoJUnitRunner.class)
 public class BackendServiceImplTest {
-
-    @Mock
-    EmailService emailService;
 
     @Mock
     AccessionDetailsService accessionDetailsService;
@@ -53,17 +48,11 @@ public class BackendServiceImplTest {
         String emailId = "datasubs@ebi.ac.uk";
         Mockito.when(accessionDetailsService.fetchFileDetails(format, accessionDetailsMap, protocol, null))
                 .thenReturn(Collections.singletonList(fileDetailList));
-        Mockito.doNothing().when(emailService).sendEmailForFastqSubmitted(Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong()
-                , Mockito.anyString(), Mockito.anyString(), Mockito.any(DownloadFormatEnum.class), Mockito.anyString());
         //ACT
-        backendService.startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, emailId, null);
+        backendService.startDownload(format, location, accessionDetailsMap, protocol, asperaConnectLocation, null);
         //ASSERT
         verify(accessionDetailsService, times(1)).doDownload(format, location, accessionDetailsMap,
                 Collections.singletonList(fileDetailList), protocol, asperaConnectLocation, null);
-
-        verify(emailService, times(1)).sendEmailForFastqSubmitted(emailId, 3, 0,
-                FileUtils.getScriptPath(accessionDetailsMap, format), accessionDetailsMap.getAccessionField(), format, location);
-
     }
 
     private List<FileDetail> createFileDetailFtp() {

@@ -43,20 +43,18 @@ import static uk.ac.ebi.ena.app.constants.Constants.TOTAL_RETRIES;
 public class BackendServiceImpl implements BackendService {
 
     final Logger console = LoggerFactory.getLogger("console");
-
-    private final EmailService emailService;
     private final AccessionDetailsService accessionDetailsService;
 
 
     @Override
-    public void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob,
-                              ProtocolEnum protocol, String asperaConnectLocation, String emailId,
-                              AuthenticationDetail authenticationDetail) {
+    public void startDownload(DownloadFormatEnum format, String location, DownloadJob downloadJob, ProtocolEnum protocol,
+                              String asperaConnectLocation, AuthenticationDetail authenticationDetail) {
 
-        console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, emailId:{}, data hub:{}",
-                format, location, protocol, asperaConnectLocation, emailId,
+        console.info("Starting download for format:{} at download location:{},protocol:{}, asperaLoc:{}, data hub:{}",
+                format, location, protocol, asperaConnectLocation,
                 Objects.nonNull(authenticationDetail) ? authenticationDetail.getUserName() : null);
-        List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol, authenticationDetail);
+        List<List<FileDetail>> fileDetailsList = accessionDetailsService.fetchFileDetails(format, downloadJob, protocol,
+                authenticationDetail);
         final List<FileDetail> finallyFailedFiles = new ArrayList<>();
         AtomicLong count = new AtomicLong();
         fileDetailsList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> count.getAndIncrement()));
@@ -75,7 +73,7 @@ public class BackendServiceImpl implements BackendService {
                         finallyFailedFiles.add(fileDetail);
                     }
                 }
-                if (failedFiles.size() > 0) {
+                if (!failedFiles.isEmpty()) {
                     failedFileList.add(failedFiles);
                 }
             });
@@ -83,7 +81,7 @@ public class BackendServiceImpl implements BackendService {
             AtomicLong newCount = new AtomicLong();
             failedFileList.forEach(fileDetails -> fileDetails.forEach(fileDetail -> newCount.getAndIncrement()));
 
-            if (failedFileList.size() > 0) {
+            if (!failedFileList.isEmpty()) {
                 log.warn("Number of files:{} successfully downloaded for accessionField:{}, format:{}",
                         count.get() - newCount.get(), downloadJob.getAccessionField(), format);
                 log.warn("Number of files:{} failed downloaded for accessionField:{}, format:{}",
@@ -96,23 +94,19 @@ public class BackendServiceImpl implements BackendService {
             }
             fileDetailsList = failedFileList;
 
-        } while (fileDetailsList.size() > 0);
+        } while (!fileDetailsList.isEmpty());
 
 
         console.info("{} files successfully downloaded for accessionField:{}, format:{} to {}",
                 count.get() - finallyFailedFiles.size(), downloadJob.getAccessionField(), format, location);
 
-        if (finallyFailedFiles.size() > 0) {
+        if (!finallyFailedFiles.isEmpty()) {
             console.info("{} files failed to be downloaded for accessionField:{}, format:{}",
                     finallyFailedFiles.size(), downloadJob.getAccessionField(), format);
             for (FileDetail fileDetail : finallyFailedFiles) {
                 console.info("{}", fileDetail.getFtpUrl());
             }
         }
-
-        emailService.sendEmailForFastqSubmitted(emailId, count.get(), 0,
-                FileUtils.getScriptPath(downloadJob, format), downloadJob.getAccessionField(), format, location);
-
     }
 
 

@@ -64,7 +64,7 @@ There are two ways to run the tool :
 1. Command to run jar file from Console without providing inputs `java -jar ena-file-downloader.jar`
 
 The user will be prompted to provide
-inputs  (`eg : accessions/query, format, location, protocol, asperaLocation, email`) and in the end will be prompted
+inputs  (`eg : accessions/query, format, location, protocol, asperaLocation`) and in the end will be prompted
 with the below options :
 
 * `To start downloading right now, and also create a script that can be invoked directly, please enter 1`
@@ -74,11 +74,11 @@ If the user selects 1, then a script file will be created with the provided argu
 directly, and download will also be started. If the user selects 2, then only the script file will be created.
 
 2. Command to run jar file from Console by providing inputs with accessions
-   `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com`
+   `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null`
    OR with query
-   `java -jar ena-file-downloader.jar --query=result=read_run&query=country=%22Japan%22AND%20depth=168 --format=READS_FASTQ --location="C:\Users\Documents\ena ebi" --protocol=FTP --asperaLocation=null --email=email@youremail.com`
+   `java -jar ena-file-downloader.jar --query=result=read_run&query=country=%22Japan%22AND%20depth=168 --format=READS_FASTQ --location="C:\Users\Documents\ena ebi" --protocol=FTP --asperaLocation=null`
 3. Command to run jar file from Console to download files from data hub
-   `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --email=email@youremail.com --dataHubUsername=dcc_abc --dataHubPassword=*****`
+   `java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location=C:\Users\Documents\ena --protocol=FTP --asperaLocation=null --dataHubUsername=dcc_abc --dataHubPassword=*****`
 
 * `--query` The search query for the download. It contains the result and the query string.
   (`eg : result=read_run&query=country=%22Japan%22AND%20depth=168`)
@@ -90,12 +90,11 @@ directly, and download will also be started. If the user selects 2, then only th
 * `--location` The location for the download
 * `--protocol` The protocol to be used for download.(`eg : FTP, ASPERA`). Default is FTP.
 * `--asperaLocation` The location of local Aspera Connect/CLI folder. Required if Protocol is Aspera.
-* `--email` The email at which one wishes to receive the alert.(optional)
 * `--dataHubUsername` Data hub username. (Required only If you want to download the data from a data hub (dcc))
 * `--dataHubPassword` Data hub password. (Required only If you want to download the data from a data hub (dcc))
 
 Please enclose the inputs within double quotes if it contains spaces. For eg:
-`java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location="C:\Users\Documents\ena ebi" --protocol=FTP --asperaLocation=null --email=email@youremail.com`
+`java -jar ena-file-downloader.jar --accessions=SAMEA3231268,SAMEA3231287 --format=READS_FASTQ --location="C:\Users\Documents\ena ebi" --protocol=FTP --asperaLocation=null`
 
 Privacy Notice The execution of this tool may require limited processing of your personal data to function. By using
 this tool you are agreeing to this as outlined in our Privacy
