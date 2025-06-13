@@ -103,9 +103,9 @@ public class FileUtils {
         return "\"" + str + "\"";
     }
 
-    public static void createDownloadScript(DownloadJob downloadJob, DownloadFormatEnum format,
-                                            String location, ProtocolEnum protocol, String asperaLocation,
-                                            String emailId, AuthenticationDetail authenticationDetail) {
+    public static void createDownloadScript(DownloadJob downloadJob, DownloadFormatEnum format, String location,
+                                            ProtocolEnum protocol, String asperaLocation,
+                                            AuthenticationDetail authenticationDetail) {
         File file = new File(location);
         if (file.exists()) {
             File file1 = new File(getScriptPath(downloadJob, format));
@@ -121,7 +121,7 @@ public class FileUtils {
                                 " --accessions=" + StringUtils.join(accessionList, ',') : " --query=" + "\""
                                 + query + "\"") +
                                 " --format=" + format + " --location=" + location + " --protocol=" + protocol +
-                                " --asperaLocation=" + asperaLocation + " --email=" + emailId +
+                                " --asperaLocation=" + asperaLocation +
                                 (Objects.nonNull(authenticationDetail) ?
                                         " --dataHubUsername=" + authenticationDetail.getUserName() +
                                                 " --dataHubPassword=" + authenticationDetail.getPassword()

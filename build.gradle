@@ -43,7 +43,7 @@ dependencies {
 
 bootRun {
 //    to run in Idea provide params like:
-//    bootRun -Pargs="--accessions=SAMD00016353,DRS000002 --format=READS_FASTQ --location=/mnt/c/data-files --protocol=FTP --asperaLocation=null --email=NONE"
+//    bootRun -Pargs="--accessions=SAMD00016353,DRS000002 --format=READS_FASTQ --location=/mnt/c/data-files --protocol=FTP --asperaLocation=null"
     if (project.hasProperty('args')) {
         args project.args.split('\\s+')
     }

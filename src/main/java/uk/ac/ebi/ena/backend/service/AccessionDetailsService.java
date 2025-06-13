@@ -129,7 +129,7 @@ public class AccessionDetailsService {
         if (accLists != null) {
             for (List<String> accList : ProgressBar.wrap(accLists, portalPB)) {
                 final List<List<String>> partitions = Lists.partition(accList,
-                        accList.size() > CHUNK_SIZE * 5 ? CHUNK_SIZE : (int) Math.ceil(new Double(accList.size()) / 5));
+                        accList.size() > CHUNK_SIZE * 5 ? CHUNK_SIZE : (int) Math.ceil((double) accList.size() / 5));
                 for (List<String> partition : partitions) {
                     final List<EnaPortalResponse> portalResponses = enaPortalService.getPortalResponses(partition, format,
                             protocol, downloadJob, authenticationDetail);
@@ -144,13 +144,13 @@ public class AccessionDetailsService {
             System.out.println("No records found for the accessions submitted under type=" + accessionType + " format=" + format);
         }
 
-        // Compare the list of accessions provided by user and acessions returns from portal api
+        // Compare the list of accessions provided by user and accessions returns from portal api
 
         if (Objects.nonNull(authenticationDetail) && StringUtils.isNotEmpty(authenticationDetail.getUserName())) {
             Set<String> missingAccessions = getMissingAccessionsFromDataHub(downloadJob, listList);
-            if (missingAccessions.size() > 0) {
-                console.info("Below accessions are not available in " + authenticationDetail.getUserName() + " data hub \n"
-                        + missingAccessions.stream().collect(Collectors.joining(",")));
+            if (!missingAccessions.isEmpty()) {
+                console.info("Below accessions are not available in {} data hub \n{}",
+                        authenticationDetail.getUserName(), String.join(",", missingAccessions));
             }
 
         }
@@ -193,7 +193,7 @@ public class AccessionDetailsService {
 
         for (int thisSet = 0; thisSet < partitions.size(); thisSet++) {
             List<FileDetail> fileDetails = partitions.get(thisSet);
-            if (fileDetails.size() == 0) {
+            if (fileDetails.isEmpty()) {
                 continue;
             }
             if (protocol == ProtocolEnum.FTP) {

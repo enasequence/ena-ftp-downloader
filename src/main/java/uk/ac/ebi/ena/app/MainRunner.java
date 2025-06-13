@@ -67,9 +67,6 @@ public class MainRunner implements CommandLineRunner {
     @Value("${asperaLocation:#{null}}")
     public String asperaLocation;
 
-    @Value("${email:#{null}}")
-    public String emailId;
-
     @Value("${dataHubUsername:#{null}}")
     public String userName;
 
@@ -118,10 +115,8 @@ public class MainRunner implements CommandLineRunner {
                     } else if (query != null) {
                         downloadJob = MenuUtils.parseQuery(query);
                     }
-                    emailId = StringUtils.trim(emailId);
-                    backendService.startDownload(format, downloadLocation,
-                            downloadJob, protocol, asperaLocation,
-                            emailId, authenticationDetail);
+                    backendService.startDownload(format, downloadLocation, downloadJob, protocol, asperaLocation,
+                            authenticationDetail);
                     console.info("Downloads Completed");
 
                 } catch (IllegalArgumentException iae) {
@@ -197,9 +192,7 @@ public class MainRunner implements CommandLineRunner {
                 log.error("Data hub username and/or password is incorrect.");
                 throw new AuthException("Data hub authentication failed");
             }
-
         }
     }
-
 
 }

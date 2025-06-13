@@ -100,7 +100,7 @@ public class CommonUtils {
         MultiValueMap<String, String> mvm = CommonUtils.getParameters(searchURL);
         List<String> includeAcc = mvm.get("includeAccessions");
 
-        return includeAcc != null && includeAcc.size() > 0 ? includeAcc : Collections.emptyList();
+        return includeAcc != null && !includeAcc.isEmpty() ? includeAcc : Collections.emptyList();
     }
 
     @SneakyThrows

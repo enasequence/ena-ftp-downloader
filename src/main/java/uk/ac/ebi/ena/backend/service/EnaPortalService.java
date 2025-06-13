@@ -77,13 +77,9 @@ public class EnaPortalService {
     public static final String BAM_ASPERA_FIELD = ",bam_aspera";
 
     private static final String PORTAL_API_READ_RUN_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
-            "=read_run" +
-            "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
+            "=read_run" + "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
     private static final String PORTAL_API_ANALYSIS_SEARCH_URL = "https://www.ebi.ac.uk/ena/portal/api/search?result" +
-            "=analysis" +
-            "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
-    private static final String PORTAL_API_SUPPORT_URL = "https://www.ebi.ac.uk/ena/portal/api/support?email=datasubs" +
-            "@ebi.ac.uk&message=%s&to=%s&subject=%s&name=%s"+Constants.CLIENT_PARAM;
+            "=analysis" + "&includeAccessionType=%s&fields=%s&format=json&limit=0"+ Constants.CLIENT_PARAM;
 
     private static final String EXPERIMENT = "experiment";
     private static final String SAMPLE = "sample";
@@ -379,26 +375,6 @@ public class EnaPortalService {
         log.error("Count not fetch get portalResponse for accession type:{}, format:{} even after {} retries",
                 accessionType, format, BeanConfig.APP_RETRY);
         return Collections.emptyList();
-    }
-
-    public void sendEmail(String recipientEmail, String message, String subject, String name) {
-        String supportApiEndpoint;
-        Assert.notNull(recipientEmail, "Email recipient cannot be null");
-        Assert.notNull(message, "Email Message cannot be null");
-
-        supportApiEndpoint = String.format(PORTAL_API_SUPPORT_URL, message, recipientEmail, subject, name);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        String boundary = Long.toHexString(System.currentTimeMillis());
-        httpHeaders.add("Content-Type", String.format(MULTIPART_FORM_DATA, boundary));
-        HttpEntity<String> request = new HttpEntity<>(null, httpHeaders);
-        URI uri = URI.create(supportApiEndpoint);
-        try {
-            restTemplate.postForObject(uri, request, String.class);
-        } catch (Exception exception) {
-            log.error("Exception encountered while sending email to emailId:{}", recipientEmail, exception);
-        }
-        console.info("Email successfully sent to:{}", recipientEmail);
-
     }
 
     public boolean authenticateUser(AuthenticationDetail authenticationDetail) {
